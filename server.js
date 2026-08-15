@@ -9,6 +9,7 @@ const {
     sendMessageToChannel,
     listGuildsAndChannels,
     listAllEmojis,
+    listGuildRoles,
 } = require("./lib/discordClient");
 // ИИ-функционал временно отключён, см. NOTES.md
 // const { askAI } = require("./lib/ai");
@@ -60,6 +61,17 @@ app.get("/api/emojis", checkAuth, (req, res) => {
         return res.status(503).json({ error: "Бот ещё не подключился к Discord" });
     }
     res.json({ emojis: listAllEmojis() });
+});
+
+app.get("/api/roles", checkAuth, (req, res) => {
+    if (!client.isReady()) {
+        return res.status(503).json({ error: "Бот ещё не подключился к Discord" });
+    }
+    const { guildId } = req.query;
+    if (!guildId) {
+        return res.status(400).json({ error: "guildId обязателен" });
+    }
+    res.json({ roles: listGuildRoles(guildId) });
 });
 
 app.post("/api/send", checkAuth, async (req, res) => {

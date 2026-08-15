@@ -371,6 +371,111 @@ function pickEmoji(value) {
 }
 
 // ==========================================================
+// Пикер ролей сервера (по аналогии с эмодзи) — вставляет
+// упоминание вида <@&roleId> в текст
+// ==========================================================
+
+const roleCache = {}; // guildId -> roles[]
+let roleTargetId = null;
+const rolePicker = document.getElementById("role-picker");
+const roleListEl = document.getElementById("role-list");
+const roleSearchEl = document.getElementById("role-search");
+
+document.querySelectorAll(".role-toggle").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        roleTargetId = btn.dataset.fmtTarget;
+        openRolePicker(btn);
+    });
+});
+
+async function openRolePicker(anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    rolePicker.style.top = `${window.scrollY + rect.bottom + 6}px`;
+    rolePicker.style.left = `${window.scrollX + rect.left}px`;
+    rolePicker.classList.remove("hidden");
+    roleSearchEl.value = "";
+    roleSearchEl.focus();
+
+    const guildId = document.getElementById("guild-select").value;
+    if (!guildId) {
+        roleListEl.innerHTML = `<p class="hint">Сначала выбери сервер вверху формы</p>`;
+        return;
+    }
+
+    roleListEl.innerHTML = `<p class="hint">Загрузка…</p>`;
+    try {
+        const roles = await loadRolesForGuild(guildId);
+        renderRoleList(roles, "");
+    } catch (err) {
+        roleListEl.innerHTML = `<p class="hint">Ошибка: ${err.message}</p>`;
+    }
+}
+
+async function loadRolesForGuild(guildId) {
+    if (roleCache[guildId]) return roleCache[guildId];
+    const data = await apiFetch(`/api/roles?guildId=${encodeURIComponent(guildId)}`);
+    roleCache[guildId] = data.roles || [];
+    return roleCache[guildId];
+}
+
+function closeRolePicker() {
+    rolePicker.classList.add("hidden");
+}
+
+document.addEventListener("click", (e) => {
+    if (!rolePicker.contains(e.target)) closeRolePicker();
+});
+
+roleSearchEl.addEventListener("input", () => {
+    const guildId = document.getElementById("guild-select").value;
+    renderRoleList(roleCache[guildId] || [], roleSearchEl.value.trim().toLowerCase());
+});
+
+function renderRoleList(roles, filter) {
+    roleListEl.innerHTML = "";
+
+    const filtered = roles.filter((r) => !filter || r.name.toLowerCase().includes(filter));
+    filtered.forEach((role) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "role-option";
+        btn.title = `@${role.name}`;
+
+        const dot = document.createElement("span");
+        dot.className = "role-color-dot";
+        dot.style.background = role.color || "#99aab5";
+        btn.appendChild(dot);
+
+        const label = document.createElement("span");
+        label.className = "role-name";
+        label.textContent = role.name;
+        btn.appendChild(label);
+
+        btn.addEventListener("click", () => pickRole(`<@&${role.id}>`));
+        roleListEl.appendChild(btn);
+    });
+
+    if (!filtered.length) {
+        roleListEl.innerHTML = `<p class="hint">Ничего не найдено</p>`;
+    }
+}
+
+function pickRole(mentionTag) {
+    const targetEl = document.getElementById(roleTargetId);
+    if (targetEl) {
+        insertAtCursor(targetEl, mentionTag, "", true);
+        targetEl.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    closeRolePicker();
+    updatePreview();
+}
+
+// Смена выбранного сервера — сбрасываем открытый пикер ролей,
+// так как список ролей зависит от сервера
+document.getElementById("guild-select").addEventListener("change", closeRolePicker);
+
+// ==========================================================
 // Форматирование текста (жирный/курсив/спойлер/ссылка)
 // ==========================================================
 
@@ -466,10 +571,20 @@ function escapeHtml(str) {
         .replace(/>/g, "&gt;");
 }
 
+// Ищет имя роли по её id в уже загруженном кэше ролей (для превью упоминаний)
+function findRoleNameById(id) {
+    for (const roles of Object.values(roleCache)) {
+        const found = roles.find((r) => r.id === id);
+        if (found) return found.name;
+    }
+    return null;
+}
+
 // Очень упрощённый рендер discord-разметки для превью (не покрывает всё, но достаточно для черновика)
 function applyInlineMarkdown(escaped) {
     let out = escaped;
     out = out.replace(/&lt;a?:(\w+):(\d+)&gt;/g, (_, name) => `<span class="dp-custom-emoji">:${name}:</span>`);
+    out = out.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => `<span class="dp-role-mention">@${findRoleNameById(id) || "роль"}</span>`);
     out = out.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
     out = out.replace(/__(.+?)__/g, "<u>$1</u>");
     out = out.replace(/~~(.+?)~~/g, "<s>$1</s>");

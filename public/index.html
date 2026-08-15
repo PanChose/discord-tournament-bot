@@ -70,6 +70,9 @@
                 <select id="channel-select"></select>
 
                 <label>Упоминание перед карточкой (необязательно)</label>
+                <div class="toolbar" style="margin-bottom:6px;">
+                    <button type="button" id="role-btn-content" class="role-toggle" data-fmt-target="embed-content" title="Вставить упоминание роли">🏷️ выбрать роль</button>
+                </div>
                 <input id="embed-content" type="text" maxlength="2000" placeholder="Например: @everyone (пинги не работают внутри карточки, поэтому это поле — снаружи)" />
                 <p class="hint" style="margin-top:-6px;">Весь остальной текст объявления (заголовок, описание, ссылки) — ниже, он попадёт внутрь самой карточки.</p>
 
@@ -114,6 +117,7 @@
                     <button type="button" data-fmt-target="embed-description" data-fmt="link" title="Вставить ссылку">🔗 ссылка</button>
                     <button type="button" data-fmt-target="embed-description" data-fmt="spoiler" title="Скрытый текст (спойлер)">🙈 спойлер</button>
                     <button type="button" id="emoji-btn-description" class="emoji-toggle" data-fmt-target="embed-description" title="Вставить эмодзи">😀 эмодзи</button>
+                    <button type="button" id="role-btn-description" class="role-toggle" data-fmt-target="embed-description" title="Вставить упоминание роли">🏷️ роль</button>
                 </div>
                 <textarea id="embed-description" rows="3" maxlength="4096" placeholder="Например: # ALL THE PREVIOUS AND FUTURE LINKS 🔗&#10;https://yf7tournaments.com/"></textarea>
 
@@ -160,6 +164,12 @@
 <div id="emoji-picker" class="emoji-picker hidden">
     <input type="text" id="emoji-search" placeholder="Поиск эмодзи по имени…" />
     <div id="emoji-list" class="emoji-list"></div>
+</div>
+
+<!-- ============== ВСПЛЫВАЮЩИЙ ПИКЕР РОЛЕЙ СЕРВЕРА ============== -->
+<div id="role-picker" class="emoji-picker role-picker hidden">
+    <input type="text" id="role-search" placeholder="Поиск роли по имени…" />
+    <div id="role-list" class="emoji-list role-list"></div>
 </div>
 
 <script src="panel.js"></script>
