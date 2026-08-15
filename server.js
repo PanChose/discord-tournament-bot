@@ -8,6 +8,7 @@ const {
     attachHandlers,
     sendMessageToChannel,
     listGuildsAndChannels,
+    listAllEmojis,
 } = require("./lib/discordClient");
 // ИИ-функционал временно отключён, см. NOTES.md
 // const { askAI } = require("./lib/ai");
@@ -15,7 +16,8 @@ const {
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+// Увеличенный лимит — в запросе передаются base64-картинки, загруженные локально
+app.use(express.json({ limit: "25mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // --- простая авторизация панели через пароль из .env ---
@@ -53,14 +55,26 @@ app.get("/api/guilds", checkAuth, (req, res) => {
     res.json({ guilds: listGuildsAndChannels() });
 });
 
+app.get("/api/emojis", checkAuth, (req, res) => {
+    if (!client.isReady()) {
+        return res.status(503).json({ error: "Бот ещё не подключился к Discord" });
+    }
+    res.json({ emojis: listAllEmojis() });
+});
+
 app.post("/api/send", checkAuth, async (req, res) => {
-    const { guildId, channelId, content, embed, buttonRows } = req.body;
+    const { guildId, channelId, content, embed, buttonRows, reactionEmoji } = req.body;
     if (!guildId || !channelId) {
         return res.status(400).json({ error: "guildId и channelId обязательны" });
     }
     try {
-        await sendMessageToChannel(guildId, channelId, { content, embed, buttonRows });
-        res.json({ ok: true });
+        const result = await sendMessageToChannel(guildId, channelId, {
+            content,
+            embed,
+            buttonRows,
+            reactionEmoji,
+        });
+        res.json({ ok: true, reactionWarning: result.reactionWarning || null });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -23,120 +23,143 @@
         <span id="bot-status" class="status">…</span>
     </header>
 
-    <main>
-        <section class="card">
-            <h2>Отправить сообщение на сервер</h2>
-            <label>Сервер (guild)</label>
-            <select id="guild-select"></select>
+    <main class="layout">
 
-            <label>Канал</label>
-            <select id="channel-select"></select>
-
-            <label>Текст сообщения</label>
-            <div class="toolbar" id="format-toolbar">
-                <button type="button" data-fmt="bold" title="Жирный"><b>Ж</b></button>
-                <button type="button" data-fmt="italic" title="Курсив"><i>К</i></button>
-                <button type="button" data-fmt="underline" title="Подчёркнутый"><u>Ч</u></button>
-                <button type="button" data-fmt="strike" title="Зачёркнутый"><s>З</s></button>
-                <button type="button" data-fmt="spoiler" title="Скрытый текст (спойлер)">🙈 спойлер</button>
-                <button type="button" data-fmt="code" title="Строчный код">`код`</button>
-                <button type="button" data-fmt="codeblock" title="Блок кода">{ }</button>
-                <button type="button" data-fmt="quote" title="Цитата">❝ цитата</button>
-                <button type="button" data-fmt="h1" title="Заголовок">H1</button>
-                <button type="button" data-fmt="h2" title="Подзаголовок">H2</button>
-                <button type="button" data-fmt="h3" title="Мелкий заголовок">H3</button>
-                <button type="button" data-fmt="list" title="Список">• список</button>
-            </div>
-            <textarea id="message-input" rows="4" placeholder="Текст сообщения... (можно оставить пустым, если используешь только Embed или кнопки)"></textarea>
-
-            <div class="toggle-row">
-                <label><input type="checkbox" id="embed-toggle" /> Добавить Embed-карточку</label>
-            </div>
-
-            <div id="embed-section" class="hidden subsection">
-                <label>Заголовок</label>
-                <input id="embed-title" type="text" maxlength="256" placeholder="Заголовок карточки" />
-
-                <label>Описание</label>
-                <textarea id="embed-description" rows="3" maxlength="4096" placeholder="Основной текст карточки"></textarea>
-
-                <div class="row-2">
-                    <div>
-                        <label>Цвет полоски</label>
-                        <input id="embed-color" type="color" value="#5865f2" />
-                    </div>
-                    <div>
-                        <label>Ссылка на заголовке</label>
-                        <input id="embed-url" type="text" placeholder="https://..." />
+        <!-- ============== ПРЕВЬЮ (слева) ============== -->
+        <section class="preview-col">
+            <div class="card preview-card">
+                <h2>Превью сообщения</h2>
+                <div class="discord-preview" id="discord-preview">
+                    <div class="dp-avatar">🤖</div>
+                    <div class="dp-body">
+                        <div class="dp-header">
+                            <span class="dp-username">Твой бот</span>
+                            <span class="dp-botTag">BOT</span>
+                            <span class="dp-time">сегодня, сейчас</span>
+                        </div>
+                        <div class="dp-content" id="dp-content"></div>
+                        <div class="dp-attachments" id="dp-attachments"></div>
+                        <div class="dp-embed" id="dp-embed" style="display:none;">
+                            <div class="dp-embed-author" id="dp-embed-author" style="display:none;"></div>
+                            <div class="dp-embed-title" id="dp-embed-title" style="display:none;"></div>
+                            <div class="dp-embed-desc" id="dp-embed-desc" style="display:none;"></div>
+                            <img class="dp-embed-thumb" id="dp-embed-thumb" style="display:none;" />
+                            <img class="dp-embed-image" id="dp-embed-image" style="display:none;" />
+                            <div class="dp-embed-footer" id="dp-embed-footer" style="display:none;"></div>
+                        </div>
+                        <div class="dp-reaction" id="dp-reaction" style="display:none;"></div>
                     </div>
                 </div>
-
-                <label>Автор (текст сверху)</label>
-                <input id="embed-author" type="text" maxlength="256" placeholder="Например: организатор турнира" />
-
-                <div class="row-2">
-                    <div>
-                        <label>Картинка (URL)</label>
-                        <input id="embed-image" type="text" placeholder="https://.../image.png" />
-                    </div>
-                    <div>
-                        <label>Миниатюра (URL)</label>
-                        <input id="embed-thumbnail" type="text" placeholder="https://.../thumb.png" />
-                    </div>
-                </div>
-
-                <label>Футер (мелкий текст снизу)</label>
-                <input id="embed-footer" type="text" maxlength="2048" placeholder="Например: Matcherino Tournament Bot" />
-
-                <label class="checkbox-label">
-                    <input type="checkbox" id="embed-timestamp" /> Добавить текущее время в футер
-                </label>
-
-                <label>Дополнительные поля</label>
-                <div id="embed-fields"></div>
-                <button type="button" id="add-field-btn" class="secondary-btn">+ Добавить поле</button>
+                <p class="hint">Ориентировочный вид сообщения. Точный рендер может немного отличаться в самом Discord.</p>
             </div>
-
-            <div class="toggle-row">
-                <label><input type="checkbox" id="buttons-toggle" /> Добавить кнопки</label>
-            </div>
-
-            <div id="buttons-section" class="hidden subsection">
-                <div id="button-list"></div>
-                <button type="button" id="add-button-btn" class="secondary-btn">+ Добавить кнопку</button>
-                <p class="hint">До 25 кнопок (автоматически разложатся по 5 в ряд). Кнопки типа «Ссылка» открывают URL напрямую; остальные при нажатии просто подтверждают клик — без своей логики.</p>
-            </div>
-
-            <button id="send-btn">Отправить</button>
-            <p id="send-result" class="result"></p>
         </section>
 
-        <!-- Блок ИИ-вопросов по турнирам временно убран, см. NOTES.md -->
+        <!-- ============== ФОРМА (справа) ============== -->
+        <section class="form-col">
+            <section class="card">
+                <div class="card-head-row">
+                    <h2>Анонс турнира</h2>
+                    <button type="button" id="reset-btn" class="secondary-btn reset-btn">🗑️ Сбросить текст</button>
+                </div>
+                <p class="hint" style="margin-bottom:16px;">Форма заточена под формат «карточка организации + заголовок + подзаголовок со ссылкой + большая картинка + лого в углу», как в примере, который ты присылал.</p>
+
+                <label>Сервер (guild)</label>
+                <select id="guild-select"></select>
+
+                <label>Канал</label>
+                <select id="channel-select"></select>
+
+                <label>Упоминание перед карточкой (необязательно)</label>
+                <input id="embed-content" type="text" maxlength="2000" placeholder="Например: @everyone (пинги не работают внутри карточки, поэтому это поле — снаружи)" />
+                <p class="hint" style="margin-top:-6px;">Весь остальной текст объявления (заголовок, описание, ссылки) — ниже, он попадёт внутрь самой карточки.</p>
+
+                <label>Локальные картинки в сообщение (просто перетащи файлы сюда)</label>
+                <div class="dropzone" id="attachments-dropzone">
+                    <span>📎 Перетащи картинки сюда или нажми, чтобы выбрать</span>
+                    <input type="file" id="attachments-input" accept="image/*" multiple hidden />
+                </div>
+                <div class="file-thumb-row" id="attachments-preview"></div>
+
+                <div class="row-2">
+                    <div>
+                        <label>Название организации</label>
+                        <input id="embed-author" type="text" maxlength="256" placeholder="Например: SST TOURNAMENTS" />
+                    </div>
+                    <div>
+                        <label>Иконка организации</label>
+                        <div class="url-or-file">
+                            <input id="embed-author-icon" type="text" placeholder="https://.../logo.png" />
+                            <label class="mini-upload-btn" for="embed-author-icon-file">📁</label>
+                            <input type="file" id="embed-author-icon-file" accept="image/*" hidden />
+                        </div>
+                    </div>
+                </div>
+
+                <label>Заголовок (крупный жирный текст)</label>
+                <input id="embed-title" type="text" maxlength="256" placeholder="Например: TOURNAMENT PLANNING" />
+                <p class="hint" style="margin-top:-8px;">Discord всегда показывает это поле крупным и жирным — разметку (# и т.п.) сюда добавить нельзя, это ограничение самого embed'а. Для заголовков и другого форматирования текста используй поле «Подзаголовок / описание» ниже.</p>
+
+                <label>Подзаголовок / описание</label>
+                <div class="toolbar" id="format-toolbar">
+                    <button type="button" data-fmt-target="embed-description" data-fmt="h1" title="Заголовок 1-го уровня (# текст)">H1</button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="h2" title="Заголовок 2-го уровня (## текст)">H2</button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="h3" title="Заголовок 3-го уровня (### текст)">H3</button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="bold" title="Жирный"><b>Ж</b></button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="italic" title="Курсив"><i>К</i></button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="underline" title="Подчёркнутый"><u>Ч</u></button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="strike" title="Зачёркнутый"><s>З</s></button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="code" title="Моноширинный код">{ }</button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="quote" title="Цитата (&gt; текст)">❝ цитата</button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="list" title="Маркированный список">• список</button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="link" title="Вставить ссылку">🔗 ссылка</button>
+                    <button type="button" data-fmt-target="embed-description" data-fmt="spoiler" title="Скрытый текст (спойлер)">🙈 спойлер</button>
+                    <button type="button" id="emoji-btn-description" class="emoji-toggle" data-fmt-target="embed-description" title="Вставить эмодзи">😀 эмодзи</button>
+                </div>
+                <textarea id="embed-description" rows="3" maxlength="4096" placeholder="Например: # ALL THE PREVIOUS AND FUTURE LINKS 🔗&#10;https://yf7tournaments.com/"></textarea>
+
+                <div class="row-2">
+                    <div>
+                        <label>Большая картинка</label>
+                        <div class="dropzone small" id="image-dropzone">
+                            <span>🖼️ Перетащи картинку или нажми</span>
+                            <input type="file" id="embed-image-file" accept="image/*" hidden />
+                        </div>
+                        <input id="embed-image" type="text" placeholder="...или вставь ссылку https://.../banner.png" />
+                        <div class="file-thumb-row" id="image-preview"></div>
+                    </div>
+                    <div>
+                        <label>Лого в углу (thumbnail)</label>
+                        <div class="dropzone small" id="thumbnail-dropzone">
+                            <span>🖼️ Перетащи картинку или нажми</span>
+                            <input type="file" id="embed-thumbnail-file" accept="image/*" hidden />
+                        </div>
+                        <input id="embed-thumbnail" type="text" placeholder="...или вставь ссылку https://.../logo.png" />
+                        <div class="file-thumb-row" id="thumbnail-preview"></div>
+                    </div>
+                </div>
+
+                <label>Цвет полоски слева</label>
+                <input id="embed-color" type="color" value="#8b5cf6" />
+
+                <label>Реакция под сообщением (необязательно)</label>
+                <div class="toolbar" style="margin-bottom:6px;">
+                    <button type="button" id="emoji-btn-reaction" class="emoji-toggle" data-fmt-target="reaction-emoji" title="Вставить эмодзи">😀 выбрать эмодзи</button>
+                </div>
+                <input id="reaction-emoji" type="text" placeholder="Например: ✅ (оставь пустым, если не нужна)" />
+                <p class="hint">Бот поставит эту реакцию первым — дальше счётчик растёт от того, сколько людей реально нажмут. Точное число (как «20» в примере) заранее выставить нельзя. Можно использовать и эмодзи с других серверов, где состоит бот.</p>
+
+                <button id="send-btn">Отправить анонс</button>
+                <p id="send-result" class="result"></p>
+            </section>
+        </section>
+
     </main>
+</div>
 
-    <template id="field-template">
-        <div class="field-item">
-            <input type="text" class="field-name" maxlength="256" placeholder="Название поля" />
-            <input type="text" class="field-value" maxlength="1024" placeholder="Значение" />
-            <label class="inline-label"><input type="checkbox" class="field-inline" /> в строку</label>
-            <button type="button" class="remove-btn" title="Удалить">✕</button>
-        </div>
-    </template>
-
-    <template id="button-template">
-        <div class="button-item">
-            <input type="text" class="btn-label" maxlength="80" placeholder="Текст кнопки" />
-            <select class="btn-style">
-                <option value="primary">Синяя</option>
-                <option value="secondary" selected>Серая</option>
-                <option value="success">Зелёная</option>
-                <option value="danger">Красная</option>
-                <option value="link">Ссылка</option>
-            </select>
-            <input type="text" class="btn-url hidden" placeholder="https://... (для типа «Ссылка»)" />
-            <button type="button" class="remove-btn" title="Удалить">✕</button>
-        </div>
-    </template>
+<!-- ============== ВСПЛЫВАЮЩИЙ ПИКЕР ЭМОДЗИ ============== -->
+<div id="emoji-picker" class="emoji-picker hidden">
+    <input type="text" id="emoji-search" placeholder="Поиск эмодзи по имени…" />
+    <div id="emoji-list" class="emoji-list"></div>
 </div>
 
 <script src="panel.js"></script>
