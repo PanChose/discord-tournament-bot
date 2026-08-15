@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Панель управления Discord-ботом</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="login-screen" class="screen">
+  <div class="card">
+    <h1>🔐 Вход в панель</h1>
+    <input id="password-input" type="password" placeholder="Пароль панели" />
+    <button id="login-btn">Войти</button>
+    <p id="login-error" class="error"></p>
+  </div>
+</div>
+
+<div id="app-screen" class="screen hidden">
+  <header>
+    <h1>🎮 Панель управления ботом</h1>
+    <span id="bot-status" class="status">…</span>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Отправить сообщение на сервер</h2>
+      <label>Сервер (guild)</label>
+      <select id="guild-select"></select>
+
+      <label>Канал</label>
+      <select id="channel-select"></select>
+
+      <label>Сообщение</label>
+      <textarea id="message-input" rows="4" placeholder="Текст сообщения..."></textarea>
+
+      <button id="send-btn">Отправить</button>
+      <p id="send-result" class="result"></p>
+    </section>
+
+    <!-- Блок ИИ-вопросов по турнирам временно убран, см. NOTES.md -->
+  </main>
+</div>
+
+<script src="panel.js"></script>
+</body>
+</html>
