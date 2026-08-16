@@ -1,103 +1,103 @@
 # Discord Tournament Bot + Web Panel
 
-Discord-бот с браузерной панелью управления сообщениями на сервере.
+A Discord bot with a browser-based control panel for posting messages to a server.
 
-## Что умеет сейчас
+## What it does right now
 
-- **Веб-панель** (открывается в браузере): выбрать сервер и канал, отправить туда анонс турнира.
-- **Форма заточена под конкретный формат сообщения** (карточка организации + заголовок + подзаголовок со ссылкой + большая картинка + лого в углу):
-    - Название организации + её иконка (маленький значок сверху карточки)
-    - Заголовок (крупный жирный текст)
-    - Подзаголовок/описание с мини-панелью форматирования: **жирный**, *курсив*, ссылка, ||спойлер||
-    - Большая картинка-баннер
-    - Лого-миниатюра в правом верхнем углу карточки
-    - Цвет полоски слева
-    - Необязательная авто-реакция под сообщением (бот сам ставит эмодзи, например ✅ — дальше счётчик растёт от реальных кликов людей, точное число заранее выставить нельзя)
-- Показывает статус бота (в сети / не в сети) в панели.
+- **Web panel** (opens in a browser): pick a server and a channel, and send a tournament announcement to it.
+- **The form is tailored to a specific message format** (organization card + title + subtitle with a link + big image + corner logo):
+    - Organization name + its icon (small icon at the top of the card)
+    - Title (large bold text)
+    - Subtitle/description with a mini formatting toolbar: **bold**, *italic*, link, ||spoiler||
+    - Big banner image
+    - Small logo thumbnail in the top-right corner of the card
+    - Left stripe color
+    - Optional auto-reaction under the message (the bot adds an emoji itself, e.g. ✅ — from there the counter grows based on real clicks from people; you can't set an exact number in advance)
+- Shows the bot's status (online / offline) in the panel.
 
-## 🤖 ИИ-помощник по турнирам — отложен
+## 🤖 AI tournament helper — on hold
 
-ИИ-функция (ответы про турниры Matcherino / Brawl Stars через `/ask` и панель) **временно
-отключена**, но код полностью готов и лежит в проекте — см. **[NOTES.md](./NOTES.md)**,
-там пошагово расписано, что раскомментировать, чтобы включить её обратно.
+The AI feature (answering questions about Matcherino / Brawl Stars tournaments via `/ask` and the panel) is
+**temporarily disabled**, but the code is fully written and sitting in the project — see
+**[NOTES.md](./NOTES.md)** for step-by-step instructions on what to uncomment to turn it back on.
 
-Коротко про неё на будущее: у Matcherino нет официального публичного API, поэтому данные
-о конкретном турнире планируется брать скрейпингом публичной страницы (`lib/matcherino.js`),
-а отвечать будет Claude API (`lib/ai.js`).
+Briefly, for future reference: Matcherino has no official public API, so data about a specific
+tournament is meant to be scraped from its public page (`lib/matcherino.js`), and the Claude API
+(`lib/ai.js`) handles the actual answering.
 
-## Установка
+## Setup
 
-1. Установи [Node.js](https://nodejs.org/) версии 18 или новее.
-2. Распакуй проект и открой в нём терминал.
-3. Установи зависимости:
+1. Install [Node.js](https://nodejs.org/) version 18 or newer.
+2. Unzip the project and open a terminal in it.
+3. Install dependencies:
    ```bash
    npm install
    ```
-4. Скопируй `.env.example` в `.env`:
+4. Copy `.env.example` to `.env`:
    ```bash
    cp .env.example .env
    ```
-5. Заполни `.env`:
+5. Fill in `.env`:
 
-   ### DISCORD_TOKEN и DISCORD_CLIENT_ID
-    1. Зайди на https://discord.com/developers/applications
-    2. Создай приложение (New Application).
-    3. В разделе **General Information** скопируй **Application ID** → это `DISCORD_CLIENT_ID`.
-    4. В разделе **Bot** нажми **Reset Token** и скопируй токен → это `DISCORD_TOKEN`.
-    5. Там же включи **MESSAGE CONTENT INTENT** (переключатель в разделе Privileged Gateway Intents).
-    6. В разделе **OAuth2 → URL Generator** выбери scope `bot` и `applications.commands`, из прав отметь минимум `Send Messages`, `Read Messages/View Channels`. Скопируй сгенерированную ссылку и открой её в браузере — так бот добавится на твой сервер.
+   ### DISCORD_TOKEN and DISCORD_CLIENT_ID
+    1. Go to https://discord.com/developers/applications
+    2. Create an application (New Application).
+    3. In the **General Information** section, copy the **Application ID** → this is `DISCORD_CLIENT_ID`.
+    4. In the **Bot** section, click **Reset Token** and copy the token → this is `DISCORD_TOKEN`.
+    5. In the same section, enable **MESSAGE CONTENT INTENT** (the toggle under Privileged Gateway Intents).
+    6. In **OAuth2 → URL Generator**, select the `bot` and `applications.commands` scopes, and under permissions check at least `Send Messages` and `Read Messages/View Channels`. Copy the generated link and open it in a browser — that's how the bot gets added to your server.
 
-## Только ты можешь добавлять бота на серверы
+## Only you can add the bot to servers
 
-Два независимых уровня защиты:
+Two independent layers of protection:
 
-1. **Главный способ (в Discord Developer Portal):** зайди в приложение → **Installation** → в разделе **Authorization Flow** выключи тумблер **Public Bot**. После этого ссылку-приглашение сможет использовать только владелец приложения (то есть ты). Именно так это настроено в этом проекте по умолчанию — не забудь выключить этот тумблер.
+1. **Main method (in the Discord Developer Portal):** open your application → **Installation** → under **Authorization Flow**, turn off the **Public Bot** toggle. After that, only the application owner (you) can use the invite link. This is how the project is set up by default — don't forget to turn this toggle off.
 
-2. **Подстраховка (в коде бота):** если заполнить `OWNER_DISCORD_ID` в `.env`, бот при старте и при каждом добавлении на новый сервер будет проверять, что владелец сервера — именно ты. Если нет — бот сам покинет сервер.
+2. **Backup (in the bot's code):** if you fill in `OWNER_DISCORD_ID` in `.env`, the bot will check on startup and every time it's added to a new server that the server's owner is actually you. If not, the bot leaves the server on its own.
 
-   ### Как узнать свой Discord ID
-    1. В Discord: Настройки пользователя → Расширенные (Advanced) → включи **Режим разработчика** (Developer Mode).
-    2. Кликни правой кнопкой по своему нику (в любом чате или в списке участников) → **Копировать ID пользователя**.
-    3. Вставь этот ID в `OWNER_DISCORD_ID` в `.env`.
+   ### How to find your Discord ID
+    1. In Discord: User Settings → Advanced → enable **Developer Mode**.
+    2. Right-click your username (in any chat or the member list) → **Copy User ID**.
+    3. Paste this ID into `OWNER_DISCORD_ID` in `.env`.
 
    ### ANTHROPIC_API_KEY
-   Получи ключ на https://console.anthropic.com/ (раздел API Keys).
+   Get a key at https://console.anthropic.com/ (API Keys section).
 
    ### PANEL_PASSWORD
-   Придумай любой пароль — им будешь заходить в веб-панель.
+   Pick any password — you'll use it to log into the web panel.
 
-6. Запусти бота:
+6. Start the bot:
    ```bash
    npm start
    ```
-7. Открой в браузере: `http://localhost:3000` (или другой порт, если менял `PORT` в `.env`), введи `PANEL_PASSWORD` — попадёшь в панель.
+7. Open in a browser: `http://localhost:3000` (or another port if you changed `PORT` in `.env`), enter `PANEL_PASSWORD` — you'll land in the panel.
 
-## Деплой на хостинг (если бот должен работать 24/7 не с твоего ПК)
+## Deploying to hosting (if the bot needs to run 24/7 without your PC)
 
-Проще всего — [Railway](https://railway.app) или [Render](https://render.com):
-1. Залей проект в GitHub-репозиторий.
-2. На Railway/Render создай новый сервис из этого репозитория.
-3. В настройках сервиса добавь те же переменные окружения, что в `.env`.
+The easiest options are [Railway](https://railway.app) or [Render](https://render.com):
+1. Push the project to a GitHub repository.
+2. On Railway/Render, create a new service from that repository.
+3. In the service settings, add the same environment variables as in `.env`.
 4. Start command: `npm start`.
-5. После деплоя сервис выдаст тебе публичный URL — панель будет доступна по нему (`https://твой-сервис.up.railway.app`).
+5. After deploying, the service will give you a public URL — the panel will be available there (`https://your-service.up.railway.app`).
 
-⚠️ На бесплатных тарифах хостинги могут "усыплять" сервис при простое — для бота, который должен быть онлайн постоянно, обычно нужен платный план (обычно недорогой, $5/мес — ориентир, уточняй актуальные цены на сайте хостинга).
+⚠️ On free tiers, hosts may put the service to sleep when idle — for a bot that needs to stay online all the time, you'll usually need a paid plan (typically inexpensive, around $5/month as a rough estimate — check the host's site for current pricing).
 
-## Структура проекта
+## Project structure
 
 ```
 discord-tournament-bot/
-├── server.js           # Express-сервер + запуск бота
+├── server.js           # Express server + bot startup
 ├── lib/
-│   ├── discordClient.js  # Discord-клиент, слэш-команда /ask, отправка сообщений
-│   ├── ai.js              # Обращение к Claude API
-│   └── matcherino.js      # Скрейпинг страницы турнира
-├── public/               # Веб-панель (HTML/CSS/JS)
+│   ├── discordClient.js  # Discord client, /ask slash command, sending messages
+│   ├── ai.js              # Talks to the Claude API
+│   └── matcherino.js      # Scrapes the tournament page
+├── public/               # Web panel (HTML/CSS/JS)
 ├── .env.example
 └── package.json
 ```
 
-## Безопасность
+## Security
 
-- Панель защищена одним общим паролем (`PANEL_PASSWORD`) — этого достаточно для личного использования, но не рассчитано на много пользователей с разными правами. Для серьёзного продакшена стоит добавить нормальную авторизацию (например, через Discord OAuth2).
-- Никогда не выкладывай `.env` файл (с токенами) в публичный репозиторий — добавь его в `.gitignore` (уже сделано).
+- The panel is protected by a single shared password (`PANEL_PASSWORD`) — that's enough for personal use, but it's not designed for many users with different permission levels. For a serious production setup, add proper authentication (e.g. via Discord OAuth2).
+- Never commit the `.env` file (with your tokens) to a public repository — add it to `.gitignore` (already done).

@@ -14,11 +14,11 @@ async function apiFetch(url, options = {}) {
         },
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `Ошибка ${res.status}`);
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
     return data;
 }
 
-// --- Логин ---
+// --- Login ---
 document.getElementById("login-btn").addEventListener("click", login);
 document.getElementById("password-input").addEventListener("keydown", (e) => {
     if (e.key === "Enter") login();
@@ -35,7 +35,7 @@ async function login() {
             body: JSON.stringify({ password }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Неверный пароль");
+        if (!res.ok) throw new Error(data.error || "Wrong password");
         sessionStorage.setItem("panel_token", data.token);
         showApp();
     } catch (err) {
@@ -52,20 +52,20 @@ function showApp() {
     updatePreview();
 }
 
-// --- Статус бота ---
+// --- Bot status ---
 async function loadStatus() {
     const statusEl = document.getElementById("bot-status");
     try {
         const data = await apiFetch("/api/status");
-        statusEl.textContent = data.ready ? `в сети: ${data.tag}` : "подключается…";
+        statusEl.textContent = data.ready ? `online: ${data.tag}` : "connecting…";
         statusEl.classList.toggle("offline", !data.ready);
     } catch (err) {
-        statusEl.textContent = "ошибка: " + err.message;
+        statusEl.textContent = "error: " + err.message;
         statusEl.classList.add("offline");
     }
 }
 
-// --- Гильдии и каналы ---
+// --- Guilds and channels ---
 let guildsData = [];
 
 async function loadGuilds() {
@@ -78,7 +78,7 @@ async function loadGuilds() {
             .join("");
         updateChannels();
     } catch (err) {
-        guildSelect.innerHTML = `<option>Ошибка: ${err.message}</option>`;
+        guildSelect.innerHTML = `<option>Error: ${err.message}</option>`;
     }
 }
 
@@ -94,22 +94,22 @@ function updateChannels() {
 }
 
 // ==========================================================
-// Локальные файлы (загрузка картинок вместо/вместе со ссылкой)
+// Local files (uploading images instead of / alongside a link)
 // ==========================================================
 
-// Состояние выбранных локальных картинок: { name, dataUrl }
+// State of selected local images: { name, dataUrl }
 const fileState = {
-    image: null,        // большая картинка embed'а
-    thumbnail: null,     // лого в углу
-    authorIcon: null,    // иконка организации
-    attachments: [],      // обычные картинки, отправляемые вместе с сообщением
+    image: null,        // the embed's big image
+    thumbnail: null,     // corner logo
+    authorIcon: null,    // organization icon
+    attachments: [],      // plain images sent alongside the message
 };
 
 function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error("Не удалось прочитать файл"));
+        reader.onerror = () => reject(new Error("Couldn't read the file"));
         reader.readAsDataURL(file);
     });
 }
@@ -182,7 +182,7 @@ function setupSingleImageUpload({ dropzoneId, inputId, urlInputId, kind }) {
         if (!file.type.startsWith("image/")) return;
         const dataUrl = await readFileAsDataUrl(file);
         fileState[kind] = { name: file.name, dataUrl };
-        if (urlInput) urlInput.value = ""; // файл важнее ссылки
+        if (urlInput) urlInput.value = ""; // the file takes priority over the link
         refreshSingleFilePreview(kind);
         updatePreview();
     }
@@ -201,7 +201,7 @@ setupSingleImageUpload({
     kind: "thumbnail",
 });
 
-// Иконка организации — без dropzone, просто маленькая кнопка загрузки рядом со ссылкой
+// Organization icon — no dropzone, just a small upload button next to the link field
 document.getElementById("embed-author-icon-file").addEventListener("change", async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -212,7 +212,7 @@ document.getElementById("embed-author-icon-file").addEventListener("change", asy
     updatePreview();
 });
 
-// Если пользователь начинает печатать ссылку вручную — сбрасываем выбранный файл
+// If the user starts typing a link manually — clear the selected file
 document.getElementById("embed-image").addEventListener("input", () => {
     if (document.getElementById("embed-image").value.trim()) {
         fileState.image = null;
@@ -234,7 +234,7 @@ document.getElementById("embed-author-icon").addEventListener("input", () => {
     updatePreview();
 });
 
-// --- Обычные вложения (перетащить картинки прямо в сообщение) ---
+// --- Plain attachments (drag images straight into the message) ---
 const attachmentsDropzone = document.getElementById("attachments-dropzone");
 const attachmentsInput = document.getElementById("attachments-input");
 
@@ -265,7 +265,7 @@ async function addAttachmentFiles(fileList) {
 }
 
 // ==========================================================
-// Эмодзи-пикер (включая эмодзи с любых серверов, где есть бот)
+// Emoji picker (including emoji from any guild the bot is in)
 // ==========================================================
 
 let emojiCache = null;
@@ -325,7 +325,7 @@ function renderEmojiList(filter) {
         btn.type = "button";
         btn.className = "emoji-option";
         btn.textContent = emoji;
-        btn.title = "Обычный эмодзи";
+        btn.title = "Standard emoji";
         btn.addEventListener("click", () => pickEmoji(emoji));
         emojiListEl.appendChild(btn);
     });
@@ -352,7 +352,7 @@ function renderEmojiList(filter) {
     });
 
     if (!quick.length && !custom.length) {
-        emojiListEl.innerHTML = `<p class="hint">Ничего не найдено</p>`;
+        emojiListEl.innerHTML = `<p class="hint">Nothing found</p>`;
     }
 }
 
@@ -360,7 +360,7 @@ function pickEmoji(value) {
     const targetEl = document.getElementById(emojiTargetId);
     if (targetEl) {
         if (targetEl.id === "reaction-emoji") {
-            targetEl.value = value; // для реакции нужен ровно один эмодзи
+            targetEl.value = value; // a reaction needs exactly one emoji
         } else {
             insertAtCursor(targetEl, value, "", true);
         }
@@ -371,8 +371,8 @@ function pickEmoji(value) {
 }
 
 // ==========================================================
-// Пикер ролей сервера (по аналогии с эмодзи) — вставляет
-// упоминание вида <@&roleId> в текст
+// Server role picker (mirrors the emoji picker) — inserts
+// a mention like <@&roleId> into the text
 // ==========================================================
 
 const roleCache = {}; // guildId -> roles[]
@@ -399,16 +399,16 @@ async function openRolePicker(anchorEl) {
 
     const guildId = document.getElementById("guild-select").value;
     if (!guildId) {
-        roleListEl.innerHTML = `<p class="hint">Сначала выбери сервер вверху формы</p>`;
+        roleListEl.innerHTML = `<p class="hint">Pick a server at the top of the form first</p>`;
         return;
     }
 
-    roleListEl.innerHTML = `<p class="hint">Загрузка…</p>`;
+    roleListEl.innerHTML = `<p class="hint">Loading…</p>`;
     try {
         const roles = await loadRolesForGuild(guildId);
         renderRoleList(roles, "");
     } catch (err) {
-        roleListEl.innerHTML = `<p class="hint">Ошибка: ${err.message}</p>`;
+        roleListEl.innerHTML = `<p class="hint">Error: ${err.message}</p>`;
     }
 }
 
@@ -457,7 +457,7 @@ function renderRoleList(roles, filter) {
     });
 
     if (!filtered.length) {
-        roleListEl.innerHTML = `<p class="hint">Ничего не найдено</p>`;
+        roleListEl.innerHTML = `<p class="hint">Nothing found</p>`;
     }
 }
 
@@ -471,28 +471,28 @@ function pickRole(mentionTag) {
     updatePreview();
 }
 
-// Смена выбранного сервера — сбрасываем открытый пикер ролей,
-// так как список ролей зависит от сервера
+// Changing the selected server — close any open role picker,
+// since the role list depends on the server
 document.getElementById("guild-select").addEventListener("change", closeRolePicker);
 
 // ==========================================================
-// Форматирование текста (жирный/курсив/спойлер/ссылка)
+// Text formatting (bold/italic/spoiler/link)
 // ==========================================================
 
 function insertAtCursor(el, before, after = "", noWrapSelection = false) {
     const start = el.selectionStart ?? el.value.length;
     const end = el.selectionEnd ?? el.value.length;
     const value = el.value;
-    const selected = noWrapSelection ? "" : (value.slice(start, end) || "текст");
+    const selected = noWrapSelection ? "" : (value.slice(start, end) || "text");
     el.value = value.slice(0, start) + before + selected + after + value.slice(end);
     const cursorPos = start + before.length + selected.length + after.length;
     el.focus();
     el.setSelectionRange(cursorPos, cursorPos);
 }
 
-// Заголовки (#, ##, ###), цитата (>) и список (-) — это префиксы строки,
-// а не обёртка вокруг выделения, поэтому обрабатываем их отдельно.
-// Повторное нажатие на ту же кнопку убирает префикс (toggle).
+// Headings (#, ##, ###), quotes (>), and lists (-) are line prefixes rather
+// than wrappers around the selection, so they're handled separately.
+// Clicking the same button again removes the prefix (toggle).
 function toggleLinePrefix(el, prefix) {
     const start = el.selectionStart ?? el.value.length;
     const end = el.selectionEnd ?? el.value.length;
@@ -561,7 +561,7 @@ document.querySelectorAll(".toolbar").forEach((toolbar) => {
 });
 
 // ==========================================================
-// Превью сообщения (слева от редактора)
+// Message preview (to the left of the editor)
 // ==========================================================
 
 function escapeHtml(str) {
@@ -571,7 +571,7 @@ function escapeHtml(str) {
         .replace(/>/g, "&gt;");
 }
 
-// Ищет имя роли по её id в уже загруженном кэше ролей (для превью упоминаний)
+// Looks up a role's name by its id in the already-loaded role cache (for previewing mentions)
 function findRoleNameById(id) {
     for (const roles of Object.values(roleCache)) {
         const found = roles.find((r) => r.id === id);
@@ -580,11 +580,11 @@ function findRoleNameById(id) {
     return null;
 }
 
-// Очень упрощённый рендер discord-разметки для превью (не покрывает всё, но достаточно для черновика)
+// Very simplified rendering of Discord markdown for the preview (doesn't cover everything, but enough for a draft)
 function applyInlineMarkdown(escaped) {
     let out = escaped;
     out = out.replace(/&lt;a?:(\w+):(\d+)&gt;/g, (_, name) => `<span class="dp-custom-emoji">:${name}:</span>`);
-    out = out.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => `<span class="dp-role-mention">@${findRoleNameById(id) || "роль"}</span>`);
+    out = out.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => `<span class="dp-role-mention">@${findRoleNameById(id) || "role"}</span>`);
     out = out.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
     out = out.replace(/__(.+?)__/g, "<u>$1</u>");
     out = out.replace(/~~(.+?)~~/g, "<s>$1</s>");
@@ -595,8 +595,8 @@ function applyInlineMarkdown(escaped) {
     return out;
 }
 
-// Каждая строка рендерится своим блоком (<div>), чтобы заголовки/цитаты/списки
-// корректно переносились без лишних <br> вокруг них.
+// Each line is rendered as its own block (<div>) so headings/quotes/lists
+// wrap correctly without extra <br> tags around them.
 function renderMarkdownish(text) {
     if (!text) return "";
 
@@ -633,7 +633,7 @@ function updatePreview() {
     contentEl.innerHTML = renderMarkdownish(content);
     contentEl.style.display = content ? "block" : "none";
 
-    // Обычные вложения
+    // Plain attachments
     const attEl = document.getElementById("dp-attachments");
     attEl.innerHTML = "";
     fileState.attachments.forEach((f) => {
@@ -700,7 +700,7 @@ function updatePreview() {
         thumbEl.style.display = "none";
     }
 
-    // Реакция
+    // Reaction
     const reactionEmoji = document.getElementById("reaction-emoji").value.trim();
     const reactionEl = document.getElementById("dp-reaction");
     if (reactionEmoji) {
@@ -722,7 +722,7 @@ function updatePreview() {
 });
 
 // ==========================================================
-// Сброс формы
+// Reset the form
 // ==========================================================
 
 document.getElementById("reset-btn").addEventListener("click", () => {
@@ -748,7 +748,7 @@ document.getElementById("reset-btn").addEventListener("click", () => {
 });
 
 // ==========================================================
-// Отправка анонса
+// Sending the announcement
 // ==========================================================
 
 document.getElementById("send-btn").addEventListener("click", async () => {
@@ -759,7 +759,7 @@ document.getElementById("send-btn").addEventListener("click", async () => {
     resultEl.className = "result";
 
     if (!guildId || !channelId) {
-        resultEl.textContent = "Выбери сервер и канал";
+        resultEl.textContent = "Pick a server and a channel";
         resultEl.className = "result error";
         return;
     }
@@ -768,7 +768,7 @@ document.getElementById("send-btn").addEventListener("click", async () => {
     const embed = collectEmbed();
 
     if (!content && !embed && !fileState.attachments.length) {
-        resultEl.textContent = "Заполни текст, embed или добавь хотя бы одну картинку";
+        resultEl.textContent = "Fill in text, an embed, or add at least one image";
         resultEl.className = "result error";
         return;
     }
@@ -788,8 +788,8 @@ document.getElementById("send-btn").addEventListener("click", async () => {
             }),
         });
         resultEl.textContent = data.reactionWarning
-            ? `✅ Отправлено. ⚠️ ${data.reactionWarning}`
-            : "✅ Отправлено";
+            ? `✅ Sent. ⚠️ ${data.reactionWarning}`
+            : "✅ Sent";
         resultEl.className = "result";
     } catch (err) {
         resultEl.textContent = "❌ " + err.message;
@@ -798,7 +798,7 @@ document.getElementById("send-btn").addEventListener("click", async () => {
 });
 
 // ==========================================================
-// Сбор Embed из формы
+// Collecting the embed from the form
 // ==========================================================
 
 function collectEmbed() {
@@ -820,7 +820,7 @@ function collectEmbed() {
     return hasContent ? embed : null;
 }
 
-// --- Автовход, если токен уже сохранён ---
+// --- Auto-login if a token is already saved ---
 if (getToken()) {
     showApp();
 }

@@ -1,7 +1,7 @@
 {
   "name": "discord-tournament-bot",
   "version": "1.0.0",
-  "description": "Discord-бот с веб-панелью управления и ИИ-помощником по турнирам Matcherino / Brawl Stars",
+  "description": "Discord bot with a web control panel and an AI helper for Matcherino / Brawl Stars tournaments",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {

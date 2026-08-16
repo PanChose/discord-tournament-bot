@@ -1,43 +1,43 @@
-# NOTES: ИИ-функция (отложена)
+# NOTES: AI feature (on hold)
 
-ИИ-ответы про турниры Matcherino / Brawl Stars временно **отключены** от бота и панели,
-но код никуда не делся — он лежит готовый в `lib/ai.js` и `lib/matcherino.js`.
-Ничего с нуля переписывать не придётся, когда решишь включать.
+AI answers about Matcherino / Brawl Stars tournaments are temporarily **disabled** in the bot
+and the panel, but the code hasn't gone anywhere — it's ready to go in `lib/ai.js` and
+`lib/matcherino.js`. You won't have to rewrite anything from scratch when you decide to turn it back on.
 
-## Что уже готово
+## What's already done
 
-- **`lib/ai.js`** — обращение к Claude API (Anthropic), с системным промптом,
-  заточенным под тематику турниров Matcherino / Brawl Stars.
-- **`lib/matcherino.js`** — скрейпинг публичной страницы турнира на matcherino.com
-  (официального API у Matcherino нет, поэтому данные берутся напрямую со страницы).
+- **`lib/ai.js`** — talks to the Claude API (Anthropic), with a system prompt tailored
+  to Matcherino / Brawl Stars tournament topics.
+- **`lib/matcherino.js`** — scrapes the public tournament page on matcherino.com
+  (Matcherino has no official API, so data is pulled straight from the page).
 
-## Как включить обратно
+## How to turn it back on
 
-1. **В `lib/discordClient.js`**:
-   - раскомментировать `require` для `askAI` и `fetchMatcherinoContext` в начале файла;
-   - раскомментировать блок команды `/ask` в массиве `commands`;
-   - раскомментировать обработчик `interactionCreate` для команды `/ask`.
+1. **In `lib/discordClient.js`**:
+    - uncomment the `require` calls for `askAI` and `fetchMatcherinoContext` at the top of the file;
+    - uncomment the `/ask` command block in the `commands` array;
+    - uncomment the `interactionCreate` handler for the `/ask` command.
 
-2. **В `server.js`**:
-   - раскомментировать `require` для `askAI` и `fetchMatcherinoContext`;
-   - вернуть роут `POST /api/ask` (сохранён в истории/можно взять из этого файла ниже).
+2. **In `server.js`**:
+    - uncomment the `require` calls for `askAI` and `fetchMatcherinoContext`;
+    - bring back the `POST /api/ask` route (kept below — you can copy it from this file).
 
-3. **В `public/index.html`**:
-   - вернуть секцию `<section class="card"> ... 🤖 ИИ ... </section>` со полями
-     `tournament-url`, `question-input`, кнопкой `ask-btn` и блоком `ask-result`.
+3. **In `public/index.html`**:
+    - bring back the `<section class="card"> ... 🤖 AI ... </section>` section with the
+      `tournament-url` and `question-input` fields, the `ask-btn` button, and the `ask-result` block.
 
-4. **В `public/panel.js`**:
-   - вернуть обработчик клика на `#ask-btn`, который дергает `/api/ask`.
+4. **In `public/panel.js`**:
+    - bring back the click handler for `#ask-btn` that calls `/api/ask`.
 
-5. Не забыть проставить `ANTHROPIC_API_KEY` в `.env`.
+5. Don't forget to set `ANTHROPIC_API_KEY` in `.env`.
 
-## Резервная копия отключённого кода — роут `/api/ask` (server.js)
+## Backup of the disabled code — the `/api/ask` route (server.js)
 
 ```js
 app.post("/api/ask", checkAuth, async (req, res) => {
   const { question, tournamentUrl } = req.body;
   if (!question) {
-    return res.status(400).json({ error: "question обязателен" });
+    return res.status(400).json({ error: "question is required" });
   }
   try {
     let context = null;
@@ -57,23 +57,23 @@ app.post("/api/ask", checkAuth, async (req, res) => {
 });
 ```
 
-## Резервная копия отключённого HTML-блока (public/index.html)
+## Backup of the disabled HTML block (public/index.html)
 
 ```html
 <section class="card">
-  <h2>🤖 ИИ: вопросы по турнирам Matcherino / Brawl Stars</h2>
-  <label>Ссылка на турнир (необязательно, matcherino.com/...)</label>
+  <h2>🤖 AI: questions about Matcherino / Brawl Stars tournaments</h2>
+  <label>Tournament link (optional, matcherino.com/...)</label>
   <input id="tournament-url" type="text" placeholder="https://matcherino.com/t/..." />
 
-  <label>Вопрос</label>
-  <textarea id="question-input" rows="3" placeholder="Например: какой формат сетки у этого турнира?"></textarea>
+  <label>Question</label>
+  <textarea id="question-input" rows="3" placeholder="E.g.: what bracket format does this tournament use?"></textarea>
 
-  <button id="ask-btn">Спросить</button>
+  <button id="ask-btn">Ask</button>
   <div id="ask-result" class="result answer"></div>
 </section>
 ```
 
-## Резервная копия отключённого JS (public/panel.js)
+## Backup of the disabled JS (public/panel.js)
 
 ```js
 document.getElementById("ask-btn").addEventListener("click", async () => {
@@ -82,11 +82,11 @@ document.getElementById("ask-btn").addEventListener("click", async () => {
   const resultEl = document.getElementById("ask-result");
 
   if (!question) {
-    resultEl.textContent = "Введи вопрос";
+    resultEl.textContent = "Enter a question";
     return;
   }
 
-  resultEl.textContent = "Думаю…";
+  resultEl.textContent = "Thinking…";
 
   try {
     const data = await apiFetch("/api/ask", {

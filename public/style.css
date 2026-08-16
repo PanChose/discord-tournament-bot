@@ -100,10 +100,10 @@ main {
     padding: 0 16px;
 }
 
-/* --- Двухколоночный layout: превью слева, форма справа ---
-   Колонка превью достаточно широкая, чтобы карточка (embed) внутри неё
-   могла раскрыться до своей обычной ширины, как в самом Discord (~420px),
-   а не сжиматься до размера уже колонки и переносить слова как попало. */
+/* --- Two-column layout: preview on the left, form on the right ---
+   The preview column is wide enough that the card (embed) inside it can
+   expand to its normal width, like in Discord itself (~420px), instead of
+   being squeezed down to the column's size and wrapping words awkwardly. */
 main.layout {
     max-width: 1180px;
     display: grid;
@@ -145,7 +145,7 @@ main.layout {
     white-space: nowrap;
 }
 
-/* --- Зоны drag & drop для локальных картинок --- */
+/* --- Drag & drop zones for local images --- */
 .dropzone {
     border: 2px dashed #4a4c5c;
     border-radius: 10px;
@@ -234,13 +234,13 @@ main.layout {
 
 .mini-upload-btn:hover { background: #262835; }
 
-/* --- Кнопка вставки эмодзи в тулбаре --- */
+/* --- Emoji-insert button in the toolbar --- */
 .emoji-toggle {
     background: #1e1f27;
     border: 1px solid #3d3f4d;
 }
 
-/* --- Всплывающий пикер эмодзи --- */
+/* --- Emoji picker popup --- */
 .emoji-picker {
     position: absolute;
     z-index: 50;
@@ -293,13 +293,13 @@ main.layout {
     object-fit: contain;
 }
 
-/* --- Кнопка вставки упоминания роли в тулбаре --- */
+/* --- Role-mention-insert button in the toolbar --- */
 .role-toggle {
     background: #1e1f27;
     border: 1px solid #3d3f4d;
 }
 
-/* --- Всплывающий пикер ролей: список, а не сетка, роли бывают длинными --- */
+/* --- Role picker popup: a list rather than a grid, since role names can be long --- */
 .role-picker {
     width: 240px;
 }
@@ -334,7 +334,7 @@ main.layout {
     white-space: nowrap;
 }
 
-/* --- Превью сообщения в стиле Discord --- */
+/* --- Discord-style message preview --- */
 .preview-card { position: relative; }
 
 .discord-preview {
@@ -431,7 +431,7 @@ main.layout {
     overflow: hidden;
 }
 
-/* Без лого в углу — текст занимает всю ширину, вторая колонка не резервируется */
+/* Without a corner logo — text takes up the full width, the second column isn't reserved */
 .dp-embed.no-thumb {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
@@ -442,8 +442,8 @@ main.layout {
         "footer";
 }
 
-/* Классическая CSS Grid ловушка: по умолчанию у грид-элементов min-width:auto,
-   из-за чего широкая картинка "распирает" узкую текстовую колонку. Обнуляем. */
+/* Classic CSS Grid trap: grid items default to min-width:auto, which lets a
+   wide image force the narrow text column open. Reset it to zero. */
 .dp-embed > * {
     min-width: 0;
 }
@@ -545,7 +545,7 @@ main.layout {
     color: var(--text);
 }
 
-/* --- Заголовки/цитаты/списки/код в превью описания --- */
+/* --- Headings/quotes/lists/code in the description preview --- */
 .dp-h1 { font-size: 20px; font-weight: 700; color: #f2f3f5; margin: 4px 0 2px; }
 .dp-h2 { font-size: 17px; font-weight: 700; color: #f2f3f5; margin: 4px 0 2px; }
 .dp-h3 { font-size: 14px; font-weight: 700; color: #f2f3f5; margin: 3px 0 1px; }
@@ -569,7 +569,7 @@ main.layout {
     font-size: 12px;
 }
 
-/* --- Панель форматирования текста --- */
+/* --- Text formatting toolbar --- */
 .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -591,7 +591,7 @@ main.layout {
     background: #34364a;
 }
 
-/* --- Переключатели Embed / Кнопки --- */
+/* --- Embed / Buttons toggles --- */
 .toggle-row {
     margin: 4px 0 8px;
 }
@@ -643,7 +643,7 @@ input[type="color"] {
     margin: 0;
 }
 
-/* --- Поля Embed --- */
+/* --- Embed fields --- */
 .field-item {
     display: grid;
     grid-template-columns: 1fr 1fr auto auto;
@@ -670,7 +670,7 @@ input[type="color"] {
     margin: 0;
 }
 
-/* --- Кнопки-конструктор --- */
+/* --- Button builder --- */
 .button-item {
     display: grid;
     grid-template-columns: 1fr auto 1fr auto;
