@@ -1,5 +1,7 @@
 # Discord Tournament Bot + Web Panel
 
+Originally used on https://discord.gg/n3DV3aUygA
+
 A Discord bot with a browser-based control panel for posting messages to a server.
 
 ## What it does right now
