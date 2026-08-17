@@ -10,7 +10,9 @@ const {
     listGuildsAndChannels,
     listAllEmojis,
     listGuildRoles,
+    tournamentSystem,
 } = require("./lib/discordClient");
+const { matcherinoSync, teams: teamsLib, tournaments: tournamentsLib } = tournamentSystem;
 // AI functionality is temporarily disabled, see NOTES.md
 // const { askAI } = require("./lib/ai");
 // const { fetchMatcherinoContext } = require("./lib/matcherino");
@@ -93,6 +95,61 @@ app.post("/api/send", checkAuth, async (req, res) => {
 });
 
 // The /api/ask route (AI helper) is temporarily disabled, see NOTES.md for how to re-enable it.
+
+// =========================================================================
+// Tournament system management (verification sync, active tournament, leaderboard)
+// =========================================================================
+
+// --- Matcherino sync (drives /verify's automatic Discord-account matching) ---
+app.get("/api/tournament/matcherino-status", checkAuth, (req, res) => {
+    res.json(matcherinoSync.getStatus());
+});
+
+app.post("/api/tournament/matcherino-bounty-id", checkAuth, async (req, res) => {
+    const { bountyId } = req.body;
+    if (!bountyId) {
+        return res.status(400).json({ error: "bountyId is required" });
+    }
+    const status = await matcherinoSync.setBountyId(bountyId);
+    res.json(status);
+});
+
+app.post("/api/tournament/matcherino-sync-now", checkAuth, async (req, res) => {
+    const status = await matcherinoSync.syncNow();
+    res.json(status);
+});
+
+// --- Active Discord tournament (view / end from the panel instead of /tournament end) ---
+app.get("/api/tournament/active", checkAuth, (req, res) => {
+    const { guildId } = req.query;
+    if (!guildId) return res.status(400).json({ error: "guildId is required" });
+    const tournament = tournamentsLib.getActiveTournament(guildId);
+    res.json({ tournament: tournament || null });
+});
+
+app.post("/api/tournament/end", checkAuth, async (req, res) => {
+    const { guildId } = req.body;
+    if (!guildId) return res.status(400).json({ error: "guildId is required" });
+    if (!client.isReady()) return res.status(503).json({ error: "The bot hasn't connected to Discord yet" });
+
+    const tournament = tournamentsLib.getActiveTournament(guildId);
+    if (!tournament) return res.status(404).json({ error: "No active tournament for this server" });
+
+    try {
+        const guild = await client.guilds.fetch(guildId);
+        await tournamentsLib.endTournament(guild, tournament);
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- Leaderboard (read-only view for the panel) ---
+app.get("/api/tournament/leaderboard", checkAuth, (req, res) => {
+    const { guildId } = req.query;
+    if (!guildId) return res.status(400).json({ error: "guildId is required" });
+    res.json({ teams: teamsLib.leaderboard(guildId, 20) });
+});
 
 const PORT = process.env.PORT || 3000;
 

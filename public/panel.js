@@ -824,3 +824,133 @@ function collectEmbed() {
 if (getToken()) {
     showApp();
 }
+// =========================================================================
+// Tournament system management panel
+// =========================================================================
+
+function currentGuildId() {
+    return document.getElementById("guild-select").value;
+}
+
+async function loadMatcherinoStatus() {
+    const el = document.getElementById("matcherino-status");
+    try {
+        const data = await apiFetch("/api/tournament/matcherino-status");
+        document.getElementById("matcherino-bounty-id").value = data.bountyId || "";
+        el.textContent = renderMatcherinoStatus(data);
+        el.classList.toggle("error", !!data.lastError);
+    } catch (err) {
+        el.textContent = "Error: " + err.message;
+        el.classList.add("error");
+    }
+}
+
+function renderMatcherinoStatus(data) {
+    if (!data.bountyId) return "No tournament ID configured yet.";
+    const lines = [
+        `Tracking: ${data.tournamentTitle || `#${data.bountyId}`}`,
+        `Teams: ${data.teamCount} · Members: ${data.memberCount} · Discord-linked: ${data.discordLinkedCount}`,
+        `Last synced: ${data.lastSyncedAt ? new Date(data.lastSyncedAt).toLocaleString() : "never"}`,
+    ];
+    if (data.lastError) lines.push(`⚠️ ${data.lastError}`);
+    return lines.join(" — ");
+}
+
+document.getElementById("matcherino-save-btn").addEventListener("click", async () => {
+    const bountyId = document.getElementById("matcherino-bounty-id").value.trim();
+    const el = document.getElementById("matcherino-status");
+    el.textContent = "Saving & syncing…";
+    el.classList.remove("error");
+    try {
+        const data = await apiFetch("/api/tournament/matcherino-bounty-id", {
+            method: "POST",
+            body: JSON.stringify({ bountyId }),
+        });
+        el.textContent = renderMatcherinoStatus(data);
+        el.classList.toggle("error", !!data.lastError);
+    } catch (err) {
+        el.textContent = "Error: " + err.message;
+        el.classList.add("error");
+    }
+});
+
+document.getElementById("matcherino-sync-btn").addEventListener("click", async () => {
+    const el = document.getElementById("matcherino-status");
+    el.textContent = "Syncing…";
+    try {
+        const data = await apiFetch("/api/tournament/matcherino-sync-now", { method: "POST" });
+        el.textContent = renderMatcherinoStatus(data);
+        el.classList.toggle("error", !!data.lastError);
+    } catch (err) {
+        el.textContent = "Error: " + err.message;
+        el.classList.add("error");
+    }
+});
+
+async function loadActiveTournament() {
+    const el = document.getElementById("active-tournament-status");
+    const guildId = currentGuildId();
+    if (!guildId) {
+        el.textContent = "Pick a server above first.";
+        return;
+    }
+    try {
+        const data = await apiFetch(`/api/tournament/active?guildId=${encodeURIComponent(guildId)}`);
+        el.textContent = data.tournament
+            ? `Active: ${data.tournament.name} (started ${new Date(data.tournament.started_at).toLocaleString()})`
+            : "No active tournament.";
+    } catch (err) {
+        el.textContent = "Error: " + err.message;
+    }
+}
+
+document.getElementById("end-tournament-btn").addEventListener("click", async () => {
+    const guildId = currentGuildId();
+    if (!guildId) return;
+    if (!confirm("End the active tournament for this server? Team channels will be locked/archived; teams themselves stay.")) return;
+    const el = document.getElementById("active-tournament-status");
+    try {
+        await apiFetch("/api/tournament/end", { method: "POST", body: JSON.stringify({ guildId }) });
+        el.textContent = "Ended.";
+        loadActiveTournament();
+    } catch (err) {
+        el.textContent = "Error: " + err.message;
+    }
+});
+
+async function loadLeaderboard() {
+    const el = document.getElementById("leaderboard-list");
+    const guildId = currentGuildId();
+    if (!guildId) {
+        el.textContent = "Pick a server above first.";
+        return;
+    }
+    try {
+        const data = await apiFetch(`/api/tournament/leaderboard?guildId=${encodeURIComponent(guildId)}`);
+        el.innerHTML = data.teams.length
+            ? "<ol>" +
+              data.teams
+                  .map((t) => `<li>${t.name} — 🏆 ${t.wins_count} · 🥉 ${t.placements_count} · ${t.tournaments_count} tournaments</li>`)
+                  .join("") +
+              "</ol>"
+            : "No results recorded yet.";
+    } catch (err) {
+        el.textContent = "Error: " + err.message;
+    }
+}
+
+document.getElementById("leaderboard-refresh-btn").addEventListener("click", loadLeaderboard);
+document.getElementById("guild-select").addEventListener("change", () => {
+    loadActiveTournament();
+    loadLeaderboard();
+});
+
+// Hook into the existing showApp() flow: wrap it so the tournament panel loads too,
+// without touching the original function body above.
+const _originalShowApp = showApp;
+showApp = function () {
+    _originalShowApp();
+    loadMatcherinoStatus();
+    loadActiveTournament();
+    loadLeaderboard();
+};

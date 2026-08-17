@@ -155,6 +155,34 @@
                 <button id="send-btn">Send announcement</button>
                 <p id="send-result" class="result"></p>
             </section>
+
+            <!-- ============== TOURNAMENT SYSTEM MANAGEMENT ============== -->
+            <section class="card">
+                <h2>🏆 Tournament system</h2>
+                <p class="hint" style="margin-bottom:16px;">Uses the server selected above (<b>Server (guild)</b> field in the Tournament announcement card).</p>
+
+                <h3 style="margin-top:0;">Matcherino sync</h3>
+                <p class="hint" style="margin-top:-6px;">The tournament ID whose roster <code>/verify</code> checks Discord accounts against. Same public API <code>draft-system</code>'s poller uses.</p>
+                <div class="row-2">
+                    <div>
+                        <label>Matcherino tournament (bounty) ID</label>
+                        <input id="matcherino-bounty-id" type="text" placeholder="e.g. 219223" />
+                    </div>
+                    <div style="display:flex; align-items:flex-end; gap:8px;">
+                        <button id="matcherino-save-btn" type="button">Save &amp; sync</button>
+                        <button id="matcherino-sync-btn" type="button" class="secondary-btn">🔄 Sync now</button>
+                    </div>
+                </div>
+                <div id="matcherino-status" class="result"></div>
+
+                <h3>Active tournament</h3>
+                <div id="active-tournament-status" class="result">…</div>
+                <button id="end-tournament-btn" type="button" class="secondary-btn">End active tournament</button>
+
+                <h3>Leaderboard</h3>
+                <button id="leaderboard-refresh-btn" type="button" class="secondary-btn">🔄 Refresh</button>
+                <div id="leaderboard-list"></div>
+            </section>
         </section>
 
     </main>
