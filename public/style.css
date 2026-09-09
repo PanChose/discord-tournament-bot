@@ -88,6 +88,15 @@ button:hover { background: var(--accent-hover); }
 
 .discord-login-btn:hover { background: var(--accent-hover); }
 
+.invite-btn {
+    display: inline-block;
+    width: auto;
+    text-align: center;
+    text-decoration: none;
+}
+
+#login-screen .invite-btn { width: 100%; }
+
 /* --- Header --- */
 header {
     display: flex;
