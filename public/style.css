@@ -321,6 +321,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 }
 
 .dp-btn-success { background: #248046; }
+.dp-btn-danger { background: #da373c; }
 
 /* --- Dashboard tournament list --- */
 .tournament-row {
