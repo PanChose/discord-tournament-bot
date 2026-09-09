@@ -6,9 +6,11 @@ watch registrations come in in real time — all synced back to the same Discord
 
 ## What it does
 
-- **Discord bot**: slash commands to create, publish, edit, and close tournaments; a **Register** /
-  **Unregister** button pair on the announcement itself with a live "12/32 slots" counter; DM
-  confirmations, start-time reminders, and an optional role ping when the tournament kicks off.
+- **Discord bot**: slash commands to create, publish, edit, and close tournaments; a single **Join**
+  button on the announcement itself with a live "12/32 slots" counter — click it and the bot records
+  your Discord tag as a participant and, if the tournament has an external link (Challonge, Matcherino,
+  etc.), replies with it so you can finish signing up there; DM confirmations, start-time reminders,
+  and an optional role ping when the tournament kicks off.
 - **Web panel**: sign in with your own Discord account (OAuth2 — no separate password), pick a server
   you organize for, build the tournament with a form that renders a live Discord-style preview as you
   type, and manage everything from a dashboard (publish / edit / close / delete, participant list,
@@ -21,7 +23,7 @@ watch registrations come in in real time — all synced back to the same Discord
 | Role | Can do |
 |---|---|
 | **Organizer** | Anyone with the **Manage Server** permission on a guild. Create/edit/close tournaments, from Discord or the panel. |
-| **Participant** | Register/unregister via the button on the announcement, or `/register` `/unregister`. |
+| **Participant** | Join via the button on the announcement (or `/register`); cancel with `/unregister`. |
 | **Viewer** | Sees the announcement and the live slot counter like any other message in the channel. |
 
 ## Discord commands
@@ -32,7 +34,8 @@ watch registrations come in in real time — all synced back to the same Discord
   message is updated in place
 - `/tournament close id:<id>` — closes registration, disables the button, posts a closed notice
 - `/tournament list` — lists this server's tournaments
-- `/register id:<id>` / `/unregister id:<id>` — the slash-command alternative to the buttons
+- `/register id:<id>` — slash-command alternative to the Join button
+- `/unregister id:<id>` — cancels a registration (there's no button for this — see below)
 
 All of the above (except `list`/`register`/`unregister`) require **Manage Server**, checked
 server-side against `interaction.memberPermissions` — not just hidden from users in the Discord UI.
@@ -68,7 +71,7 @@ post a new message — `refreshAnnouncementMessage()` in `lib/discordClient.js` 
 message's embed and buttons from the current DB state and calls `message.edit()` on it. That's how the
 "12/32 slots" counter updates live without spamming the channel.
 
-The harder problem is two people clicking **Register** for the last open slot within milliseconds of
+The harder problem is two people clicking **Join** for the last open slot within milliseconds of
 each other. `registerParticipant()` in `lib/tournaments.js` handles this by relying on `better-sqlite3`
 being a **synchronous** driver: the whole "count active registrations → compare to max → insert" sequence
 runs inside one `db.transaction()` call with no `await` in between. Since Node is single-threaded and

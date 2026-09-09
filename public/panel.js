@@ -298,6 +298,7 @@ function editTournament(t) {
     document.getElementById("f-starts-at").value = msToLocalInputValue(t.starts_at);
     document.getElementById("f-max").value = t.max_participants || 32;
     document.getElementById("f-description").value = t.description || "";
+    document.getElementById("f-external-url").value = t.external_url || "";
     document.getElementById("f-color").value = t.color || "#8b5cf6";
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
     document.getElementById("f-reminder").value = t.reminder_hours || "";
@@ -316,6 +317,7 @@ function resetEditorForm() {
     document.getElementById("f-starts-at").value = "";
     document.getElementById("f-max").value = 32;
     document.getElementById("f-description").value = "";
+    document.getElementById("f-external-url").value = "";
     document.getElementById("f-color").value = "#8b5cf6";
     document.getElementById("f-ping-role").value = "";
     document.getElementById("f-reminder").value = "";
@@ -347,6 +349,7 @@ function collectFormData() {
         startsAt: localInputValueToMs(document.getElementById("f-starts-at").value),
         maxParticipants: parseInt(document.getElementById("f-max").value, 10) || 32,
         description: document.getElementById("f-description").value.trim() || null,
+        externalUrl: document.getElementById("f-external-url").value.trim() || null,
         banner: state.bannerOverride || document.getElementById("f-banner").value.trim() || null,
         color: document.getElementById("f-color").value,
         pingRoleId: document.getElementById("f-ping-role").value || null,
@@ -422,7 +425,7 @@ function renderPreview() {
 
     const registerBtn = document.getElementById("pv-register-btn");
     const isFull = activeCount >= data.maxParticipants;
-    registerBtn.textContent = isFull ? "Slots full" : "✅ Register";
+    registerBtn.textContent = isFull ? "Slots full" : "✅ Join";
     registerBtn.style.opacity = status === "published" && !isFull ? "1" : "0.5";
 }
 
