@@ -6,11 +6,12 @@ watch registrations come in in real time — all synced back to the same Discord
 
 ## What it does
 
-- **Discord bot**: slash commands to create, publish, edit, and close tournaments; a single **Join**
-  button on the announcement itself with a live "12/32 slots" counter — click it and the bot records
-  your Discord tag as a participant and, if the tournament has an external link (Challonge, Matcherino,
-  etc.), replies with it so you can finish signing up there; DM confirmations, start-time reminders,
-  and an optional role ping when the tournament kicks off.
+- **Discord bot**: slash commands to create, publish, edit, and close tournaments; **Join** / **Leave**
+  buttons on the announcement itself with a live "12/32 slots" counter — Join records your Discord tag
+  as a participant and, if the tournament has an external link (Challonge, Matcherino, etc.), replies
+  with it so you can finish signing up there; Leave removes you again (clicking Join a second time just
+  re-sends the link instead of double-booking you). DM confirmations, start-time reminders, and an
+  optional role ping when the tournament kicks off.
 - **Web panel**: sign in with your own Discord account (OAuth2 — no separate password), pick a server
   you organize for, build the tournament with a form that renders a live Discord-style preview as you
   type, and manage everything from a dashboard (publish / edit / close / delete, participant list,
@@ -23,7 +24,7 @@ watch registrations come in in real time — all synced back to the same Discord
 | Role | Can do |
 |---|---|
 | **Organizer** | Anyone with the **Manage Server** permission on a guild. Create/edit/close tournaments, from Discord or the panel. |
-| **Participant** | Join via the button on the announcement (or `/register`); cancel with `/unregister`. |
+| **Participant** | Join/Leave via the buttons on the announcement, or `/register` / `/unregister`. |
 | **Viewer** | Sees the announcement and the live slot counter like any other message in the channel. |
 
 ## Discord commands
@@ -34,8 +35,7 @@ watch registrations come in in real time — all synced back to the same Discord
   message is updated in place
 - `/tournament close id:<id>` — closes registration, disables the button, posts a closed notice
 - `/tournament list` — lists this server's tournaments
-- `/register id:<id>` — slash-command alternative to the Join button
-- `/unregister id:<id>` — cancels a registration (there's no button for this — see below)
+- `/register id:<id>` / `/unregister id:<id>` — slash-command alternative to the Join/Leave buttons
 
 All of the above (except `list`/`register`/`unregister`) require **Manage Server**, checked
 server-side against `interaction.memberPermissions` — not just hidden from users in the Discord UI.
