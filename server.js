@@ -10,6 +10,7 @@ const {
     attachHandlers,
     listGuildsAndChannels,
     listGuildRoles,
+    getBotInviteUrl,
     publishTournament,
     closeTournamentAnnouncement,
     refreshAnnouncementMessage,
@@ -124,6 +125,11 @@ app.get("/api/me", requireAuth, async (req, res) => {
 
 app.get("/api/status", (req, res) => {
     res.json({ ready: client.isReady(), tag: client.user ? client.user.tag : null });
+});
+
+// Public on purpose — a server admin needs this link before they've logged in at all.
+app.get("/api/bot-invite-url", (req, res) => {
+    res.json({ url: getBotInviteUrl() });
 });
 
 // =========================================================================
