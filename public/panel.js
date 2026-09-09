@@ -1,956 +1,476 @@
-const API = "";
+const state = {
+    user: null,
+    guilds: [],
+    guildId: null,
+    channels: [],
+    roles: [],
+    tournaments: [],
+    bannerOverride: null, // dataURL from a local upload, takes precedence over the f-banner text field
+    pollTimer: null,
+};
 
-function getToken() {
-    return sessionStorage.getItem("panel_token");
-}
+const FORMAT_LABELS = {
+    single_elim: "Single Elimination",
+    double_elim: "Double Elimination",
+    round_robin: "Round Robin",
+};
 
-async function apiFetch(url, options = {}) {
-    const res = await fetch(API + url, {
-        ...options,
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken() || ""}`,
-            ...(options.headers || {}),
-        },
+const STATUS_LABELS = { draft: "Draft", published: "Registration Open", closed: "Registration Closed" };
+
+async function apiFetch(url, opts = {}) {
+    const res = await fetch(url, {
+        ...opts,
+        headers: { "content-type": "application/json", ...(opts.headers || {}) },
     });
+    if (res.status === 401) {
+        showLogin();
+        throw new Error("Not logged in");
+    }
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
     return data;
 }
 
-// --- Login ---
-document.getElementById("login-btn").addEventListener("click", login);
-document.getElementById("password-input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") login();
-});
-
-async function login() {
-    const password = document.getElementById("password-input").value;
-    const errorEl = document.getElementById("login-error");
-    errorEl.textContent = "";
-    try {
-        const res = await fetch("/api/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ password }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Wrong password");
-        sessionStorage.setItem("panel_token", data.token);
-        showApp();
-    } catch (err) {
-        errorEl.textContent = err.message;
-    }
+function showLogin() {
+    document.getElementById("login-screen").classList.remove("hidden");
+    document.getElementById("app-screen").classList.add("hidden");
 }
 
 function showApp() {
     document.getElementById("login-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.remove("hidden");
-    loadStatus();
-    loadGuilds();
-    loadEmojis();
-    updatePreview();
 }
 
-// --- Bot status ---
-async function loadStatus() {
-    const statusEl = document.getElementById("bot-status");
+// =========================================================================
+// Bootstrap
+// =========================================================================
+
+async function init() {
     try {
-        const data = await apiFetch("/api/status");
-        statusEl.textContent = data.ready ? `online: ${data.tag}` : "connecting…";
-        statusEl.classList.toggle("offline", !data.ready);
+        const me = await apiFetch("/api/me");
+        state.user = me.user;
+        state.guilds = me.guilds;
+        document.getElementById("user-tag").textContent = me.user.username;
+        showApp();
+        populateGuildSelect();
+        if (state.guilds.length) await switchGuild(state.guilds[0].id);
+        pollStatus();
+        setInterval(pollStatus, 10_000);
     } catch (err) {
-        statusEl.textContent = "error: " + err.message;
-        statusEl.classList.add("offline");
+        showLogin();
     }
 }
 
-// --- Guilds and channels ---
-let guildsData = [];
-
-async function loadGuilds() {
-    const guildSelect = document.getElementById("guild-select");
+async function pollStatus() {
     try {
-        const data = await apiFetch("/api/guilds");
-        guildsData = data.guilds;
-        guildSelect.innerHTML = guildsData
-            .map((g) => `<option value="${g.id}">${g.name}</option>`)
-            .join("");
-        updateChannels();
+        const { ready, tag } = await apiFetch("/api/status");
+        const el = document.getElementById("bot-status");
+        el.textContent = ready ? `● online (${tag})` : "● offline";
+        el.classList.toggle("offline", !ready);
     } catch (err) {
-        guildSelect.innerHTML = `<option>Error: ${err.message}</option>`;
+        // status endpoint doesn't require auth; ignore transient errors
     }
 }
 
-document.getElementById("guild-select").addEventListener("change", updateChannels);
+document.getElementById("logout-btn").addEventListener("click", async () => {
+    await apiFetch("/api/logout", { method: "POST" }).catch(() => {});
+    showLogin();
+});
 
-function updateChannels() {
-    const guildId = document.getElementById("guild-select").value;
+// =========================================================================
+// Guild switching
+// =========================================================================
+
+function populateGuildSelect() {
+    const select = document.getElementById("guild-select");
+    select.innerHTML = "";
+    if (!state.guilds.length) {
+        select.innerHTML = `<option value="">No servers available — add the bot first</option>`;
+        return;
+    }
+    for (const g of state.guilds) {
+        const opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = g.name;
+        select.appendChild(opt);
+    }
+}
+
+document.getElementById("guild-select").addEventListener("change", (e) => {
+    if (e.target.value) switchGuild(e.target.value);
+});
+
+async function switchGuild(guildId) {
+    state.guildId = guildId;
+    document.getElementById("guild-select").value = guildId;
+    try {
+        const { channels, roles } = await apiFetch(`/api/guilds/${guildId}`);
+        state.channels = channels;
+        state.roles = roles;
+        populateChannelAndRoleSelects();
+    } catch (err) {
+        state.channels = [];
+        state.roles = [];
+    }
+    await loadTournaments();
+}
+
+function populateChannelAndRoleSelects() {
     const channelSelect = document.getElementById("channel-select");
-    const guild = guildsData.find((g) => g.id === guildId);
-    channelSelect.innerHTML = (guild ? guild.channels : [])
-        .map((c) => `<option value="${c.id}">#${c.name}</option>`)
-        .join("");
+    channelSelect.innerHTML = state.channels.map((c) => `<option value="${c.id}">#${escapeHtml(c.name)}</option>`).join("");
+
+    const roleSelect = document.getElementById("f-ping-role");
+    roleSelect.innerHTML =
+        `<option value="">— none —</option>` + state.roles.map((r) => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
 }
 
-// ==========================================================
-// Local files (uploading images instead of / alongside a link)
-// ==========================================================
+// =========================================================================
+// Tabs
+// =========================================================================
 
-// State of selected local images: { name, dataUrl }
-const fileState = {
-    image: null,        // the embed's big image
-    thumbnail: null,     // corner logo
-    authorIcon: null,    // organization icon
-    attachments: [],      // plain images sent alongside the message
-};
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
+        btn.classList.add("active");
+        document.getElementById(`${btn.dataset.tab}-tab`).classList.remove("hidden");
 
-function readFileAsDataUrl(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error("Couldn't read the file"));
-        reader.readAsDataURL(file);
+        if (btn.dataset.tab === "dashboard") {
+            startPolling();
+        } else {
+            stopPolling();
+        }
+        if (btn.dataset.tab === "editor" && !document.getElementById("tournament-id").value) {
+            resetEditorForm();
+        }
     });
+});
+
+function startPolling() {
+    stopPolling();
+    state.pollTimer = setInterval(loadTournaments, 5000);
+}
+function stopPolling() {
+    if (state.pollTimer) clearInterval(state.pollTimer);
 }
 
-function renderThumbRow(containerId, items, onRemove) {
-    const el = document.getElementById(containerId);
-    el.innerHTML = "";
-    items.forEach((item, idx) => {
-        const wrap = document.createElement("div");
-        wrap.className = "file-thumb";
-        const img = document.createElement("img");
-        img.src = item.dataUrl;
-        const rm = document.createElement("button");
-        rm.type = "button";
-        rm.textContent = "✕";
-        rm.addEventListener("click", () => onRemove(idx));
-        wrap.appendChild(img);
-        wrap.appendChild(rm);
-        el.appendChild(wrap);
-    });
-}
+// =========================================================================
+// Dashboard: tournament list
+// =========================================================================
 
-function refreshSingleFilePreview(kind) {
-    const map = {
-        image: "image-preview",
-        thumbnail: "thumbnail-preview",
-    };
-    const containerId = map[kind];
-    if (!containerId) return;
-    const item = fileState[kind];
-    renderThumbRow(containerId, item ? [item] : [], () => {
-        fileState[kind] = null;
-        refreshSingleFilePreview(kind);
-        updatePreview();
-    });
-}
-
-function refreshAttachmentsPreview() {
-    renderThumbRow("attachments-preview", fileState.attachments, (idx) => {
-        fileState.attachments.splice(idx, 1);
-        refreshAttachmentsPreview();
-        updatePreview();
-    });
-}
-
-function setupSingleImageUpload({ dropzoneId, inputId, urlInputId, kind }) {
-    const dropzone = document.getElementById(dropzoneId);
-    const input = document.getElementById(inputId);
-    const urlInput = urlInputId ? document.getElementById(urlInputId) : null;
-
-    dropzone.addEventListener("click", () => input.click());
-    dropzone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropzone.classList.add("dragover");
-    });
-    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
-    dropzone.addEventListener("drop", async (e) => {
-        e.preventDefault();
-        dropzone.classList.remove("dragover");
-        const file = e.dataTransfer.files && e.dataTransfer.files[0];
-        if (file) await handleSingleFile(file);
-    });
-    input.addEventListener("change", async () => {
-        const file = input.files && input.files[0];
-        if (file) await handleSingleFile(file);
-        input.value = "";
-    });
-
-    async function handleSingleFile(file) {
-        if (!file.type.startsWith("image/")) return;
-        const dataUrl = await readFileAsDataUrl(file);
-        fileState[kind] = { name: file.name, dataUrl };
-        if (urlInput) urlInput.value = ""; // the file takes priority over the link
-        refreshSingleFilePreview(kind);
-        updatePreview();
-    }
-}
-
-setupSingleImageUpload({
-    dropzoneId: "image-dropzone",
-    inputId: "embed-image-file",
-    urlInputId: "embed-image",
-    kind: "image",
-});
-setupSingleImageUpload({
-    dropzoneId: "thumbnail-dropzone",
-    inputId: "embed-thumbnail-file",
-    urlInputId: "embed-thumbnail",
-    kind: "thumbnail",
-});
-
-// Organization icon — no dropzone, just a small upload button next to the link field
-document.getElementById("embed-author-icon-file").addEventListener("change", async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const dataUrl = await readFileAsDataUrl(file);
-    fileState.authorIcon = { name: file.name, dataUrl };
-    document.getElementById("embed-author-icon").value = "";
-    e.target.value = "";
-    updatePreview();
-});
-
-// If the user starts typing a link manually — clear the selected file
-document.getElementById("embed-image").addEventListener("input", () => {
-    if (document.getElementById("embed-image").value.trim()) {
-        fileState.image = null;
-        refreshSingleFilePreview("image");
-    }
-    updatePreview();
-});
-document.getElementById("embed-thumbnail").addEventListener("input", () => {
-    if (document.getElementById("embed-thumbnail").value.trim()) {
-        fileState.thumbnail = null;
-        refreshSingleFilePreview("thumbnail");
-    }
-    updatePreview();
-});
-document.getElementById("embed-author-icon").addEventListener("input", () => {
-    if (document.getElementById("embed-author-icon").value.trim()) {
-        fileState.authorIcon = null;
-    }
-    updatePreview();
-});
-
-// --- Plain attachments (drag images straight into the message) ---
-const attachmentsDropzone = document.getElementById("attachments-dropzone");
-const attachmentsInput = document.getElementById("attachments-input");
-
-attachmentsDropzone.addEventListener("click", () => attachmentsInput.click());
-attachmentsDropzone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    attachmentsDropzone.classList.add("dragover");
-});
-attachmentsDropzone.addEventListener("dragleave", () => attachmentsDropzone.classList.remove("dragover"));
-attachmentsDropzone.addEventListener("drop", async (e) => {
-    e.preventDefault();
-    attachmentsDropzone.classList.remove("dragover");
-    await addAttachmentFiles(e.dataTransfer.files);
-});
-attachmentsInput.addEventListener("change", async () => {
-    await addAttachmentFiles(attachmentsInput.files);
-    attachmentsInput.value = "";
-});
-
-async function addAttachmentFiles(fileList) {
-    const files = Array.from(fileList || []).filter((f) => f.type.startsWith("image/"));
-    for (const file of files.slice(0, 10 - fileState.attachments.length)) {
-        const dataUrl = await readFileAsDataUrl(file);
-        fileState.attachments.push({ name: file.name, dataUrl });
-    }
-    refreshAttachmentsPreview();
-    updatePreview();
-}
-
-// ==========================================================
-// Emoji picker (including emoji from any guild the bot is in)
-// ==========================================================
-
-let emojiCache = null;
-const QUICK_UNICODE_EMOJIS = [
-    "✅", "❌", "🔥", "🏆", "🎮", "🎉", "⚔️", "🛡️", "⭐", "💥",
-    "👑", "🚀", "📢", "🔔", "🕹️", "💰", "🥇", "🥈", "🥉", "❤️",
-];
-
-async function loadEmojis() {
+async function loadTournaments() {
+    if (!state.guildId) return;
     try {
-        const data = await apiFetch("/api/emojis");
-        emojiCache = data.emojis || [];
+        const { tournaments } = await apiFetch(`/api/tournaments?guildId=${state.guildId}`);
+        state.tournaments = tournaments;
+        renderTournamentList();
     } catch (err) {
-        emojiCache = [];
+        // transient — keep showing the last known list
     }
 }
 
-let emojiTargetId = null;
-const emojiPicker = document.getElementById("emoji-picker");
-const emojiListEl = document.getElementById("emoji-list");
-const emojiSearchEl = document.getElementById("emoji-search");
-
-document.querySelectorAll(".emoji-toggle").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        emojiTargetId = btn.dataset.fmtTarget;
-        openEmojiPicker(btn);
-    });
-});
-
-function openEmojiPicker(anchorEl) {
-    const rect = anchorEl.getBoundingClientRect();
-    emojiPicker.style.top = `${window.scrollY + rect.bottom + 6}px`;
-    emojiPicker.style.left = `${window.scrollX + rect.left}px`;
-    emojiPicker.classList.remove("hidden");
-    emojiSearchEl.value = "";
-    renderEmojiList("");
-    emojiSearchEl.focus();
-}
-
-function closeEmojiPicker() {
-    emojiPicker.classList.add("hidden");
-}
-
-document.addEventListener("click", (e) => {
-    if (!emojiPicker.contains(e.target)) closeEmojiPicker();
-});
-
-emojiSearchEl.addEventListener("input", () => renderEmojiList(emojiSearchEl.value.trim().toLowerCase()));
-
-function renderEmojiList(filter) {
-    emojiListEl.innerHTML = "";
-
-    const quick = QUICK_UNICODE_EMOJIS.filter((e) => !filter || e.includes(filter));
-    quick.forEach((emoji) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "emoji-option";
-        btn.textContent = emoji;
-        btn.title = "Standard emoji";
-        btn.addEventListener("click", () => pickEmoji(emoji));
-        emojiListEl.appendChild(btn);
-    });
-
-    const custom = (emojiCache || []).filter(
-        (e) => !filter || e.name.toLowerCase().includes(filter)
-    );
-    custom.forEach((emoji) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "emoji-option custom";
-        btn.title = `:${emoji.name}: — ${emoji.guildName}`;
-        if (emoji.url) {
-            const img = document.createElement("img");
-            img.src = emoji.url;
-            img.alt = emoji.name;
-            btn.appendChild(img);
-        } else {
-            btn.textContent = emoji.name;
-        }
-        const tag = `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}>`;
-        btn.addEventListener("click", () => pickEmoji(tag));
-        emojiListEl.appendChild(btn);
-    });
-
-    if (!quick.length && !custom.length) {
-        emojiListEl.innerHTML = `<p class="hint">Nothing found</p>`;
-    }
-}
-
-function pickEmoji(value) {
-    const targetEl = document.getElementById(emojiTargetId);
-    if (targetEl) {
-        if (targetEl.id === "reaction-emoji") {
-            targetEl.value = value; // a reaction needs exactly one emoji
-        } else {
-            insertAtCursor(targetEl, value, "", true);
-        }
-        targetEl.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    closeEmojiPicker();
-    updatePreview();
-}
-
-// ==========================================================
-// Server role picker (mirrors the emoji picker) — inserts
-// a mention like <@&roleId> into the text
-// ==========================================================
-
-const roleCache = {}; // guildId -> roles[]
-let roleTargetId = null;
-const rolePicker = document.getElementById("role-picker");
-const roleListEl = document.getElementById("role-list");
-const roleSearchEl = document.getElementById("role-search");
-
-document.querySelectorAll(".role-toggle").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        roleTargetId = btn.dataset.fmtTarget;
-        openRolePicker(btn);
-    });
-});
-
-async function openRolePicker(anchorEl) {
-    const rect = anchorEl.getBoundingClientRect();
-    rolePicker.style.top = `${window.scrollY + rect.bottom + 6}px`;
-    rolePicker.style.left = `${window.scrollX + rect.left}px`;
-    rolePicker.classList.remove("hidden");
-    roleSearchEl.value = "";
-    roleSearchEl.focus();
-
-    const guildId = document.getElementById("guild-select").value;
-    if (!guildId) {
-        roleListEl.innerHTML = `<p class="hint">Pick a server at the top of the form first</p>`;
+function renderTournamentList() {
+    const container = document.getElementById("tournament-list");
+    if (!state.tournaments.length) {
+        container.innerHTML = `<p class="hint">No tournaments yet — create one in the "New tournament" tab.</p>`;
         return;
     }
 
-    roleListEl.innerHTML = `<p class="hint">Loading…</p>`;
-    try {
-        const roles = await loadRolesForGuild(guildId);
-        renderRoleList(roles, "");
-    } catch (err) {
-        roleListEl.innerHTML = `<p class="hint">Error: ${err.message}</p>`;
-    }
-}
+    container.innerHTML = state.tournaments
+        .map((t) => {
+            const meta = [t.game, FORMAT_LABELS[t.format] || t.format, t.starts_at ? new Date(t.starts_at).toLocaleString() : "no start time set"]
+                .filter(Boolean)
+                .join(" · ");
+            const actions = [];
+            if (t.status === "draft") {
+                actions.push(`<button data-action="edit" data-id="${t.id}">Edit</button>`);
+                actions.push(`<button data-action="publish" data-id="${t.id}">Publish</button>`);
+            }
+            if (t.status === "published") {
+                actions.push(`<button data-action="edit" data-id="${t.id}">Edit</button>`);
+                actions.push(`<button data-action="close" data-id="${t.id}">Close</button>`);
+            }
+            if (t.status !== "draft") {
+                actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">Participants</button>`);
+            }
+            actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">Delete</button>`);
 
-async function loadRolesForGuild(guildId) {
-    if (roleCache[guildId]) return roleCache[guildId];
-    const data = await apiFetch(`/api/roles?guildId=${encodeURIComponent(guildId)}`);
-    roleCache[guildId] = data.roles || [];
-    return roleCache[guildId];
-}
-
-function closeRolePicker() {
-    rolePicker.classList.add("hidden");
-}
-
-document.addEventListener("click", (e) => {
-    if (!rolePicker.contains(e.target)) closeRolePicker();
-});
-
-roleSearchEl.addEventListener("input", () => {
-    const guildId = document.getElementById("guild-select").value;
-    renderRoleList(roleCache[guildId] || [], roleSearchEl.value.trim().toLowerCase());
-});
-
-function renderRoleList(roles, filter) {
-    roleListEl.innerHTML = "";
-
-    const filtered = roles.filter((r) => !filter || r.name.toLowerCase().includes(filter));
-    filtered.forEach((role) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "role-option";
-        btn.title = `@${role.name}`;
-
-        const dot = document.createElement("span");
-        dot.className = "role-color-dot";
-        dot.style.background = role.color || "#99aab5";
-        btn.appendChild(dot);
-
-        const label = document.createElement("span");
-        label.className = "role-name";
-        label.textContent = role.name;
-        btn.appendChild(label);
-
-        btn.addEventListener("click", () => pickRole(`<@&${role.id}>`));
-        roleListEl.appendChild(btn);
-    });
-
-    if (!filtered.length) {
-        roleListEl.innerHTML = `<p class="hint">Nothing found</p>`;
-    }
-}
-
-function pickRole(mentionTag) {
-    const targetEl = document.getElementById(roleTargetId);
-    if (targetEl) {
-        insertAtCursor(targetEl, mentionTag, "", true);
-        targetEl.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    closeRolePicker();
-    updatePreview();
-}
-
-// Changing the selected server — close any open role picker,
-// since the role list depends on the server
-document.getElementById("guild-select").addEventListener("change", closeRolePicker);
-
-// ==========================================================
-// Text formatting (bold/italic/spoiler/link)
-// ==========================================================
-
-function insertAtCursor(el, before, after = "", noWrapSelection = false) {
-    const start = el.selectionStart ?? el.value.length;
-    const end = el.selectionEnd ?? el.value.length;
-    const value = el.value;
-    const selected = noWrapSelection ? "" : (value.slice(start, end) || "text");
-    el.value = value.slice(0, start) + before + selected + after + value.slice(end);
-    const cursorPos = start + before.length + selected.length + after.length;
-    el.focus();
-    el.setSelectionRange(cursorPos, cursorPos);
-}
-
-// Headings (#, ##, ###), quotes (>), and lists (-) are line prefixes rather
-// than wrappers around the selection, so they're handled separately.
-// Clicking the same button again removes the prefix (toggle).
-function toggleLinePrefix(el, prefix) {
-    const start = el.selectionStart ?? el.value.length;
-    const end = el.selectionEnd ?? el.value.length;
-    const value = el.value;
-
-    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-    let lineEnd = value.indexOf("\n", end);
-    if (lineEnd === -1) lineEnd = value.length;
-    const line = value.slice(lineStart, lineEnd);
-
-    const headingRe = /^(#{1,3}\s)/;
-    const quoteRe = /^(>\s)/;
-    const listRe = /^(-\s)/;
-
-    let newLine;
-    if (/^#{1,3}\s$/.test(prefix)) {
-        const match = line.match(headingRe);
-        if (match && match[1] === prefix) {
-            newLine = line.slice(match[1].length);
-        } else if (match) {
-            newLine = prefix + line.slice(match[1].length);
-        } else {
-            newLine = prefix + line;
-        }
-    } else if (prefix === "> ") {
-        newLine = quoteRe.test(line) ? line.replace(quoteRe, "") : "> " + line;
-    } else if (prefix === "- ") {
-        newLine = listRe.test(line) ? line.replace(listRe, "") : "- " + line;
-    } else {
-        newLine = prefix + line;
-    }
-
-    const newValue = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
-    const diff = newLine.length - line.length;
-    el.value = newValue;
-    el.focus();
-    el.setSelectionRange(Math.max(lineStart, start + diff), Math.max(lineStart, end + diff));
-}
-
-const FORMAT_ACTIONS = {
-    h1: (el) => toggleLinePrefix(el, "# "),
-    h2: (el) => toggleLinePrefix(el, "## "),
-    h3: (el) => toggleLinePrefix(el, "### "),
-    quote: (el) => toggleLinePrefix(el, "> "),
-    list: (el) => toggleLinePrefix(el, "- "),
-    bold: (el) => insertAtCursor(el, "**", "**"),
-    italic: (el) => insertAtCursor(el, "*", "*"),
-    underline: (el) => insertAtCursor(el, "__", "__"),
-    strike: (el) => insertAtCursor(el, "~~", "~~"),
-    code: (el) => insertAtCursor(el, "`", "`"),
-    spoiler: (el) => insertAtCursor(el, "||", "||"),
-    link: (el) => insertAtCursor(el, "[", "](https://)"),
-};
-
-document.querySelectorAll(".toolbar").forEach((toolbar) => {
-    toolbar.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-fmt]");
-        if (!btn) return;
-        const targetEl = document.getElementById(btn.dataset.fmtTarget);
-        const action = FORMAT_ACTIONS[btn.dataset.fmt];
-        if (action && targetEl) {
-            action(targetEl);
-            targetEl.dispatchEvent(new Event("input", { bubbles: true }));
-        }
-    });
-});
-
-// ==========================================================
-// Message preview (to the left of the editor)
-// ==========================================================
-
-function escapeHtml(str) {
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-}
-
-// Looks up a role's name by its id in the already-loaded role cache (for previewing mentions)
-function findRoleNameById(id) {
-    for (const roles of Object.values(roleCache)) {
-        const found = roles.find((r) => r.id === id);
-        if (found) return found.name;
-    }
-    return null;
-}
-
-// Very simplified rendering of Discord markdown for the preview (doesn't cover everything, but enough for a draft)
-function applyInlineMarkdown(escaped) {
-    let out = escaped;
-    out = out.replace(/&lt;a?:(\w+):(\d+)&gt;/g, (_, name) => `<span class="dp-custom-emoji">:${name}:</span>`);
-    out = out.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => `<span class="dp-role-mention">@${findRoleNameById(id) || "role"}</span>`);
-    out = out.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
-    out = out.replace(/__(.+?)__/g, "<u>$1</u>");
-    out = out.replace(/~~(.+?)~~/g, "<s>$1</s>");
-    out = out.replace(/`(.+?)`/g, '<code class="dp-code">$1</code>');
-    out = out.replace(/\*(.+?)\*/g, "<i>$1</i>");
-    out = out.replace(/\|\|(.+?)\|\|/g, '<span class="dp-spoiler">$1</span>');
-    out = out.replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    return out;
-}
-
-// Each line is rendered as its own block (<div>) so headings/quotes/lists
-// wrap correctly without extra <br> tags around them.
-function renderMarkdownish(text) {
-    if (!text) return "";
-
-    return text
-        .split("\n")
-        .map((rawLine) => {
-            const escaped = escapeHtml(rawLine);
-            const h3 = /^###\s(.*)$/.exec(escaped);
-            const h2 = /^##\s(.*)$/.exec(escaped);
-            const h1 = /^#\s(.*)$/.exec(escaped);
-            const quote = /^&gt;\s(.*)$/.exec(escaped);
-            const item = /^-\s(.*)$/.exec(escaped);
-
-            if (h3) return `<div class="dp-h3">${applyInlineMarkdown(h3[1])}</div>`;
-            if (h2) return `<div class="dp-h2">${applyInlineMarkdown(h2[1])}</div>`;
-            if (h1) return `<div class="dp-h1">${applyInlineMarkdown(h1[1])}</div>`;
-            if (quote) return `<div class="dp-quote">${applyInlineMarkdown(quote[1])}</div>`;
-            if (item) return `<div class="dp-list-item">• ${applyInlineMarkdown(item[1])}</div>`;
-            if (!escaped) return `<div>&nbsp;</div>`;
-            return `<div>${applyInlineMarkdown(escaped)}</div>`;
+            return `
+                <div class="tournament-row">
+                    <div>
+                        <div class="tournament-name">${escapeHtml(t.name)}</div>
+                        <div class="tournament-meta">${escapeHtml(meta)}</div>
+                    </div>
+                    <div class="tournament-meta">${t.activeCount}/${t.max_participants} slots</div>
+                    <span class="badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
+                    <div class="row-actions">${actions.join("")}</div>
+                </div>`;
         })
         .join("");
 }
 
-function resolveImageSrc(fileItem, urlValue) {
-    if (fileItem) return fileItem.dataUrl;
-    if (urlValue && urlValue.trim()) return urlValue.trim();
-    return null;
-}
+document.getElementById("tournament-list").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const { action, id } = btn.dataset;
+    const tournament = state.tournaments.find((t) => t.id === id);
 
-function updatePreview() {
-    const content = document.getElementById("embed-content").value;
-    const contentEl = document.getElementById("dp-content");
-    contentEl.innerHTML = renderMarkdownish(content);
-    contentEl.style.display = content ? "block" : "none";
-
-    // Plain attachments
-    const attEl = document.getElementById("dp-attachments");
-    attEl.innerHTML = "";
-    fileState.attachments.forEach((f) => {
-        const img = document.createElement("img");
-        img.src = f.dataUrl;
-        attEl.appendChild(img);
-    });
-    attEl.style.display = fileState.attachments.length ? "flex" : "none";
-
-    // Embed
-    const authorName = document.getElementById("embed-author").value.trim();
-    const authorIconSrc = resolveImageSrc(fileState.authorIcon, document.getElementById("embed-author-icon").value);
-    const title = document.getElementById("embed-title").value.trim();
-    const description = document.getElementById("embed-description").value.trim();
-    const imageSrc = resolveImageSrc(fileState.image, document.getElementById("embed-image").value);
-    const thumbSrc = resolveImageSrc(fileState.thumbnail, document.getElementById("embed-thumbnail").value);
-    const color = document.getElementById("embed-color").value || "#8b5cf6";
-
-    const hasEmbed = authorName || title || description || imageSrc || thumbSrc;
-    const embedEl = document.getElementById("dp-embed");
-    embedEl.style.display = hasEmbed ? "grid" : "none";
-    embedEl.style.borderLeftColor = color;
-    embedEl.classList.toggle("no-thumb", !thumbSrc);
-
-    const authorEl = document.getElementById("dp-embed-author");
-    if (authorName) {
-        authorEl.style.display = "flex";
-        authorEl.innerHTML =
-            (authorIconSrc ? `<img src="${authorIconSrc}" />` : "") +
-            `<span>${escapeHtml(authorName)}</span>`;
-    } else {
-        authorEl.style.display = "none";
-    }
-
-    const titleEl = document.getElementById("dp-embed-title");
-    if (title) {
-        titleEl.style.display = "block";
-        titleEl.textContent = title;
-    } else {
-        titleEl.style.display = "none";
-    }
-
-    const descEl = document.getElementById("dp-embed-desc");
-    if (description) {
-        descEl.style.display = "block";
-        descEl.innerHTML = renderMarkdownish(description);
-    } else {
-        descEl.style.display = "none";
-    }
-
-    const imageEl = document.getElementById("dp-embed-image");
-    if (imageSrc) {
-        imageEl.style.display = "block";
-        imageEl.src = imageSrc;
-    } else {
-        imageEl.style.display = "none";
-    }
-
-    const thumbEl = document.getElementById("dp-embed-thumb");
-    if (thumbSrc) {
-        thumbEl.style.display = "block";
-        thumbEl.src = thumbSrc;
-    } else {
-        thumbEl.style.display = "none";
-    }
-
-    // Reaction
-    const reactionEmoji = document.getElementById("reaction-emoji").value.trim();
-    const reactionEl = document.getElementById("dp-reaction");
-    if (reactionEmoji) {
-        reactionEl.style.display = "inline-flex";
-        const customMatch = /^<a?:(\w+):(\d+)>$/.exec(reactionEmoji);
-        reactionEl.innerHTML = customMatch
-            ? `<span class="dp-custom-emoji">:${customMatch[1]}:</span> 1`
-            : `${escapeHtml(reactionEmoji)} 1`;
-    } else {
-        reactionEl.style.display = "none";
-    }
-}
-
-[
-    "embed-content", "embed-author", "embed-author-icon", "embed-title",
-    "embed-description", "embed-image", "embed-thumbnail", "embed-color", "reaction-emoji",
-].forEach((id) => {
-    document.getElementById(id).addEventListener("input", updatePreview);
+    if (action === "edit") return editTournament(tournament);
+    if (action === "publish") return publishTournament(id);
+    if (action === "close") return closeTournament(id);
+    if (action === "delete") return deleteTournament(id);
+    if (action === "participants") return showParticipants(tournament);
 });
 
-// ==========================================================
-// Reset the form
-// ==========================================================
-
-document.getElementById("reset-btn").addEventListener("click", () => {
-    [
-        "embed-content", "embed-author", "embed-author-icon", "embed-title",
-        "embed-description", "embed-image", "embed-thumbnail", "reaction-emoji",
-    ].forEach((id) => (document.getElementById(id).value = ""));
-
-    document.getElementById("embed-color").value = "#8b5cf6";
-
-    fileState.image = null;
-    fileState.thumbnail = null;
-    fileState.authorIcon = null;
-    fileState.attachments = [];
-    refreshSingleFilePreview("image");
-    refreshSingleFilePreview("thumbnail");
-    refreshAttachmentsPreview();
-
-    document.getElementById("send-result").textContent = "";
-    document.getElementById("send-result").className = "result";
-
-    updatePreview();
-});
-
-// ==========================================================
-// Sending the announcement
-// ==========================================================
-
-document.getElementById("send-btn").addEventListener("click", async () => {
-    const guildId = document.getElementById("guild-select").value;
-    const channelId = document.getElementById("channel-select").value;
-    const resultEl = document.getElementById("send-result");
-    resultEl.textContent = "";
-    resultEl.className = "result";
-
-    if (!guildId || !channelId) {
-        resultEl.textContent = "Pick a server and a channel";
-        resultEl.className = "result error";
-        return;
-    }
-
-    const content = document.getElementById("embed-content").value.trim() || undefined;
-    const embed = collectEmbed();
-
-    if (!content && !embed && !fileState.attachments.length) {
-        resultEl.textContent = "Fill in text, an embed, or add at least one image";
-        resultEl.className = "result error";
-        return;
-    }
-
-    const reactionEmoji = document.getElementById("reaction-emoji").value.trim() || undefined;
-
+async function publishTournament(id) {
     try {
-        const data = await apiFetch("/api/send", {
-            method: "POST",
-            body: JSON.stringify({
-                guildId,
-                channelId,
-                content,
-                embed,
-                files: fileState.attachments.length ? fileState.attachments : undefined,
-                reactionEmoji,
-            }),
-        });
-        resultEl.textContent = data.reactionWarning
-            ? `✅ Sent. ⚠️ ${data.reactionWarning}`
-            : "✅ Sent";
-        resultEl.className = "result";
+        await apiFetch(`/api/tournaments/${id}/publish`, { method: "POST" });
+        await loadTournaments();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function closeTournament(id) {
+    if (!confirm("Close registration for this tournament?")) return;
+    try {
+        await apiFetch(`/api/tournaments/${id}/close`, { method: "POST" });
+        await loadTournaments();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function deleteTournament(id) {
+    if (!confirm("Delete this tournament? This can't be undone.")) return;
+    try {
+        await apiFetch(`/api/tournaments/${id}`, { method: "DELETE" });
+        await loadTournaments();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function showParticipants(tournament) {
+    const card = document.getElementById("participants-card");
+    card.classList.remove("hidden");
+    document.getElementById("participants-title").textContent = `Participants — ${tournament.name}`;
+    document.getElementById("csv-export-link").href = `/api/tournaments/${tournament.id}/participants.csv`;
+
+    const { participants } = await apiFetch(`/api/tournaments/${tournament.id}/participants`);
+    const body = document.getElementById("participants-body");
+    const empty = document.getElementById("participants-empty");
+    if (!participants.length) {
+        body.innerHTML = "";
+        empty.classList.remove("hidden");
+    } else {
+        empty.classList.add("hidden");
+        body.innerHTML = participants
+            .map((p) => `<tr><td>${escapeHtml(p.username || p.user_id)}</td><td>${new Date(p.registered_at).toLocaleString()}</td></tr>`)
+            .join("");
+    }
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// =========================================================================
+// Editor: constructor form + live preview
+// =========================================================================
+
+function editTournament(t) {
+    document.querySelector('.tab-btn[data-tab="editor"]').click();
+    document.getElementById("editor-heading").textContent = `Edit: ${t.name}`;
+    document.getElementById("tournament-id").value = t.id;
+    document.getElementById("channel-select").value = t.channel_id || "";
+    document.getElementById("f-name").value = t.name || "";
+    document.getElementById("f-game").value = t.game || "";
+    document.getElementById("f-format").value = t.format || "single_elim";
+    document.getElementById("f-starts-at").value = msToLocalInputValue(t.starts_at);
+    document.getElementById("f-max").value = t.max_participants || 32;
+    document.getElementById("f-description").value = t.description || "";
+    document.getElementById("f-color").value = t.color || "#8b5cf6";
+    document.getElementById("f-ping-role").value = t.ping_role_id || "";
+    document.getElementById("f-reminder").value = t.reminder_hours || "";
+    state.bannerOverride = null;
+    document.getElementById("f-banner").value = t.banner && !t.banner.startsWith("data:") ? t.banner : "";
+    if (t.banner && t.banner.startsWith("data:")) state.bannerOverride = t.banner;
+    renderPreview();
+}
+
+function resetEditorForm() {
+    document.getElementById("editor-heading").textContent = "New tournament";
+    document.getElementById("tournament-id").value = "";
+    document.getElementById("f-name").value = "";
+    document.getElementById("f-game").value = "";
+    document.getElementById("f-format").value = "single_elim";
+    document.getElementById("f-starts-at").value = "";
+    document.getElementById("f-max").value = 32;
+    document.getElementById("f-description").value = "";
+    document.getElementById("f-color").value = "#8b5cf6";
+    document.getElementById("f-ping-role").value = "";
+    document.getElementById("f-reminder").value = "";
+    document.getElementById("f-banner").value = "";
+    document.getElementById("ai-prize").value = "";
+    document.getElementById("ai-result").textContent = "";
+    state.bannerOverride = null;
+    renderPreview();
+}
+
+document.getElementById("editor-reset-btn").addEventListener("click", resetEditorForm);
+
+function msToLocalInputValue(ms) {
+    if (!ms) return "";
+    const d = new Date(ms - new Date().getTimezoneOffset() * 60000);
+    return d.toISOString().slice(0, 16);
+}
+
+function localInputValueToMs(value) {
+    return value ? new Date(value).getTime() : null;
+}
+
+function collectFormData() {
+    return {
+        channelId: document.getElementById("channel-select").value || null,
+        name: document.getElementById("f-name").value.trim(),
+        game: document.getElementById("f-game").value.trim() || null,
+        format: document.getElementById("f-format").value,
+        startsAt: localInputValueToMs(document.getElementById("f-starts-at").value),
+        maxParticipants: parseInt(document.getElementById("f-max").value, 10) || 32,
+        description: document.getElementById("f-description").value.trim() || null,
+        banner: state.bannerOverride || document.getElementById("f-banner").value.trim() || null,
+        color: document.getElementById("f-color").value,
+        pingRoleId: document.getElementById("f-ping-role").value || null,
+        reminderHours: document.getElementById("f-reminder").value ? parseInt(document.getElementById("f-reminder").value, 10) : null,
+    };
+}
+
+document.getElementById("save-btn").addEventListener("click", async () => {
+    const data = collectFormData();
+    if (!data.name) return (document.getElementById("save-result").textContent = "❌ Name is required");
+    if (!data.channelId) return (document.getElementById("save-result").textContent = "❌ Pick a channel");
+
+    const id = document.getElementById("tournament-id").value;
+    const resultEl = document.getElementById("save-result");
+    resultEl.textContent = "Saving…";
+    try {
+        if (id) {
+            await apiFetch(`/api/tournaments/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+        } else {
+            await apiFetch("/api/tournaments", { method: "POST", body: JSON.stringify({ guildId: state.guildId, ...data }) });
+        }
+        resultEl.textContent = "✅ Saved";
+        await loadTournaments();
+        document.querySelector('.tab-btn[data-tab="dashboard"]').click();
     } catch (err) {
         resultEl.textContent = "❌ " + err.message;
-        resultEl.className = "result error";
     }
 });
 
-// ==========================================================
-// Collecting the embed from the form
-// ==========================================================
+// --- Live preview (debounced, fully local — no network calls per keystroke) ---
+let previewDebounce = null;
+function schedulePreview() {
+    clearTimeout(previewDebounce);
+    previewDebounce = setTimeout(renderPreview, 150);
+}
 
-function collectEmbed() {
-    const embed = {
-        authorName: document.getElementById("embed-author").value.trim() || undefined,
-        authorIconUrl: fileState.authorIcon ? undefined : (document.getElementById("embed-author-icon").value.trim() || undefined),
-        authorIconFile: fileState.authorIcon || undefined,
-        title: document.getElementById("embed-title").value.trim() || undefined,
-        description: document.getElementById("embed-description").value.trim() || undefined,
-        imageUrl: fileState.image ? undefined : (document.getElementById("embed-image").value.trim() || undefined),
-        imageFile: fileState.image || undefined,
-        thumbnailUrl: fileState.thumbnail ? undefined : (document.getElementById("embed-thumbnail").value.trim() || undefined),
-        thumbnailFile: fileState.thumbnail || undefined,
-        color: document.getElementById("embed-color").value || undefined,
+["f-name", "f-game", "f-format", "f-starts-at", "f-max", "f-description", "f-banner", "f-color", "tournament-id"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", schedulePreview);
+    document.getElementById(id).addEventListener("change", schedulePreview);
+});
+
+function renderPreview() {
+    const data = collectFormData();
+    const isEditing = Boolean(document.getElementById("tournament-id").value);
+    const existing = isEditing ? state.tournaments.find((t) => t.id === document.getElementById("tournament-id").value) : null;
+    const status = existing ? existing.status : "draft";
+    const activeCount = existing ? existing.activeCount : 0;
+
+    document.getElementById("pv-title").textContent = data.name || "Tournament name";
+    const descEl = document.getElementById("pv-desc");
+    descEl.textContent = data.description || "";
+    descEl.classList.toggle("hidden", !data.description);
+
+    const fields = [];
+    if (data.game) fields.push(["Game", data.game]);
+    fields.push(["Format", FORMAT_LABELS[data.format] || data.format]);
+    fields.push(["Slots", `${activeCount}/${data.maxParticipants}`]);
+    if (data.startsAt) fields.push(["Starts", new Date(data.startsAt).toLocaleString()]);
+    document.getElementById("pv-fields").innerHTML = fields
+        .map(([name, value]) => `<div class="dp-field"><span class="dp-field-name">${escapeHtml(name)}</span> — <span class="dp-field-value">${escapeHtml(value)}</span></div>`)
+        .join("");
+
+    const imgEl = document.getElementById("pv-image");
+    if (data.banner) {
+        imgEl.src = data.banner;
+        imgEl.classList.remove("hidden");
+    } else {
+        imgEl.classList.add("hidden");
+    }
+
+    document.getElementById("pv-footer").textContent = STATUS_LABELS[status];
+    document.querySelector(".dp-embed").style.borderLeftColor = data.color;
+
+    const registerBtn = document.getElementById("pv-register-btn");
+    const isFull = activeCount >= data.maxParticipants;
+    registerBtn.textContent = isFull ? "Slots full" : "✅ Register";
+    registerBtn.style.opacity = status === "published" && !isFull ? "1" : "0.5";
+}
+
+// --- Banner upload (drag & drop or click) ---
+const bannerDropzone = document.getElementById("banner-dropzone");
+const bannerFileInput = document.getElementById("banner-file");
+
+bannerDropzone.addEventListener("click", () => bannerFileInput.click());
+bannerDropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    bannerDropzone.classList.add("dragover");
+});
+bannerDropzone.addEventListener("dragleave", () => bannerDropzone.classList.remove("dragover"));
+bannerDropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    bannerDropzone.classList.remove("dragover");
+    if (e.dataTransfer.files[0]) handleBannerFile(e.dataTransfer.files[0]);
+});
+bannerFileInput.addEventListener("change", () => {
+    if (bannerFileInput.files[0]) handleBannerFile(bannerFileInput.files[0]);
+});
+
+function handleBannerFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        state.bannerOverride = reader.result;
+        document.getElementById("f-banner").value = "";
+        renderPreview();
     };
-
-    const hasContent =
-        embed.title || embed.description || embed.imageUrl || embed.imageFile;
-    return hasContent ? embed : null;
+    reader.readAsDataURL(file);
 }
 
-// --- Auto-login if a token is already saved ---
-if (getToken()) {
-    showApp();
-}
-// =========================================================================
-// Tournament system management panel
-// =========================================================================
+document.getElementById("f-banner").addEventListener("input", () => {
+    state.bannerOverride = null;
+});
 
-function currentGuildId() {
-    return document.getElementById("guild-select").value;
-}
-
-async function loadMatcherinoStatus() {
-    const el = document.getElementById("matcherino-status");
+// --- AI description generator ---
+document.getElementById("ai-generate-btn").addEventListener("click", async () => {
+    const resultEl = document.getElementById("ai-result");
+    resultEl.textContent = "Thinking…";
     try {
-        const data = await apiFetch("/api/tournament/matcherino-status");
-        document.getElementById("matcherino-bounty-id").value = data.bountyId || "";
-        el.textContent = renderMatcherinoStatus(data);
-        el.classList.toggle("error", !!data.lastError);
-    } catch (err) {
-        el.textContent = "Error: " + err.message;
-        el.classList.add("error");
-    }
-}
-
-function renderMatcherinoStatus(data) {
-    if (!data.bountyId) return "No tournament ID configured yet.";
-    const lines = [
-        `Tracking: ${data.tournamentTitle || `#${data.bountyId}`}`,
-        `Teams: ${data.teamCount} · Members: ${data.memberCount} · Discord-linked: ${data.discordLinkedCount}`,
-        `Last synced: ${data.lastSyncedAt ? new Date(data.lastSyncedAt).toLocaleString() : "never"}`,
-    ];
-    if (data.lastError) lines.push(`⚠️ ${data.lastError}`);
-    return lines.join(" — ");
-}
-
-document.getElementById("matcherino-save-btn").addEventListener("click", async () => {
-    const bountyId = document.getElementById("matcherino-bounty-id").value.trim();
-    const el = document.getElementById("matcherino-status");
-    el.textContent = "Saving & syncing…";
-    el.classList.remove("error");
-    try {
-        const data = await apiFetch("/api/tournament/matcherino-bounty-id", {
+        const { description } = await apiFetch("/api/ai/generate-description", {
             method: "POST",
-            body: JSON.stringify({ bountyId }),
+            body: JSON.stringify({
+                game: document.getElementById("f-game").value.trim(),
+                format: FORMAT_LABELS[document.getElementById("f-format").value],
+                prize: document.getElementById("ai-prize").value.trim(),
+            }),
         });
-        el.textContent = renderMatcherinoStatus(data);
-        el.classList.toggle("error", !!data.lastError);
+        document.getElementById("f-description").value = description;
+        resultEl.textContent = "✅ Generated — feel free to edit it";
+        renderPreview();
     } catch (err) {
-        el.textContent = "Error: " + err.message;
-        el.classList.add("error");
+        resultEl.textContent = "❌ " + err.message;
     }
 });
 
-document.getElementById("matcherino-sync-btn").addEventListener("click", async () => {
-    const el = document.getElementById("matcherino-status");
-    el.textContent = "Syncing…";
-    try {
-        const data = await apiFetch("/api/tournament/matcherino-sync-now", { method: "POST" });
-        el.textContent = renderMatcherinoStatus(data);
-        el.classList.toggle("error", !!data.lastError);
-    } catch (err) {
-        el.textContent = "Error: " + err.message;
-        el.classList.add("error");
-    }
-});
-
-async function loadActiveTournament() {
-    const el = document.getElementById("active-tournament-status");
-    const guildId = currentGuildId();
-    if (!guildId) {
-        el.textContent = "Pick a server above first.";
-        return;
-    }
-    try {
-        const data = await apiFetch(`/api/tournament/active?guildId=${encodeURIComponent(guildId)}`);
-        el.textContent = data.tournament
-            ? `Active: ${data.tournament.name} (started ${new Date(data.tournament.started_at).toLocaleString()})`
-            : "No active tournament.";
-    } catch (err) {
-        el.textContent = "Error: " + err.message;
-    }
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-document.getElementById("end-tournament-btn").addEventListener("click", async () => {
-    const guildId = currentGuildId();
-    if (!guildId) return;
-    if (!confirm("End the active tournament for this server? Team channels will be locked/archived; teams themselves stay.")) return;
-    const el = document.getElementById("active-tournament-status");
-    try {
-        await apiFetch("/api/tournament/end", { method: "POST", body: JSON.stringify({ guildId }) });
-        el.textContent = "Ended.";
-        loadActiveTournament();
-    } catch (err) {
-        el.textContent = "Error: " + err.message;
-    }
-});
-
-async function loadLeaderboard() {
-    const el = document.getElementById("leaderboard-list");
-    const guildId = currentGuildId();
-    if (!guildId) {
-        el.textContent = "Pick a server above first.";
-        return;
-    }
-    try {
-        const data = await apiFetch(`/api/tournament/leaderboard?guildId=${encodeURIComponent(guildId)}`);
-        el.innerHTML = data.teams.length
-            ? "<ol>" +
-              data.teams
-                  .map((t) => `<li>${t.name} — 🏆 ${t.wins_count} · 🥉 ${t.placements_count} · ${t.tournaments_count} tournaments</li>`)
-                  .join("") +
-              "</ol>"
-            : "No results recorded yet.";
-    } catch (err) {
-        el.textContent = "Error: " + err.message;
-    }
-}
-
-document.getElementById("leaderboard-refresh-btn").addEventListener("click", loadLeaderboard);
-document.getElementById("guild-select").addEventListener("change", () => {
-    loadActiveTournament();
-    loadLeaderboard();
-});
-
-// Hook into the existing showApp() flow: wrap it so the tournament panel loads too,
-// without touching the original function body above.
-const _originalShowApp = showApp;
-showApp = function () {
-    _originalShowApp();
-    loadMatcherinoStatus();
-    loadActiveTournament();
-    loadLeaderboard();
-};
+init();
