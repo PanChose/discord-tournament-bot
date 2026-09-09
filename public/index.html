@@ -84,8 +84,7 @@
                                     <div class="dp-embed-footer" id="pv-footer">Draft</div>
                                 </div>
                                 <div class="dp-buttons">
-                                    <span class="dp-btn dp-btn-success" id="pv-register-btn">✅ Register</span>
-                                    <span class="dp-btn dp-btn-danger">Unregister</span>
+                                    <span class="dp-btn dp-btn-success" id="pv-register-btn">✅ Join</span>
                                 </div>
                             </div>
                         </div>
@@ -136,6 +135,10 @@
 
                         <label>Description / rules</label>
                         <textarea id="f-description" rows="4" maxlength="4096" placeholder="Bo1 group stage, Bo3 playoffs. Check-in 30 min before start."></textarea>
+
+                        <label>External tournament link (optional)</label>
+                        <input id="f-external-url" type="text" placeholder="https://challonge.com/... or matcherino.com/..." />
+                        <p class="hint" style="margin-top:-8px;">If set, clicking Join records the person as a participant here, then the bot sends them this link to finish signing up on the other platform.</p>
 
                         <div class="ai-row">
                             <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" />
