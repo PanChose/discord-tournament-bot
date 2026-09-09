@@ -254,12 +254,20 @@ async function main() {
     }
 
     attachHandlers();
-    await registerSlashCommands();
-    await client.login(process.env.DISCORD_TOKEN);
 
+    // Start serving the panel immediately — a slow/failed Discord login shouldn't
+    // take the whole web service down with it (that's why /api/status exists:
+    // the panel can be up while it reports the bot as not-yet-ready).
     app.listen(PORT, () => {
         console.log(`[panel] Web panel available at http://localhost:${PORT}`);
     });
+
+    try {
+        await registerSlashCommands();
+        await client.login(process.env.DISCORD_TOKEN);
+    } catch (err) {
+        console.error("❌ Discord bot failed to start (web panel is still running):", err.message);
+    }
 }
 
 main().catch((err) => {
