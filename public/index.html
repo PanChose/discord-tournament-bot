@@ -3,201 +3,174 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Discord Bot Control Panel</title>
+    <title>Tournament Bot Control Panel</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div id="login-screen" class="screen">
-    <div class="card">
-        <h1>🔐 Panel login</h1>
-        <input id="password-input" type="password" placeholder="Panel password" />
-        <button id="login-btn">Log in</button>
-        <p id="login-error" class="error"></p>
+    <div class="card login-card">
+        <h1>🏆 Tournament Bot</h1>
+        <p class="hint" style="margin-bottom:18px;">Sign in with Discord to manage tournaments on servers where you're an organizer (Manage Server permission).</p>
+        <a id="login-btn" class="discord-login-btn" href="/auth/discord">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.01c.12.099.246.197.373.291a.077.077 0 0 1-.006.128 12.3 12.3 0 0 1-1.873.892.076.076 0 0 0-.04.106c.36.699.772 1.364 1.225 1.994a.077.077 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.662a.06.06 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.955 2.419-2.157 2.419Zm7.974 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.946 2.419-2.157 2.419Z"/></svg>
+            <span>Log in with Discord</span>
+        </a>
     </div>
 </div>
 
 <div id="app-screen" class="screen hidden">
     <header>
-        <h1>🎮 Bot control panel</h1>
-        <span id="bot-status" class="status">…</span>
+        <div class="header-left">
+            <h1>🏆 Tournament Bot</h1>
+            <span id="bot-status" class="status">…</span>
+        </div>
+        <div class="header-right">
+            <select id="guild-select"></select>
+            <span id="user-tag" class="user-tag"></span>
+            <button id="logout-btn" class="secondary-btn" type="button">Log out</button>
+        </div>
     </header>
 
-    <main class="layout">
+    <main>
+        <nav class="tabs">
+            <button type="button" class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button type="button" class="tab-btn" data-tab="editor">＋ New tournament</button>
+        </nav>
 
-        <!-- ============== PREVIEW (left) ============== -->
-        <section class="preview-col">
-            <div class="card preview-card">
-                <h2>Message preview</h2>
-                <div class="discord-preview" id="discord-preview">
-                    <div class="dp-avatar">🤖</div>
-                    <div class="dp-body">
-                        <div class="dp-header">
-                            <span class="dp-username">Your bot</span>
-                            <span class="dp-botTag">BOT</span>
-                            <span class="dp-time">today, just now</span>
-                        </div>
-                        <div class="dp-content" id="dp-content"></div>
-                        <div class="dp-attachments" id="dp-attachments"></div>
-                        <div class="dp-embed" id="dp-embed" style="display:none;">
-                            <div class="dp-embed-author" id="dp-embed-author" style="display:none;"></div>
-                            <div class="dp-embed-title" id="dp-embed-title" style="display:none;"></div>
-                            <div class="dp-embed-desc" id="dp-embed-desc" style="display:none;"></div>
-                            <img class="dp-embed-thumb" id="dp-embed-thumb" style="display:none;" />
-                            <img class="dp-embed-image" id="dp-embed-image" style="display:none;" />
-                            <div class="dp-embed-footer" id="dp-embed-footer" style="display:none;"></div>
-                        </div>
-                        <div class="dp-reaction" id="dp-reaction" style="display:none;"></div>
-                    </div>
+        <!-- ============== DASHBOARD ============== -->
+        <section id="dashboard-tab" class="tab-panel">
+            <section class="card">
+                <h2>Tournaments</h2>
+                <div id="tournament-list"></div>
+            </section>
+
+            <section id="participants-card" class="card hidden">
+                <div class="card-head-row">
+                    <h2 id="participants-title">Participants</h2>
+                    <a id="csv-export-link" class="secondary-btn csv-btn" href="#">⬇️ Export CSV</a>
                 </div>
-                <p class="hint">Approximate look of the message. The exact rendering may differ slightly in Discord itself.</p>
+                <table class="participants-table">
+                    <thead><tr><th>User</th><th>Registered</th></tr></thead>
+                    <tbody id="participants-body"></tbody>
+                </table>
+                <p id="participants-empty" class="hint hidden">No registrations yet.</p>
+            </section>
+        </section>
+
+        <!-- ============== EDITOR (constructor + live preview) ============== -->
+        <section id="editor-tab" class="tab-panel hidden">
+            <div class="layout">
+
+                <section class="preview-col">
+                    <div class="card preview-card">
+                        <h2>Live preview</h2>
+                        <div class="discord-preview">
+                            <div class="dp-avatar">🤖</div>
+                            <div class="dp-body">
+                                <div class="dp-header">
+                                    <span class="dp-username">Tournament Bot</span>
+                                    <span class="dp-botTag">BOT</span>
+                                    <span class="dp-time">today, just now</span>
+                                </div>
+                                <div class="dp-embed">
+                                    <div class="dp-embed-title" id="pv-title">Tournament name</div>
+                                    <div class="dp-embed-desc" id="pv-desc"></div>
+                                    <div class="dp-embed-fields" id="pv-fields"></div>
+                                    <img class="dp-embed-image hidden" id="pv-image" />
+                                    <div class="dp-embed-footer" id="pv-footer">Draft</div>
+                                </div>
+                                <div class="dp-buttons">
+                                    <span class="dp-btn dp-btn-success" id="pv-register-btn">✅ Register</span>
+                                    <span class="dp-btn dp-btn-danger">Unregister</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="hint">Rendered locally from the form below — no Discord API calls while you type. The real embed is built server-side from the same data when you publish.</p>
+                    </div>
+                </section>
+
+                <section class="form-col">
+                    <section class="card">
+                        <div class="card-head-row">
+                            <h2 id="editor-heading">New tournament</h2>
+                            <button type="button" id="editor-reset-btn" class="secondary-btn">🗑️ Clear</button>
+                        </div>
+
+                        <input type="hidden" id="tournament-id" />
+
+                        <label>Channel to announce in</label>
+                        <select id="channel-select"></select>
+
+                        <label>Tournament name</label>
+                        <input id="f-name" type="text" maxlength="256" placeholder="Spring Showdown" />
+
+                        <div class="row-2">
+                            <div>
+                                <label>Game</label>
+                                <input id="f-game" type="text" maxlength="100" placeholder="Valorant" />
+                            </div>
+                            <div>
+                                <label>Format</label>
+                                <select id="f-format">
+                                    <option value="single_elim">Single Elimination</option>
+                                    <option value="double_elim">Double Elimination</option>
+                                    <option value="round_robin">Round Robin</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row-2">
+                            <div>
+                                <label>Start date/time</label>
+                                <input id="f-starts-at" type="datetime-local" />
+                            </div>
+                            <div>
+                                <label>Max participants</label>
+                                <input id="f-max" type="number" min="2" max="1000" value="32" />
+                            </div>
+                        </div>
+
+                        <label>Description / rules</label>
+                        <textarea id="f-description" rows="4" maxlength="4096" placeholder="Bo1 group stage, Bo3 playoffs. Check-in 30 min before start."></textarea>
+
+                        <div class="ai-row">
+                            <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" />
+                            <button type="button" id="ai-generate-btn" class="secondary-btn">✨ Generate with AI</button>
+                        </div>
+                        <p id="ai-result" class="result"></p>
+
+                        <label>Banner image</label>
+                        <div class="dropzone small" id="banner-dropzone">
+                            <span>🖼️ Drag an image here or click</span>
+                            <input type="file" id="banner-file" accept="image/*" hidden />
+                        </div>
+                        <input id="f-banner" type="text" placeholder="...or paste a link https://.../banner.png" />
+
+                        <div class="row-2">
+                            <div>
+                                <label>Embed color</label>
+                                <input id="f-color" type="color" value="#8b5cf6" />
+                            </div>
+                            <div>
+                                <label>Ping role on start (optional)</label>
+                                <select id="f-ping-role">
+                                    <option value="">— none —</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label>Reminder before start (hours, optional)</label>
+                        <input id="f-reminder" type="number" min="0" max="168" placeholder="e.g. 1" />
+
+                        <button id="save-btn" type="button">💾 Save draft</button>
+                        <p id="save-result" class="result"></p>
+                    </section>
+                </section>
+
             </div>
         </section>
-
-        <!-- ============== FORM (right) ============== -->
-        <section class="form-col">
-            <section class="card">
-                <div class="card-head-row">
-                    <h2>Tournament announcement</h2>
-                    <button type="button" id="reset-btn" class="secondary-btn reset-btn">🗑️ Reset text</button>
-                </div>
-                <p class="hint" style="margin-bottom:16px;">This form is tailored to the "organization card + title + subtitle with a link + big image + logo in the corner" format, like the example you sent.</p>
-
-                <label>Server (guild)</label>
-                <select id="guild-select"></select>
-
-                <label>Channel</label>
-                <select id="channel-select"></select>
-
-                <label>Mention before the card (optional)</label>
-                <div class="toolbar" style="margin-bottom:6px;">
-                    <button type="button" id="role-btn-content" class="role-toggle" data-fmt-target="embed-content" title="Insert a role mention">🏷️ pick a role</button>
-                </div>
-                <input id="embed-content" type="text" maxlength="2000" placeholder="E.g.: @everyone (pings don't work inside the card, so this field is outside it)" />
-                <p class="hint" style="margin-top:-6px;">The rest of the announcement text (title, description, links) is below — it goes inside the card itself.</p>
-
-                <label>Local images in the message (just drag files here)</label>
-                <div class="dropzone" id="attachments-dropzone">
-                    <span>📎 Drag images here or click to choose</span>
-                    <input type="file" id="attachments-input" accept="image/*" multiple hidden />
-                </div>
-                <div class="file-thumb-row" id="attachments-preview"></div>
-
-                <div class="row-2">
-                    <div>
-                        <label>Organization name</label>
-                        <input id="embed-author" type="text" maxlength="256" placeholder="E.g.: SST TOURNAMENTS" />
-                    </div>
-                    <div>
-                        <label>Organization icon</label>
-                        <div class="url-or-file">
-                            <input id="embed-author-icon" type="text" placeholder="https://.../logo.png" />
-                            <label class="mini-upload-btn" for="embed-author-icon-file">📁</label>
-                            <input type="file" id="embed-author-icon-file" accept="image/*" hidden />
-                        </div>
-                    </div>
-                </div>
-
-                <label>Title (large bold text)</label>
-                <input id="embed-title" type="text" maxlength="256" placeholder="E.g.: TOURNAMENT PLANNING" />
-                <p class="hint" style="margin-top:-8px;">Discord always shows this field large and bold — you can't add markdown (# etc.) here, that's a limitation of the embed itself. For headings and other text formatting, use the "Subtitle / description" field below.</p>
-
-                <label>Subtitle / description</label>
-                <div class="toolbar" id="format-toolbar">
-                    <button type="button" data-fmt-target="embed-description" data-fmt="h1" title="Level 1 heading (# text)">H1</button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="h2" title="Level 2 heading (## text)">H2</button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="h3" title="Level 3 heading (### text)">H3</button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="bold" title="Bold"><b>B</b></button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="italic" title="Italic"><i>I</i></button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="underline" title="Underline"><u>U</u></button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="strike" title="Strikethrough"><s>S</s></button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="code" title="Monospace code">{ }</button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="quote" title="Quote (&gt; text)">❝ quote</button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="list" title="Bulleted list">• list</button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="link" title="Insert a link">🔗 link</button>
-                    <button type="button" data-fmt-target="embed-description" data-fmt="spoiler" title="Hidden text (spoiler)">🙈 spoiler</button>
-                    <button type="button" id="emoji-btn-description" class="emoji-toggle" data-fmt-target="embed-description" title="Insert an emoji">😀 emoji</button>
-                    <button type="button" id="role-btn-description" class="role-toggle" data-fmt-target="embed-description" title="Insert a role mention">🏷️ role</button>
-                </div>
-                <textarea id="embed-description" rows="3" maxlength="4096" placeholder="E.g.: # ALL THE PREVIOUS AND FUTURE LINKS 🔗&#10;https://"></textarea>
-
-                <div class="row-2">
-                    <div>
-                        <label>Big image</label>
-                        <div class="dropzone small" id="image-dropzone">
-                            <span>🖼️ Drag an image here or click</span>
-                            <input type="file" id="embed-image-file" accept="image/*" hidden />
-                        </div>
-                        <input id="embed-image" type="text" placeholder="...or paste a link https://.../banner.png" />
-                        <div class="file-thumb-row" id="image-preview"></div>
-                    </div>
-                    <div>
-                        <label>Corner logo (thumbnail)</label>
-                        <div class="dropzone small" id="thumbnail-dropzone">
-                            <span>🖼️ Drag an image here or click</span>
-                            <input type="file" id="embed-thumbnail-file" accept="image/*" hidden />
-                        </div>
-                        <input id="embed-thumbnail" type="text" placeholder="...or paste a link https://.../logo.png" />
-                        <div class="file-thumb-row" id="thumbnail-preview"></div>
-                    </div>
-                </div>
-
-                <label>Left stripe color</label>
-                <input id="embed-color" type="color" value="#8b5cf6" />
-
-                <label>Reaction under the message (optional)</label>
-                <div class="toolbar" style="margin-bottom:6px;">
-                    <button type="button" id="emoji-btn-reaction" class="emoji-toggle" data-fmt-target="reaction-emoji" title="Insert an emoji">😀 pick an emoji</button>
-                </div>
-                <input id="reaction-emoji" type="text" placeholder="E.g.: ✅ (leave empty if not needed)" />
-                <p class="hint">The bot will add this reaction. You can also use emoji from other servers the bot is on.</p>
-
-                <button id="send-btn">Send announcement</button>
-                <p id="send-result" class="result"></p>
-            </section>
-
-            <!-- ============== TOURNAMENT SYSTEM MANAGEMENT ============== -->
-            <section class="card">
-                <h2>🏆 Tournament system</h2>
-                <p class="hint" style="margin-bottom:16px;">Uses the server selected above (<b>Server (guild)</b> field in the Tournament announcement card).</p>
-
-                <h3 style="margin-top:0;">Matcherino sync</h3>
-                <p class="hint" style="margin-top:-6px;">The tournament ID whose roster <code>/verify</code> checks Discord accounts against. Same public API <code>draft-system</code>'s poller uses.</p>
-                <div class="row-2">
-                    <div>
-                        <label>Matcherino tournament (bounty) ID</label>
-                        <input id="matcherino-bounty-id" type="text" placeholder="e.g. 219223" />
-                    </div>
-                    <div style="display:flex; align-items:flex-end; gap:8px;">
-                        <button id="matcherino-save-btn" type="button">Save &amp; sync</button>
-                        <button id="matcherino-sync-btn" type="button" class="secondary-btn">🔄 Sync now</button>
-                    </div>
-                </div>
-                <div id="matcherino-status" class="result"></div>
-
-                <h3>Active tournament</h3>
-                <div id="active-tournament-status" class="result">…</div>
-                <button id="end-tournament-btn" type="button" class="secondary-btn">End active tournament</button>
-
-                <h3>Leaderboard</h3>
-                <button id="leaderboard-refresh-btn" type="button" class="secondary-btn">🔄 Refresh</button>
-                <div id="leaderboard-list"></div>
-            </section>
-        </section>
-
     </main>
-</div>
-
-<!-- ============== EMOJI PICKER POPUP ============== -->
-<div id="emoji-picker" class="emoji-picker hidden">
-    <input type="text" id="emoji-search" placeholder="Search emoji by name…" />
-    <div id="emoji-list" class="emoji-list"></div>
-</div>
-
-<!-- ============== SERVER ROLE PICKER POPUP ============== -->
-<div id="role-picker" class="emoji-picker role-picker hidden">
-    <input type="text" id="role-search" placeholder="Search role by name…" />
-    <div id="role-list" class="emoji-list role-list"></div>
 </div>
 
 <script src="panel.js"></script>
