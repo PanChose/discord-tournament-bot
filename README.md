@@ -25,6 +25,10 @@ watch registrations come in in real time — all synced back to the same Discord
   and prize pool, keeps the announcement's "Teams Registered" and "Prize Pool" fields in sync with it
   instead of (or alongside) Discord Join clicks, and posts a "+N teams" / "-N slots" update — with the
   current prize pool — in the channel whenever the team count changes.
+- **Announcement branding & notifications**: an embed author line (small icon + name above the title),
+  a thumbnail icon, an auto-react emoji (custom server emoji or any standard one) the bot reacts with
+  on publish, and an optional real role ping in the message itself when it goes out — separate from the
+  existing "ping when it starts", since an `@role` mention inside an embed never actually notifies anyone.
 - **Optional AI helper**: generates a tournament description from a few keywords (game, format, prize)
   via the Claude API.
 

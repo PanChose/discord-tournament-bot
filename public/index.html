@@ -76,9 +76,17 @@
                                     <span class="dp-botTag">BOT</span>
                                     <span class="dp-time">today, just now</span>
                                 </div>
+                                <div class="dp-content hidden" id="pv-content"></div>
                                 <div class="dp-embed">
-                                    <div class="dp-embed-title" id="pv-title">Tournament name</div>
-                                    <div class="dp-embed-desc" id="pv-desc"></div>
+                                    <div class="dp-embed-author hidden" id="pv-author">
+                                        <img class="dp-author-icon hidden" id="pv-author-icon" />
+                                        <span id="pv-author-name"></span>
+                                    </div>
+                                    <div class="dp-embed-top">
+                                        <img class="dp-embed-thumbnail hidden" id="pv-thumbnail" />
+                                        <div class="dp-embed-title" id="pv-title">Tournament name</div>
+                                        <div class="dp-embed-desc" id="pv-desc"></div>
+                                    </div>
                                     <div class="dp-embed-fields" id="pv-fields"></div>
                                     <img class="dp-embed-image hidden" id="pv-image" />
                                     <div class="dp-embed-footer" id="pv-footer">Draft</div>
@@ -173,12 +181,34 @@
                         </div>
                         <p id="ai-result" class="result"></p>
 
-                        <label>Banner image</label>
+                        <label>Banner image (large image at the bottom)</label>
                         <div class="dropzone small" id="banner-dropzone">
                             <span>🖼️ Drag an image here or click</span>
                             <input type="file" id="banner-file" accept="image/*" hidden />
                         </div>
                         <input id="f-banner" type="text" placeholder="...or paste a link https://.../banner.png" />
+
+                        <label>Tournament icon (small thumbnail, top-right corner, optional)</label>
+                        <div class="dropzone small" id="thumbnail-dropzone">
+                            <span>🖼️ Drag an image here or click</span>
+                            <input type="file" id="thumbnail-file" accept="image/*" hidden />
+                        </div>
+                        <input id="f-thumbnail" type="text" placeholder="...or paste a link https://.../icon.png" />
+
+                        <div class="row-2">
+                            <div>
+                                <label>Author name (small line above the title, optional)</label>
+                                <input id="f-author-name" type="text" maxlength="256" placeholder="e.g. SS Tournaments" />
+                            </div>
+                            <div>
+                                <label>Author mini icon</label>
+                                <div class="dropzone small" id="author-icon-dropzone">
+                                    <span>🖼️ Drag or click</span>
+                                    <input type="file" id="author-icon-file" accept="image/*" hidden />
+                                </div>
+                            </div>
+                        </div>
+                        <input id="f-author-icon" type="text" placeholder="...or paste a link for the author icon" />
 
                         <div class="row-2">
                             <div>
@@ -186,10 +216,14 @@
                                 <input id="f-color" type="color" value="#8b5cf6" />
                             </div>
                             <div>
-                                <label>Ping role on start (optional)</label>
+                                <label>Ping role (optional)</label>
                                 <select id="f-ping-role">
                                     <option value="">— none —</option>
                                 </select>
+                                <label class="checkbox-row">
+                                    <input type="checkbox" id="f-ping-on-publish" />
+                                    <span>📢 Also ping this role right when published (a real notification, not just the embed)</span>
+                                </label>
                             </div>
                         </div>
 
@@ -202,6 +236,17 @@
                             <div class="dt-panel hidden" data-dt-panel></div>
                         </div>
                         <p class="hint" style="margin-top:-8px;">Registered participants get a DM at this exact time — pick when you actually want it sent, not "N hours before".</p>
+
+                        <label>Auto-react emoji (optional)</label>
+                        <div class="reaction-row">
+                            <button type="button" class="reaction-chip" id="reaction-chip">
+                                <span id="reaction-chip-content">— none —</span>
+                            </button>
+                            <button type="button" class="secondary-btn" id="reaction-emoji-btn" title="Pick a custom server emoji">😀 Custom</button>
+                            <input type="text" id="f-reaction-unicode" placeholder="or paste any emoji 🎉" maxlength="8" />
+                        </div>
+                        <div id="reaction-dropdown" class="dropdown-menu hidden"></div>
+                        <p class="hint" style="margin-top:-8px;">The bot reacts with this once, right when you publish.</p>
 
                         <button id="save-btn" type="button">💾 Save draft</button>
                         <p id="save-result" class="result"></p>

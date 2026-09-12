@@ -6,6 +6,9 @@ const state = {
     roles: [],
     tournaments: [],
     bannerOverride: null, // dataURL from a local upload, takes precedence over the f-banner text field
+    thumbnailOverride: null,
+    authorIconOverride: null,
+    reactionEmoji: null, // null, or { id: string|null, name: string }
     pollTimer: null,
     emojis: null, // cached custom emojis for the current guild, fetched lazily on first use
 };
@@ -483,8 +486,7 @@ function createDateTimePicker(root, defaultLabel) {
     }
 
     function openPanel() {
-        document.querySelectorAll(".dt-panel:not(.hidden)").forEach((p) => p.classList.add("hidden"));
-        closeDropdown();
+        closeAllPopovers(panel);
         syncTimeFromValue();
         renderPanel();
         panel.classList.remove("hidden");
@@ -517,6 +519,15 @@ startsAtPicker.onChange = schedulePreview;
 // Editor: constructor form + live preview
 // =========================================================================
 
+// Banner/thumbnail/author-icon all store either a pasted URL (goes in the
+// text input) or a local upload (goes in state as a data: URL, text input
+// stays empty) — this fills both correctly from whichever the DB has.
+function setImageField(textInputId, overrideKey, value) {
+    const isUpload = Boolean(value) && value.startsWith("data:");
+    state[overrideKey] = isUpload ? value : null;
+    document.getElementById(textInputId).value = isUpload ? "" : value || "";
+}
+
 function editTournament(t) {
     document.querySelector('.tab-btn[data-tab="editor"]').click();
     document.getElementById("editor-heading").textContent = `Edit: ${t.name}`;
@@ -531,10 +542,13 @@ function editTournament(t) {
     document.getElementById("f-external-url").value = t.external_url || "";
     document.getElementById("f-color").value = t.color || "#8b5cf6";
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
+    document.getElementById("f-ping-on-publish").checked = Boolean(t.ping_on_publish);
+    document.getElementById("f-author-name").value = t.author_name || "";
     remindAtPicker.set(t.reminder_at || null);
-    state.bannerOverride = null;
-    document.getElementById("f-banner").value = t.banner && !t.banner.startsWith("data:") ? t.banner : "";
-    if (t.banner && t.banner.startsWith("data:")) state.bannerOverride = t.banner;
+    setImageField("f-banner", "bannerOverride", t.banner);
+    setImageField("f-thumbnail", "thumbnailOverride", t.thumbnail);
+    setImageField("f-author-icon", "authorIconOverride", t.author_icon);
+    setReactionEmoji(t.reaction_emoji_name ? { id: t.reaction_emoji_id, name: t.reaction_emoji_name } : null);
     updateMatcherinoStatus();
     renderPreview();
 }
@@ -551,11 +565,15 @@ function resetEditorForm() {
     document.getElementById("f-external-url").value = "";
     document.getElementById("f-color").value = "#8b5cf6";
     document.getElementById("f-ping-role").value = "";
+    document.getElementById("f-ping-on-publish").checked = false;
+    document.getElementById("f-author-name").value = "";
     remindAtPicker.set(null);
-    document.getElementById("f-banner").value = "";
+    setImageField("f-banner", "bannerOverride", null);
+    setImageField("f-thumbnail", "thumbnailOverride", null);
+    setImageField("f-author-icon", "authorIconOverride", null);
+    setReactionEmoji(null);
     document.getElementById("ai-prize").value = "";
     document.getElementById("ai-result").textContent = "";
-    state.bannerOverride = null;
     updateMatcherinoStatus();
     renderPreview();
 }
@@ -606,9 +624,15 @@ function collectFormData() {
         description: document.getElementById("f-description").value.trim() || null,
         externalUrl: document.getElementById("f-external-url").value.trim() || null,
         banner: state.bannerOverride || document.getElementById("f-banner").value.trim() || null,
+        thumbnail: state.thumbnailOverride || document.getElementById("f-thumbnail").value.trim() || null,
+        authorName: document.getElementById("f-author-name").value.trim() || null,
+        authorIcon: state.authorIconOverride || document.getElementById("f-author-icon").value.trim() || null,
         color: document.getElementById("f-color").value,
         pingRoleId: document.getElementById("f-ping-role").value || null,
+        pingOnPublish: document.getElementById("f-ping-on-publish").checked,
         reminderAt: remindAtPicker.get(),
+        reactionEmojiId: state.reactionEmoji ? state.reactionEmoji.id : null,
+        reactionEmojiName: state.reactionEmoji ? state.reactionEmoji.name : null,
     };
 }
 
@@ -641,7 +665,21 @@ function schedulePreview() {
     previewDebounce = setTimeout(renderPreview, 150);
 }
 
-["f-name", "f-game", "f-format", "f-max", "f-description", "f-banner", "f-color", "tournament-id"].forEach((id) => {
+[
+    "f-name",
+    "f-game",
+    "f-format",
+    "f-max",
+    "f-description",
+    "f-banner",
+    "f-thumbnail",
+    "f-author-name",
+    "f-author-icon",
+    "f-color",
+    "f-ping-role",
+    "f-ping-on-publish",
+    "tournament-id",
+].forEach((id) => {
     document.getElementById(id).addEventListener("input", schedulePreview);
     document.getElementById(id).addEventListener("change", schedulePreview);
 });
@@ -653,6 +691,40 @@ function renderPreview() {
     const status = existing ? existing.status : "draft";
     const usingMatcherino = existing && existing.matcherino_bounty_id && existing.matcherino_entrants !== null && existing.matcherino_entrants !== undefined;
     const activeCount = usingMatcherino ? existing.matcherino_entrants : existing ? existing.activeCount : 0;
+
+    // Message content sits above the embed — only real notification the bot
+    // sends, since embeds never ping even with a mention inside them.
+    const contentEl = document.getElementById("pv-content");
+    if (data.pingOnPublish && data.pingRoleId) {
+        const role = state.roles.find((r) => r.id === data.pingRoleId);
+        contentEl.textContent = `@${role ? role.name : "role"}`;
+        contentEl.classList.remove("hidden");
+    } else {
+        contentEl.classList.add("hidden");
+    }
+
+    const authorEl = document.getElementById("pv-author");
+    if (data.authorName) {
+        document.getElementById("pv-author-name").textContent = data.authorName;
+        const authorIconEl = document.getElementById("pv-author-icon");
+        if (data.authorIcon) {
+            authorIconEl.src = data.authorIcon;
+            authorIconEl.classList.remove("hidden");
+        } else {
+            authorIconEl.classList.add("hidden");
+        }
+        authorEl.classList.remove("hidden");
+    } else {
+        authorEl.classList.add("hidden");
+    }
+
+    const thumbnailEl = document.getElementById("pv-thumbnail");
+    if (data.thumbnail) {
+        thumbnailEl.src = data.thumbnail;
+        thumbnailEl.classList.remove("hidden");
+    } else {
+        thumbnailEl.classList.add("hidden");
+    }
 
     document.getElementById("pv-title").textContent = data.name || "Tournament name";
     const descEl = document.getElementById("pv-desc");
@@ -696,38 +768,47 @@ function renderPreview() {
     registerBtn.style.opacity = status === "published" && !isFull ? "1" : "0.5";
 }
 
-// --- Banner upload (drag & drop or click) ---
-const bannerDropzone = document.getElementById("banner-dropzone");
-const bannerFileInput = document.getElementById("banner-file");
+// --- Image uploads (drag & drop or click) — banner, thumbnail, author icon ---
+// All three behave identically (a local upload becomes a data: URL that takes
+// precedence over the paired text input's pasted link), so one factory wires
+// each instead of repeating the same dropzone plumbing three times.
+function wireImageDropzone(dropzoneId, fileInputId, textInputId, overrideKey) {
+    const dropzone = document.getElementById(dropzoneId);
+    const fileInput = document.getElementById(fileInputId);
+    const textInput = document.getElementById(textInputId);
 
-bannerDropzone.addEventListener("click", () => bannerFileInput.click());
-bannerDropzone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    bannerDropzone.classList.add("dragover");
-});
-bannerDropzone.addEventListener("dragleave", () => bannerDropzone.classList.remove("dragover"));
-bannerDropzone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    bannerDropzone.classList.remove("dragover");
-    if (e.dataTransfer.files[0]) handleBannerFile(e.dataTransfer.files[0]);
-});
-bannerFileInput.addEventListener("change", () => {
-    if (bannerFileInput.files[0]) handleBannerFile(bannerFileInput.files[0]);
-});
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            state[overrideKey] = reader.result;
+            textInput.value = "";
+            renderPreview();
+        };
+        reader.readAsDataURL(file);
+    }
 
-function handleBannerFile(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-        state.bannerOverride = reader.result;
-        document.getElementById("f-banner").value = "";
-        renderPreview();
-    };
-    reader.readAsDataURL(file);
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+    textInput.addEventListener("input", () => {
+        state[overrideKey] = null;
+    });
 }
 
-document.getElementById("f-banner").addEventListener("input", () => {
-    state.bannerOverride = null;
-});
+wireImageDropzone("banner-dropzone", "banner-file", "f-banner", "bannerOverride");
+wireImageDropzone("thumbnail-dropzone", "thumbnail-file", "f-thumbnail", "thumbnailOverride");
+wireImageDropzone("author-icon-dropzone", "author-icon-file", "f-author-icon", "authorIconOverride");
 
 // =========================================================================
 // Description toolbar: Discord markdown shortcuts + role/channel/user mention
@@ -858,6 +939,7 @@ function toggleDropdown(name, renderFn) {
         closeDropdown();
         return;
     }
+    closeAllPopovers(formatDropdown);
     formatDropdown.dataset.for = name;
     formatDropdown.innerHTML = "";
     renderFn(formatDropdown);
@@ -921,44 +1003,106 @@ document.getElementById("mention-user-btn").addEventListener("click", () => {
     });
 });
 
-document.getElementById("emoji-picker-btn").addEventListener("click", async () => {
-    if (!formatDropdown.classList.contains("hidden") && formatDropdown.dataset.for === "emoji") {
-        closeDropdown();
-        return;
-    }
-    formatDropdown.dataset.for = "emoji";
-    formatDropdown.innerHTML = `<div class="dd-empty">Loading…</div>`;
-    formatDropdown.classList.remove("hidden");
+// Closes every other popover (the mention/emoji dropdown, both date/time
+// pickers, and the reaction-emoji dropdown) except the one just opened —
+// keeps only one of these open at a time.
+function closeAllPopovers(exceptEl) {
+    document.querySelectorAll(".dt-panel:not(.hidden)").forEach((p) => p.classList.add("hidden"));
+    document.querySelectorAll(".dropdown-menu").forEach((d) => {
+        if (d === exceptEl) return;
+        d.classList.add("hidden");
+        d.innerHTML = "";
+        delete d.dataset.for;
+    });
+}
 
-    if (state.emojis === null) {
-        try {
-            const { emojis } = await apiFetch(`/api/guilds/${state.guildId}/emojis`);
-            state.emojis = emojis;
-        } catch (err) {
-            state.emojis = [];
+// Fetches (and caches) the guild's custom emojis and renders them as a grid
+// inside dropdownEl, calling onPick(emoji) when one is clicked — shared by
+// the description's emoji button and the auto-react emoji button below.
+function wireEmojiPicker(dropdownEl, triggerBtn, onPick) {
+    function close() {
+        dropdownEl.classList.add("hidden");
+        dropdownEl.innerHTML = "";
+    }
+
+    triggerBtn.addEventListener("click", async () => {
+        const wasOpen = !dropdownEl.classList.contains("hidden");
+        closeAllPopovers(dropdownEl);
+        if (wasOpen) return close();
+
+        dropdownEl.innerHTML = `<div class="dd-empty">Loading…</div>`;
+        dropdownEl.classList.remove("hidden");
+
+        if (state.emojis === null) {
+            try {
+                const { emojis } = await apiFetch(`/api/guilds/${state.guildId}/emojis`);
+                state.emojis = emojis;
+            } catch (err) {
+                state.emojis = [];
+            }
         }
+        if (dropdownEl.classList.contains("hidden")) return; // closed while that fetch was in flight
+
+        dropdownEl.innerHTML = "";
+        if (!state.emojis.length) {
+            dropdownEl.innerHTML = `<div class="dd-empty">No custom emojis on this server.</div>`;
+            return;
+        }
+        for (const emoji of state.emojis) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "dd-item dd-emoji-item";
+            btn.title = `:${emoji.name}:`;
+            btn.innerHTML = `<img src="${emoji.url}" alt="${escapeHtml(emoji.name)}" />`;
+            btn.addEventListener("click", () => {
+                onPick(emoji);
+                close();
+            });
+            dropdownEl.appendChild(btn);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!triggerBtn.contains(e.target) && !dropdownEl.contains(e.target)) close();
+    });
+}
+
+wireEmojiPicker(formatDropdown, document.getElementById("emoji-picker-btn"), (emoji) => {
+    insertAtCursor(document.getElementById("f-description"), emoji.tag);
+});
+
+// --- Auto-react emoji: either a custom server emoji (picked below) or any
+// pasted/typed standard unicode emoji — mutually exclusive with each other.
+function setReactionEmoji(value, { syncUnicodeInput = true } = {}) {
+    state.reactionEmoji = value;
+    const chip = document.getElementById("reaction-chip");
+    const content = document.getElementById("reaction-chip-content");
+
+    if (!value) {
+        content.textContent = "— none —";
+        chip.classList.remove("has-value");
+    } else if (value.id) {
+        content.innerHTML = `<img src="https://cdn.discordapp.com/emojis/${value.id}.png" alt="${escapeHtml(value.name)}" /> :${escapeHtml(value.name)}:`;
+        chip.classList.add("has-value");
+    } else {
+        content.textContent = value.name;
+        chip.classList.add("has-value");
     }
 
-    // The picker may have been closed (or switched to another one) while that fetch was in flight.
-    if (formatDropdown.dataset.for !== "emoji") return;
+    if (syncUnicodeInput) {
+        document.getElementById("f-reaction-unicode").value = value && !value.id ? value.name : "";
+    }
+}
 
-    formatDropdown.innerHTML = "";
-    if (!state.emojis.length) {
-        formatDropdown.innerHTML = `<div class="dd-empty">No custom emojis on this server.</div>`;
-        return;
-    }
-    for (const emoji of state.emojis) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "dd-item dd-emoji-item";
-        btn.title = `:${emoji.name}:`;
-        btn.innerHTML = `<img src="${emoji.url}" alt="${escapeHtml(emoji.name)}" />`;
-        btn.addEventListener("click", () => {
-            insertAtCursor(document.getElementById("f-description"), emoji.tag);
-            closeDropdown();
-        });
-        formatDropdown.appendChild(btn);
-    }
+document.getElementById("reaction-chip").addEventListener("click", () => setReactionEmoji(null));
+
+document.getElementById("f-reaction-unicode").addEventListener("input", (e) => {
+    const value = e.target.value.trim();
+    setReactionEmoji(value ? { id: null, name: value } : null, { syncUnicodeInput: false });
+});
+
+wireEmojiPicker(document.getElementById("reaction-dropdown"), document.getElementById("reaction-emoji-btn"), (emoji) => {
+    setReactionEmoji({ id: emoji.id, name: emoji.name });
 });
 
 // --- AI description generator ---

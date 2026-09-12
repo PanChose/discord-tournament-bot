@@ -215,6 +215,24 @@ main {
 
 input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
+.checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 4px 0 14px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 1px 0 0;
+    flex: none;
+    cursor: pointer;
+}
+
 .ai-row {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -264,6 +282,13 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .dp-time { color: #949ba4; font-size: 11px; }
 
+.dp-content {
+    color: #dbdee1;
+    font-size: 14px;
+    margin-top: 4px;
+    white-space: pre-wrap;
+}
+
 .dp-embed {
     margin-top: 8px;
     background: #2b2d31;
@@ -272,6 +297,29 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     padding: 10px 12px;
     max-width: 432px;
     overflow: hidden;
+}
+
+.dp-embed-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f2f3f5;
+}
+
+.dp-author-icon { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+
+.dp-embed-top { overflow: hidden; }
+
+.dp-embed-thumbnail {
+    float: right;
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin: 0 0 6px 12px;
 }
 
 .dp-embed-title { color: #f2f3f5; font-weight: 700; font-size: 15px; }
@@ -472,6 +520,41 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .matcherino-status { color: var(--ok); }
 .matcherino-status.stale { color: var(--warn); }
+
+/* --- Auto-react emoji picker --- */
+.reaction-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.reaction-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    margin: 0;
+    padding: 6px 12px;
+    background: #1e1f27;
+    border: 1px solid #3d3f4d;
+    color: var(--muted);
+    font-size: 13px;
+    min-width: 90px;
+}
+
+.reaction-chip:hover { border-color: var(--accent); color: var(--text); }
+.reaction-chip.has-value { color: var(--text); }
+.reaction-chip img { width: 18px; height: 18px; vertical-align: -4px; }
+
+.reaction-row input {
+    width: auto;
+    flex: 1;
+    margin: 0;
+    min-width: 0;
+}
+
+.reaction-row .secondary-btn { width: auto; margin: 0; white-space: nowrap; }
 
 /* --- Custom date/time picker (replaces the native datetime-local popup) --- */
 .dt-field { position: relative; }
