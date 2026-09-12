@@ -371,3 +371,104 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .participants-table th { color: var(--muted); font-weight: 600; }
 
 .csv-btn { width: auto; margin: 0; text-decoration: none; display: inline-block; text-align: center; }
+
+/* --- Description formatting toolbar --- */
+.format-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 6px 0;
+}
+
+.format-toolbar button {
+    width: auto;
+    margin: 0;
+    padding: 5px 9px;
+    font-size: 12px;
+    background: #1e1f27;
+    border: 1px solid #3d3f4d;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.format-toolbar button:hover { background: #262835; border-color: var(--accent); }
+
+.toolbar-sep {
+    width: 1px;
+    align-self: stretch;
+    background: #3d3f4d;
+    margin: 2px 4px;
+}
+
+/* --- Popover used by the mention/emoji pickers --- */
+.dropdown-menu {
+    position: relative;
+    background: var(--card);
+    border: 1px solid #3d3f4d;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -2px 0 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.dropdown-menu.hidden { display: none; }
+
+.dropdown-menu .dd-item {
+    width: auto;
+    margin: 0;
+    padding: 5px 10px;
+    font-size: 12px;
+    background: #1e1f27;
+    border: 1px solid #3d3f4d;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.dropdown-menu .dd-item:hover { background: #262835; border-color: var(--accent); }
+
+.dropdown-menu .dd-empty {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 4px;
+}
+
+.dropdown-menu .dd-emoji-item {
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1e1f27;
+    border: 1px solid #3d3f4d;
+    font-size: 18px;
+}
+
+.dropdown-menu .dd-emoji-item img { width: 22px; height: 22px; }
+.dropdown-menu .dd-emoji-item:hover { border-color: var(--accent); }
+
+.dropdown-menu .dd-form {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+
+.dropdown-menu .dd-form input {
+    margin: 0;
+    flex: 1;
+}
+
+.dropdown-menu .dd-form button {
+    width: auto;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.matcherino-status { color: var(--ok); }
+.matcherino-status.stale { color: var(--warn); }

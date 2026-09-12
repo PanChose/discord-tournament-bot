@@ -10,12 +10,14 @@ const {
     attachHandlers,
     listGuildsAndChannels,
     listGuildRoles,
+    listGuildEmojis,
     getBotInviteUrl,
     publishTournament,
     closeTournamentAnnouncement,
     refreshAnnouncementMessage,
 } = require("./lib/discordClient");
 const tournamentsLib = require("./lib/tournaments");
+const matcherinoSync = require("./lib/matcherinoSync");
 const oauth = require("./lib/oauth");
 const { generateDescription } = require("./lib/ai");
 
@@ -144,6 +146,13 @@ app.get("/api/guilds/:guildId", requireAuth, async (req, res) => {
     res.json({ channels: guild.channels, roles: listGuildRoles(guildId) });
 });
 
+// Custom server emojis for the description editor's emoji picker.
+app.get("/api/guilds/:guildId/emojis", requireAuth, async (req, res) => {
+    const { guildId } = req.params;
+    if (!(await requireOrganizerOf(req, res, guildId))) return;
+    res.json({ emojis: listGuildEmojis(guildId) });
+});
+
 // =========================================================================
 // Tournaments CRUD
 // =========================================================================
@@ -215,6 +224,22 @@ app.post("/api/tournaments/:id/close", requireAuth, async (req, res) => {
         const closed = tournamentsLib.setClosed(tournament.id);
         await closeTournamentAnnouncement(closed);
         res.json({ tournament: closed });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Manually kick off a Matcherino entrants re-check instead of waiting for the
+// next automatic tick (lib/matcherinoSync.js runs this every ~4 minutes anyway).
+app.post("/api/tournaments/:id/matcherino-sync", requireAuth, async (req, res) => {
+    const tournament = await loadOwnedTournament(req, res);
+    if (!tournament) return;
+    if (!tournament.matcherino_bounty_id) {
+        return res.status(400).json({ error: "This tournament's external link isn't a Matcherino tournament URL" });
+    }
+    try {
+        const updated = await matcherinoSync.syncOne(tournament);
+        res.json({ tournament: updated });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
