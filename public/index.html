@@ -126,7 +126,13 @@
                         <div class="row-2">
                             <div>
                                 <label>Start date/time</label>
-                                <input id="f-starts-at" type="datetime-local" />
+                                <div class="dt-field" data-dt="starts">
+                                    <button type="button" class="dt-toggle" data-dt-toggle>
+                                        <span>📅</span>
+                                        <span data-dt-label>Pick a date &amp; time</span>
+                                    </button>
+                                    <div class="dt-panel hidden" data-dt-panel></div>
+                                </div>
                             </div>
                             <div>
                                 <label>Max participants</label>
@@ -187,8 +193,15 @@
                             </div>
                         </div>
 
-                        <label>Reminder before start (hours, optional)</label>
-                        <input id="f-reminder" type="number" min="0" max="168" placeholder="e.g. 1" />
+                        <label>Send a reminder DM at (optional)</label>
+                        <div class="dt-field" data-dt="remind">
+                            <button type="button" class="dt-toggle" data-dt-toggle>
+                                <span>⏰</span>
+                                <span data-dt-label>No reminder</span>
+                            </button>
+                            <div class="dt-panel hidden" data-dt-panel></div>
+                        </div>
+                        <p class="hint" style="margin-top:-8px;">Registered participants get a DM at this exact time — pick when you actually want it sent, not "N hours before".</p>
 
                         <button id="save-btn" type="button">💾 Save draft</button>
                         <p id="save-result" class="result"></p>

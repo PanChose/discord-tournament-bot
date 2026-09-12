@@ -228,7 +228,7 @@ function renderTournamentList() {
                         <div class="tournament-meta">${escapeHtml(meta)}</div>
                         ${matcherinoLine}
                     </div>
-                    <div class="tournament-meta">${slots}/${t.max_participants} slots</div>
+                    <div class="tournament-meta">${slots}/${t.max_participants} teams</div>
                     <span class="badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
                     <div class="row-actions">${actions.join("")}</div>
                 </div>`;
@@ -324,6 +324,193 @@ async function showParticipants(tournament) {
 }
 
 // =========================================================================
+// Custom date/time picker — a small calendar + 12-hour time picker that
+// replaces the browser's native <input type="datetime-local"> popup, which
+// renders in the OS's own (usually light) theme and clashes with the rest
+// of the dark UI. Used for both "Starts" and "Remind at".
+// =========================================================================
+
+function createDateTimePicker(root, defaultLabel) {
+    const toggle = root.querySelector("[data-dt-toggle]");
+    const label = root.querySelector("[data-dt-label]");
+    const panel = root.querySelector("[data-dt-panel]");
+
+    const picker = { value: null, onChange: null };
+    let viewYear, viewMonth, hour12, minute, ampm;
+
+    function formatLabel(ms) {
+        if (!ms) return defaultLabel;
+        return new Date(ms).toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+
+    // Loads viewYear/viewMonth/hour12/minute/ampm from the current value (or
+    // "now, rounded to noon" when nothing's picked yet) whenever the panel opens.
+    function syncTimeFromValue() {
+        const d = picker.value ? new Date(picker.value) : new Date(new Date().setHours(12, 0, 0, 0));
+        viewYear = d.getFullYear();
+        viewMonth = d.getMonth();
+        const h24 = d.getHours();
+        hour12 = h24 % 12 === 0 ? 12 : h24 % 12;
+        ampm = h24 < 12 ? "AM" : "PM";
+        minute = d.getMinutes();
+    }
+
+    function hour24() {
+        const h = hour12 % 12;
+        return ampm === "AM" ? h : h + 12;
+    }
+
+    function setValue(ms) {
+        picker.value = ms || null;
+        label.textContent = formatLabel(picker.value);
+        toggle.classList.toggle("has-value", Boolean(picker.value));
+        if (picker.onChange) picker.onChange(picker.value);
+    }
+
+    function applyDay(day) {
+        setValue(new Date(viewYear, viewMonth, day, hour24(), minute, 0, 0).getTime());
+        renderCalendar();
+    }
+
+    function applyTimeChange() {
+        const base = picker.value ? new Date(picker.value) : new Date(viewYear, viewMonth, new Date().getDate());
+        setValue(new Date(base.getFullYear(), base.getMonth(), base.getDate(), hour24(), minute, 0, 0).getTime());
+    }
+
+    function shiftMonth(delta) {
+        viewMonth += delta;
+        if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear -= 1;
+        } else if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear += 1;
+        }
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const monthLabel = panel.querySelector('[data-el="month-label"]');
+        const grid = panel.querySelector('[data-el="grid"]');
+        monthLabel.textContent = new Date(viewYear, viewMonth, 1).toLocaleString([], { month: "long", year: "numeric" });
+
+        const startOffset = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7; // Monday-first
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+        const selected = picker.value ? new Date(picker.value) : null;
+        const today = new Date();
+
+        let html = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => `<div class="dt-cal-dow">${d}</div>`).join("");
+        for (let i = 0; i < startOffset; i++) html += `<div class="dt-cal-day empty"></div>`;
+        for (let day = 1; day <= daysInMonth; day++) {
+            const isSelected = selected && selected.getFullYear() === viewYear && selected.getMonth() === viewMonth && selected.getDate() === day;
+            const isToday = today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === day;
+            html += `<button type="button" class="dt-cal-day${isSelected ? " selected" : ""}${isToday ? " today" : ""}" data-day="${day}">${day}</button>`;
+        }
+        grid.innerHTML = html;
+        grid.querySelectorAll("[data-day]").forEach((btn) => {
+            btn.addEventListener("click", () => applyDay(parseInt(btn.dataset.day, 10)));
+        });
+    }
+
+    function syncControls() {
+        panel.querySelector('[data-el="hour"]').value = String(hour12);
+        panel.querySelector('[data-el="minute"]').value = String(minute);
+        panel.querySelectorAll("[data-ampm]").forEach((btn) => btn.classList.toggle("active", btn.dataset.ampm === ampm));
+    }
+
+    function renderPanel() {
+        const hourOptions = Array.from({ length: 12 }, (_, i) => i + 1)
+            .map((h) => `<option value="${h}">${String(h).padStart(2, "0")}</option>`)
+            .join("");
+        const minuteOptions = Array.from({ length: 60 }, (_, i) => i)
+            .map((m) => `<option value="${m}">${String(m).padStart(2, "0")}</option>`)
+            .join("");
+
+        panel.innerHTML = `
+            <div class="dt-cal-header">
+                <button type="button" data-act="prev">‹</button>
+                <span data-el="month-label"></span>
+                <button type="button" data-act="next">›</button>
+            </div>
+            <div class="dt-cal-grid" data-el="grid"></div>
+            <div class="dt-time-row">
+                <select data-el="hour">${hourOptions}</select>
+                <span>:</span>
+                <select data-el="minute">${minuteOptions}</select>
+                <div class="dt-ampm">
+                    <button type="button" data-ampm="AM">AM</button>
+                    <button type="button" data-ampm="PM">PM</button>
+                </div>
+            </div>
+            <div class="dt-actions">
+                <button type="button" class="secondary-btn" data-act="clear">Clear</button>
+                <button type="button" class="secondary-btn" data-act="today">Today</button>
+            </div>`;
+
+        panel.querySelector('[data-act="prev"]').addEventListener("click", () => shiftMonth(-1));
+        panel.querySelector('[data-act="next"]').addEventListener("click", () => shiftMonth(1));
+        panel.querySelector('[data-act="clear"]').addEventListener("click", () => {
+            setValue(null);
+            closePanel();
+        });
+        panel.querySelector('[data-act="today"]').addEventListener("click", () => {
+            const now = new Date();
+            viewYear = now.getFullYear();
+            viewMonth = now.getMonth();
+            applyDay(now.getDate());
+        });
+        panel.querySelector('[data-el="hour"]').addEventListener("change", (e) => {
+            hour12 = parseInt(e.target.value, 10);
+            applyTimeChange();
+        });
+        panel.querySelector('[data-el="minute"]').addEventListener("change", (e) => {
+            minute = parseInt(e.target.value, 10);
+            applyTimeChange();
+        });
+        panel.querySelectorAll("[data-ampm]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                ampm = btn.dataset.ampm;
+                applyTimeChange();
+                syncControls();
+            });
+        });
+
+        renderCalendar();
+        syncControls();
+    }
+
+    function openPanel() {
+        document.querySelectorAll(".dt-panel:not(.hidden)").forEach((p) => p.classList.add("hidden"));
+        closeDropdown();
+        syncTimeFromValue();
+        renderPanel();
+        panel.classList.remove("hidden");
+    }
+
+    function closePanel() {
+        panel.classList.add("hidden");
+    }
+
+    toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (panel.classList.contains("hidden")) openPanel();
+        else closePanel();
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!root.contains(e.target)) closePanel();
+    });
+
+    picker.set = setValue;
+    picker.get = () => picker.value;
+    return picker;
+}
+
+const startsAtPicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="starts"]'), "Pick a date & time");
+const remindAtPicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="remind"]'), "No reminder");
+startsAtPicker.onChange = schedulePreview;
+
+// =========================================================================
 // Editor: constructor form + live preview
 // =========================================================================
 
@@ -335,13 +522,13 @@ function editTournament(t) {
     document.getElementById("f-name").value = t.name || "";
     document.getElementById("f-game").value = t.game || "";
     document.getElementById("f-format").value = t.format || "single_elim";
-    document.getElementById("f-starts-at").value = msToLocalInputValue(t.starts_at);
+    startsAtPicker.set(t.starts_at || null);
     document.getElementById("f-max").value = t.max_participants || 32;
     document.getElementById("f-description").value = t.description || "";
     document.getElementById("f-external-url").value = t.external_url || "";
     document.getElementById("f-color").value = t.color || "#8b5cf6";
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
-    document.getElementById("f-reminder").value = t.reminder_hours || "";
+    remindAtPicker.set(t.reminder_at || null);
     state.bannerOverride = null;
     document.getElementById("f-banner").value = t.banner && !t.banner.startsWith("data:") ? t.banner : "";
     if (t.banner && t.banner.startsWith("data:")) state.bannerOverride = t.banner;
@@ -355,13 +542,13 @@ function resetEditorForm() {
     document.getElementById("f-name").value = "";
     document.getElementById("f-game").value = "";
     document.getElementById("f-format").value = "single_elim";
-    document.getElementById("f-starts-at").value = "";
+    startsAtPicker.set(null);
     document.getElementById("f-max").value = 32;
     document.getElementById("f-description").value = "";
     document.getElementById("f-external-url").value = "";
     document.getElementById("f-color").value = "#8b5cf6";
     document.getElementById("f-ping-role").value = "";
-    document.getElementById("f-reminder").value = "";
+    remindAtPicker.set(null);
     document.getElementById("f-banner").value = "";
     document.getElementById("ai-prize").value = "";
     document.getElementById("ai-result").textContent = "";
@@ -397,30 +584,20 @@ document.getElementById("f-external-url").addEventListener("input", updateMatche
 
 document.getElementById("editor-reset-btn").addEventListener("click", resetEditorForm);
 
-function msToLocalInputValue(ms) {
-    if (!ms) return "";
-    const d = new Date(ms - new Date().getTimezoneOffset() * 60000);
-    return d.toISOString().slice(0, 16);
-}
-
-function localInputValueToMs(value) {
-    return value ? new Date(value).getTime() : null;
-}
-
 function collectFormData() {
     return {
         channelId: document.getElementById("channel-select").value || null,
         name: document.getElementById("f-name").value.trim(),
         game: document.getElementById("f-game").value.trim() || null,
         format: document.getElementById("f-format").value,
-        startsAt: localInputValueToMs(document.getElementById("f-starts-at").value),
+        startsAt: startsAtPicker.get(),
         maxParticipants: parseInt(document.getElementById("f-max").value, 10) || 32,
         description: document.getElementById("f-description").value.trim() || null,
         externalUrl: document.getElementById("f-external-url").value.trim() || null,
         banner: state.bannerOverride || document.getElementById("f-banner").value.trim() || null,
         color: document.getElementById("f-color").value,
         pingRoleId: document.getElementById("f-ping-role").value || null,
-        reminderHours: document.getElementById("f-reminder").value ? parseInt(document.getElementById("f-reminder").value, 10) : null,
+        reminderAt: remindAtPicker.get(),
     };
 }
 
@@ -453,7 +630,7 @@ function schedulePreview() {
     previewDebounce = setTimeout(renderPreview, 150);
 }
 
-["f-name", "f-game", "f-format", "f-starts-at", "f-max", "f-description", "f-banner", "f-color", "tournament-id"].forEach((id) => {
+["f-name", "f-game", "f-format", "f-max", "f-description", "f-banner", "f-color", "tournament-id"].forEach((id) => {
     document.getElementById(id).addEventListener("input", schedulePreview);
     document.getElementById(id).addEventListener("change", schedulePreview);
 });
@@ -468,14 +645,19 @@ function renderPreview() {
 
     document.getElementById("pv-title").textContent = data.name || "Tournament name";
     const descEl = document.getElementById("pv-desc");
-    descEl.textContent = data.description || "";
+    descEl.innerHTML = renderDiscordMarkup(data.description || "");
     descEl.classList.toggle("hidden", !data.description);
 
     const fields = [];
     if (data.game) fields.push(["Game", data.game]);
     fields.push(["Format", FORMAT_LABELS[data.format] || data.format]);
-    fields.push(["Slots", `${activeCount}/${data.maxParticipants}`]);
-    if (data.startsAt) fields.push(["Starts", new Date(data.startsAt).toLocaleString()]);
+    fields.push(["Teams Registered", `${activeCount}/${data.maxParticipants}`]);
+    if (data.startsAt) {
+        fields.push([
+            "Starts",
+            new Date(data.startsAt).toLocaleString([], { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }),
+        ]);
+    }
     document.getElementById("pv-fields").innerHTML = fields
         .map(([name, value]) => `<div class="dp-field"><span class="dp-field-name">${escapeHtml(name)}</span> — <span class="dp-field-value">${escapeHtml(value)}</span></div>`)
         .join("");
@@ -488,12 +670,15 @@ function renderPreview() {
         imgEl.classList.add("hidden");
     }
 
-    document.getElementById("pv-footer").textContent = STATUS_LABELS[status];
+    // Mirrors how a real Discord embed footer looks with .setTimestamp() —
+    // the status text plus a live "Today at HH:MM" clock.
+    const nowLabel = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    document.getElementById("pv-footer").textContent = `${STATUS_LABELS[status]} • Today at ${nowLabel}`;
     document.querySelector(".dp-embed").style.borderLeftColor = data.color;
 
     const registerBtn = document.getElementById("pv-register-btn");
     const isFull = activeCount >= data.maxParticipants;
-    registerBtn.textContent = isFull ? "Slots full" : "✅ Join";
+    registerBtn.textContent = isFull ? "Full" : "✅ Join";
     registerBtn.style.opacity = status === "published" && !isFull ? "1" : "0.5";
 }
 
@@ -547,6 +732,62 @@ const FORMAT_MAP = {
     bullet: ["- ", "", "list item"],
     header: ["# ", "", "header"],
 };
+
+// Turns the raw markdown typed into the description into the same HTML shape
+// Discord itself renders, so the "Live preview" actually looks like the real
+// embed instead of showing raw ** and <:emoji:id> syntax. Best-effort — it
+// covers the toolbar's own formatting plus emoji/mention tags, not the full
+// breadth of Discord's markdown grammar.
+function renderDiscordMarkup(raw) {
+    if (!raw) return "";
+    let html = escapeHtml(raw);
+
+    html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<div class="dp-code-block">${code}</div>`);
+    html = html.replace(/`([^`]+)`/g, (_, code) => `<span class="dp-code">${code}</span>`);
+
+    // Custom emoji <:name:id> / <a:name:id> — Discord's CDN serves these
+    // straight from the id, no need to look them up in the fetched emoji list.
+    html = html.replace(/&lt;(a?):(\w+):(\d+)&gt;/g, (_, animated, name, id) => {
+        const ext = animated ? "gif" : "png";
+        return `<img class="dp-emoji" src="https://cdn.discordapp.com/emojis/${id}.${ext}" alt=":${name}:" title=":${name}:" />`;
+    });
+
+    // Role / channel / user mentions — resolved against the currently loaded
+    // guild data where possible, since we only have an id at this point.
+    html = html.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => {
+        const role = state.roles.find((r) => r.id === id);
+        return `<span class="dp-mention">@${escapeHtml(role ? role.name : "role")}</span>`;
+    });
+    html = html.replace(/&lt;#(\d+)&gt;/g, (_, id) => {
+        const channel = state.channels.find((c) => c.id === id);
+        return `<span class="dp-mention">#${escapeHtml(channel ? channel.name : "channel")}</span>`;
+    });
+    html = html.replace(/&lt;@(\d+)&gt;/g, () => `<span class="dp-mention">@user</span>`);
+    html = html.replace(/(^|\s)@(everyone|here)\b/g, (_, pre, kw) => `${pre}<span class="dp-mention">@${kw}</span>`);
+
+    html = html.replace(/\*\*\*([^*]+)\*\*\*/g, "<b><i>$1</i></b>");
+    html = html.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    html = html.replace(/__([^_]+)__/g, "<u>$1</u>");
+    html = html.replace(/~~([^~]+)~~/g, "<s>$1</s>");
+    html = html.replace(/\|\|([^|]+)\|\|/g, '<span class="dp-spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
+    html = html.replace(/\*([^*\n]+)\*/g, "<i>$1</i>");
+    html = html.replace(/(?<![\w:])_([^_\n]+)_(?![\w:])/g, "<i>$1</i>");
+
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    html = html
+        .split("\n")
+        .map((line) => {
+            const header = /^(#{1,3})\s+(.*)$/.exec(line);
+            if (header) return `<div class="dp-h${header[1].length}">${header[2]}</div>`;
+            if (/^&gt;\s?/.test(line)) return `<div class="dp-quote">${line.replace(/^&gt;\s?/, "")}</div>`;
+            if (/^-\s+/.test(line)) return `<div class="dp-bullet">• ${line.replace(/^-\s+/, "")}</div>`;
+            return line;
+        })
+        .join("\n");
+
+    return html;
+}
 
 function wrapSelection(textarea, prefix, suffix, placeholder) {
     const start = textarea.selectionStart;
