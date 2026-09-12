@@ -7,6 +7,7 @@ const state = {
     tournaments: [],
     bannerOverride: null, // dataURL from a local upload, takes precedence over the f-banner text field
     pollTimer: null,
+    emojis: null, // cached custom emojis for the current guild, fetched lazily on first use
 };
 
 const FORMAT_LABELS = {
@@ -114,6 +115,7 @@ document.getElementById("guild-select").addEventListener("change", (e) => {
 async function switchGuild(guildId) {
     state.guildId = guildId;
     document.getElementById("guild-select").value = guildId;
+    state.emojis = null; // custom emojis are per-guild — drop the old server's cache
     try {
         const { channels, roles } = await apiFetch(`/api/guilds/${guildId}`);
         state.channels = channels;
@@ -204,20 +206,43 @@ function renderTournamentList() {
             if (t.status !== "draft") {
                 actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">Participants</button>`);
             }
+            if (t.matcherino_bounty_id) {
+                actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">🔄 Sync</button>`);
+            }
             actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">Delete</button>`);
+
+            const usingMatcherino = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
+            const slots = usingMatcherino ? t.matcherino_entrants : t.activeCount;
+            const matcherinoLine = t.matcherino_bounty_id
+                ? `<div class="tournament-meta">🔗 Matcherino #${escapeHtml(t.matcherino_bounty_id)}${
+                      usingMatcherino
+                          ? ` — last checked ${t.matcherino_checked_at ? timeAgo(t.matcherino_checked_at) : "just now"}`
+                          : " — not checked yet"
+                  }</div>`
+                : "";
 
             return `
                 <div class="tournament-row">
                     <div>
                         <div class="tournament-name">${escapeHtml(t.name)}</div>
                         <div class="tournament-meta">${escapeHtml(meta)}</div>
+                        ${matcherinoLine}
                     </div>
-                    <div class="tournament-meta">${t.activeCount}/${t.max_participants} slots</div>
+                    <div class="tournament-meta">${slots}/${t.max_participants} slots</div>
                     <span class="badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
                     <div class="row-actions">${actions.join("")}</div>
                 </div>`;
         })
         .join("");
+}
+
+function timeAgo(ms) {
+    const seconds = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
 }
 
 document.getElementById("tournament-list").addEventListener("click", async (e) => {
@@ -231,7 +256,22 @@ document.getElementById("tournament-list").addEventListener("click", async (e) =
     if (action === "close") return closeTournament(id);
     if (action === "delete") return deleteTournament(id);
     if (action === "participants") return showParticipants(tournament);
+    if (action === "matcherino-sync") return syncMatcherino(id, btn);
 });
+
+async function syncMatcherino(id, btn) {
+    const originalText = btn.textContent;
+    btn.textContent = "⏳ …";
+    btn.disabled = true;
+    try {
+        await apiFetch(`/api/tournaments/${id}/matcherino-sync`, { method: "POST" });
+        await loadTournaments();
+    } catch (err) {
+        alert(err.message);
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
 
 async function publishTournament(id) {
     try {
@@ -305,6 +345,7 @@ function editTournament(t) {
     state.bannerOverride = null;
     document.getElementById("f-banner").value = t.banner && !t.banner.startsWith("data:") ? t.banner : "";
     if (t.banner && t.banner.startsWith("data:")) state.bannerOverride = t.banner;
+    updateMatcherinoStatus();
     renderPreview();
 }
 
@@ -325,8 +366,34 @@ function resetEditorForm() {
     document.getElementById("ai-prize").value = "";
     document.getElementById("ai-result").textContent = "";
     state.bannerOverride = null;
+    updateMatcherinoStatus();
     renderPreview();
 }
+
+// Mirrors lib/matcherino.js's regex so the organizer sees this before saving.
+const MATCHERINO_URL_RE = /matcherino\.com\/(?:[^/?#]+\/)?tournaments\/(\d+)/i;
+
+function updateMatcherinoStatus() {
+    const statusEl = document.getElementById("matcherino-status");
+    const url = document.getElementById("f-external-url").value.trim();
+    const match = MATCHERINO_URL_RE.exec(url);
+    if (!match) {
+        statusEl.classList.add("hidden");
+        return;
+    }
+
+    const id = document.getElementById("tournament-id").value;
+    const existing = id ? state.tournaments.find((t) => t.id === id) : null;
+    const known = existing && existing.matcherino_bounty_id === match[1] && existing.matcherino_entrants !== null && existing.matcherino_entrants !== undefined;
+
+    statusEl.classList.remove("hidden");
+    statusEl.classList.toggle("stale", !known);
+    statusEl.textContent = known
+        ? `🔗 Matcherino tournament #${match[1]} — ${existing.matcherino_entrants} teams registered right now (auto-refreshes every ~4 min).`
+        : `🔗 Matcherino tournament #${match[1]} detected — the team count will start syncing automatically once this is published.`;
+}
+
+document.getElementById("f-external-url").addEventListener("input", updateMatcherinoStatus);
 
 document.getElementById("editor-reset-btn").addEventListener("click", resetEditorForm);
 
@@ -396,7 +463,8 @@ function renderPreview() {
     const isEditing = Boolean(document.getElementById("tournament-id").value);
     const existing = isEditing ? state.tournaments.find((t) => t.id === document.getElementById("tournament-id").value) : null;
     const status = existing ? existing.status : "draft";
-    const activeCount = existing ? existing.activeCount : 0;
+    const usingMatcherino = existing && existing.matcherino_bounty_id && existing.matcherino_entrants !== null && existing.matcherino_entrants !== undefined;
+    const activeCount = usingMatcherino ? existing.matcherino_entrants : existing ? existing.activeCount : 0;
 
     document.getElementById("pv-title").textContent = data.name || "Tournament name";
     const descEl = document.getElementById("pv-desc");
@@ -460,6 +528,182 @@ function handleBannerFile(file) {
 
 document.getElementById("f-banner").addEventListener("input", () => {
     state.bannerOverride = null;
+});
+
+// =========================================================================
+// Description toolbar: Discord markdown shortcuts + role/channel/user mention
+// pickers + a custom-emoji picker pulled live from the selected server.
+// =========================================================================
+
+const FORMAT_MAP = {
+    bold: ["**", "**", "bold text"],
+    italic: ["*", "*", "italic text"],
+    underline: ["__", "__", "underlined text"],
+    strike: ["~~", "~~", "strikethrough"],
+    spoiler: ["||", "||", "spoiler"],
+    code: ["`", "`", "code"],
+    codeblock: ["```\n", "\n```", "code block"],
+    quote: ["> ", "", "quote"],
+    bullet: ["- ", "", "list item"],
+    header: ["# ", "", "header"],
+};
+
+function wrapSelection(textarea, prefix, suffix, placeholder) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+    const selected = value.slice(start, end) || placeholder;
+    textarea.value = value.slice(0, start) + prefix + selected + suffix + value.slice(end);
+    const selStart = start + prefix.length;
+    textarea.focus();
+    textarea.setSelectionRange(selStart, selStart + selected.length);
+    schedulePreview();
+}
+
+function insertAtCursor(textarea, text) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    textarea.value = textarea.value.slice(0, start) + text + textarea.value.slice(end);
+    const pos = start + text.length;
+    textarea.focus();
+    textarea.setSelectionRange(pos, pos);
+    schedulePreview();
+}
+
+document.getElementById("desc-toolbar").addEventListener("click", (e) => {
+    const fmtBtn = e.target.closest("button[data-fmt]");
+    if (!fmtBtn) return;
+    const textarea = document.getElementById("f-description");
+
+    if (fmtBtn.dataset.fmt === "link") {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const label = textarea.value.slice(start, end) || "link text";
+        const url = prompt("Link URL:", "https://");
+        if (!url) return;
+        wrapSelection(textarea, "[", `](${url})`, label);
+        return;
+    }
+
+    const [prefix, suffix, placeholder] = FORMAT_MAP[fmtBtn.dataset.fmt];
+    wrapSelection(textarea, prefix, suffix, placeholder);
+});
+
+// --- Shared popover for the mention/emoji buttons below the toolbar ---
+const formatDropdown = document.getElementById("format-dropdown");
+
+function closeDropdown() {
+    formatDropdown.classList.add("hidden");
+    formatDropdown.innerHTML = "";
+    delete formatDropdown.dataset.for;
+}
+
+function toggleDropdown(name, renderFn) {
+    if (!formatDropdown.classList.contains("hidden") && formatDropdown.dataset.for === name) {
+        closeDropdown();
+        return;
+    }
+    formatDropdown.dataset.for = name;
+    formatDropdown.innerHTML = "";
+    renderFn(formatDropdown);
+    formatDropdown.classList.remove("hidden");
+}
+
+document.addEventListener("click", (e) => {
+    const triggerIds = ["mention-role-btn", "mention-channel-btn", "mention-user-btn", "emoji-picker-btn"];
+    if (triggerIds.includes(e.target.closest("button")?.id) || formatDropdown.contains(e.target)) return;
+    closeDropdown();
+});
+
+function renderMentionList(container, items) {
+    if (!items.length) {
+        container.innerHTML = `<div class="dd-empty">Nothing to show.</div>`;
+        return;
+    }
+    for (const item of items) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dd-item";
+        btn.textContent = item.label;
+        btn.addEventListener("click", () => {
+            insertAtCursor(document.getElementById("f-description"), item.value);
+            closeDropdown();
+        });
+        container.appendChild(btn);
+    }
+}
+
+document.getElementById("mention-role-btn").addEventListener("click", () => {
+    toggleDropdown("role", (container) => {
+        const items = [
+            { label: "@everyone", value: "@everyone" },
+            { label: "@here", value: "@here" },
+            ...state.roles.map((r) => ({ label: `@${r.name}`, value: `<@&${r.id}>` })),
+        ];
+        renderMentionList(container, items);
+    });
+});
+
+document.getElementById("mention-channel-btn").addEventListener("click", () => {
+    toggleDropdown("channel", (container) => {
+        renderMentionList(container, state.channels.map((c) => ({ label: `#${c.name}`, value: `<#${c.id}>` })));
+    });
+});
+
+document.getElementById("mention-user-btn").addEventListener("click", () => {
+    toggleDropdown("user", (container) => {
+        container.innerHTML = `
+            <div class="dd-form">
+                <input type="text" id="mention-user-id" placeholder="User ID (Developer Mode → right-click → Copy User ID)" />
+                <button type="button" id="mention-user-insert">Insert</button>
+            </div>`;
+        container.querySelector("#mention-user-insert").addEventListener("click", () => {
+            const id = container.querySelector("#mention-user-id").value.trim();
+            if (!/^\d{5,25}$/.test(id)) return alert("That doesn't look like a valid Discord user ID.");
+            insertAtCursor(document.getElementById("f-description"), `<@${id}>`);
+            closeDropdown();
+        });
+    });
+});
+
+document.getElementById("emoji-picker-btn").addEventListener("click", async () => {
+    if (!formatDropdown.classList.contains("hidden") && formatDropdown.dataset.for === "emoji") {
+        closeDropdown();
+        return;
+    }
+    formatDropdown.dataset.for = "emoji";
+    formatDropdown.innerHTML = `<div class="dd-empty">Loading…</div>`;
+    formatDropdown.classList.remove("hidden");
+
+    if (state.emojis === null) {
+        try {
+            const { emojis } = await apiFetch(`/api/guilds/${state.guildId}/emojis`);
+            state.emojis = emojis;
+        } catch (err) {
+            state.emojis = [];
+        }
+    }
+
+    // The picker may have been closed (or switched to another one) while that fetch was in flight.
+    if (formatDropdown.dataset.for !== "emoji") return;
+
+    formatDropdown.innerHTML = "";
+    if (!state.emojis.length) {
+        formatDropdown.innerHTML = `<div class="dd-empty">No custom emojis on this server.</div>`;
+        return;
+    }
+    for (const emoji of state.emojis) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dd-item dd-emoji-item";
+        btn.title = `:${emoji.name}:`;
+        btn.innerHTML = `<img src="${emoji.url}" alt="${escapeHtml(emoji.name)}" />`;
+        btn.addEventListener("click", () => {
+            insertAtCursor(document.getElementById("f-description"), emoji.tag);
+            closeDropdown();
+        });
+        formatDropdown.appendChild(btn);
+    }
 });
 
 // --- AI description generator ---

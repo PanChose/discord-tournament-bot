@@ -135,11 +135,31 @@
                         </div>
 
                         <label>Description / rules</label>
+                        <div class="format-toolbar" id="desc-toolbar">
+                            <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
+                            <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
+                            <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
+                            <button type="button" data-fmt="strike" title="Strikethrough"><s>S</s></button>
+                            <button type="button" data-fmt="spoiler" title="Spoiler (hidden until clicked)">||S||</button>
+                            <button type="button" data-fmt="code" title="Inline code">`code`</button>
+                            <button type="button" data-fmt="codeblock" title="Code block">{ }</button>
+                            <button type="button" data-fmt="quote" title="Quote">❝</button>
+                            <button type="button" data-fmt="bullet" title="Bullet list">•</button>
+                            <button type="button" data-fmt="header" title="Header">H</button>
+                            <button type="button" data-fmt="link" title="Link">🔗</button>
+                            <span class="toolbar-sep"></span>
+                            <button type="button" id="mention-role-btn" title="Mention a role">@Role</button>
+                            <button type="button" id="mention-channel-btn" title="Mention a channel">#Chan</button>
+                            <button type="button" id="mention-user-btn" title="Mention a user by ID">@User</button>
+                            <button type="button" id="emoji-picker-btn" title="Insert a custom server emoji">😀</button>
+                        </div>
+                        <div id="format-dropdown" class="dropdown-menu hidden"></div>
                         <textarea id="f-description" rows="4" maxlength="4096" placeholder="Bo1 group stage, Bo3 playoffs. Check-in 30 min before start."></textarea>
 
                         <label>External tournament link (optional)</label>
                         <input id="f-external-url" type="text" placeholder="https://challonge.com/... or matcherino.com/..." />
                         <p class="hint" style="margin-top:-8px;">If set, clicking Join records the person as a participant here, then the bot sends them this link to finish signing up on the other platform.</p>
+                        <p id="matcherino-status" class="hint matcherino-status hidden"></p>
 
                         <div class="ai-row">
                             <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" />

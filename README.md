@@ -16,6 +16,14 @@ watch registrations come in in real time — all synced back to the same Discord
   you organize for, build the tournament with a form that renders a live Discord-style preview as you
   type, and manage everything from a dashboard (publish / edit / close / delete, participant list,
   CSV export).
+- **Description editor toolbar**: bold/italic/underline/strikethrough/spoiler/code/quote/list/header
+  buttons, a link inserter, role/channel/user mention pickers, and a picker for the server's own custom
+  emojis (pulled live from Discord) — everything gets inserted as the right Discord markdown right at
+  the cursor.
+- **Matcherino sync**: paste a `matcherino.com/.../tournaments/<id>/...` link into the external-link
+  field and the bot polls Matcherino's own bracket API every ~4 minutes for the real entrants count,
+  keeps the announcement's "Slots" counter in sync with it instead of (or alongside) Discord Join
+  clicks, and posts a "+N teams" / "-N slots" update in the channel whenever that count changes.
 - **Optional AI helper**: generates a tournament description from a few keywords (game, format, prize)
   via the Claude API.
 
@@ -47,6 +55,8 @@ Browser (public/)  <-- OAuth2 + REST + polling -->  Express (server.js)
                                                           |
                                                           |-- lib/oauth.js        (Discord OAuth2)
                                                           |-- lib/tournaments.js  (business logic)
+                                                          |-- lib/matcherino.js   (Matcherino API client)
+                                                          |-- lib/matcherinoSync.js (polls it every ~4 min)
                                                           |-- lib/ai.js           (Claude API, optional)
                                                           |
                                                     lib/discordClient.js (discord.js client)
@@ -105,6 +115,20 @@ when you hit Publish.
 The dashboard's slot counters, by contrast, *do* need to reflect real activity from other people
 clicking the button in Discord — that view polls `GET /api/tournaments` every 5 seconds while it's open.
 
+### 4. Matcherino as the source of truth for team count
+
+Matcherino has no webhooks, so `lib/matcherinoSync.js` polls instead — same pattern as
+`lib/reminders.js`, a `setInterval` tick rather than a timer per tournament. The external-link field
+doubles as the Matcherino link: whenever it's saved, `lib/tournaments.js` runs it through
+`extractBountyId()` (`lib/matcherino.js`) and stores the parsed bounty id; nothing new to configure.
+
+Every ~4 minutes (and once immediately on publish, so the count isn't stale for the first few minutes),
+each published tournament with a bounty id gets `GET https://api.matcherino.com/__api/brackets` and the
+current `entrants` array length. That count replaces the Discord Join-button count in the embed's
+"Slots" field once it's known, and if it changed since the last check, `postMatcherinoDelta()` sends a
+short "+N teams registered" / "-N slots opened up" message. The first check after saving a new link
+only establishes a baseline — it deliberately doesn't post a delta with nothing to compare against.
+
 ## Setup
 
 1. Install [Node.js](https://nodejs.org/) 18+.
@@ -162,7 +186,9 @@ discord-tournament-bot/
 │   ├── tournaments.js         # CRUD + atomic registration/unregistration + CSV export
 │   ├── discordClient.js        # discord.js client: slash commands, buttons, embeds
 │   ├── reminders.js             # polls for due reminder DMs / start-time role pings
-│   └── ai.js                     # Claude API — tournament description generator
+│   ├── matcherino.js             # Matcherino bracket API client (bounty id + entrants count)
+│   ├── matcherinoSync.js          # polls it every ~4 min, updates the embed + posts deltas
+│   └── ai.js                       # Claude API — tournament description generator
 ├── public/                # Web panel (vanilla HTML/CSS/JS, no build step)
 ├── data/                   # SQLite database file (gitignored)
 ├── .env.example
