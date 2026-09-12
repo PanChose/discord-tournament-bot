@@ -21,9 +21,10 @@ watch registrations come in in real time — all synced back to the same Discord
   emojis (pulled live from Discord) — everything gets inserted as the right Discord markdown right at
   the cursor.
 - **Matcherino sync**: paste a `matcherino.com/.../tournaments/<id>/...` link into the external-link
-  field and the bot polls Matcherino's own bracket API every ~4 minutes for the real entrants count,
-  keeps the announcement's "Slots" counter in sync with it instead of (or alongside) Discord Join
-  clicks, and posts a "+N teams" / "-N slots" update in the channel whenever that count changes.
+  field and the bot polls Matcherino's own bracket API every ~4 minutes for the real entrants count
+  and prize pool, keeps the announcement's "Teams Registered" and "Prize Pool" fields in sync with it
+  instead of (or alongside) Discord Join clicks, and posts a "+N teams" / "-N slots" update — with the
+  current prize pool — in the channel whenever the team count changes.
 - **Optional AI helper**: generates a tournament description from a few keywords (game, format, prize)
   via the Claude API.
 
@@ -122,12 +123,17 @@ Matcherino has no webhooks, so `lib/matcherinoSync.js` polls instead — same pa
 doubles as the Matcherino link: whenever it's saved, `lib/tournaments.js` runs it through
 `extractBountyId()` (`lib/matcherino.js`) and stores the parsed bounty id; nothing new to configure.
 
-Every ~4 minutes (and once immediately on publish, so the count isn't stale for the first few minutes),
-each published tournament with a bounty id gets `GET https://api.matcherino.com/__api/brackets` and the
-current `entrants` array length. That count replaces the Discord Join-button count in the embed's
-"Slots" field once it's known, and if it changed since the last check, `postMatcherinoDelta()` sends a
-short "+N teams registered" / "-N slots opened up" message. The first check after saving a new link
-only establishes a baseline — it deliberately doesn't post a delta with nothing to compare against.
+Every ~4 minutes (and once immediately on publish, so the numbers aren't stale for the first few
+minutes), each published tournament with a bounty id gets two calls: `GET .../__api/brackets` for the
+current `entrants` array length, and `GET .../__api/bounties/totalSpent` for the funded prize pool. Both
+responses are walked with a small breadth-first `findField()` helper instead of a hard-coded path, since
+neither shape is officially documented. The entrants count replaces the Discord Join-button count in the
+embed's "Teams Registered" field once known, the prize pool becomes its own "Prize Pool" field, and if
+the team count changed since the last check, `postMatcherinoDelta()` sends a short "+N teams registered"
+/ "-N slots opened up" message with the current prize pool appended. The first check after saving a new
+link only establishes a baseline — it deliberately doesn't post a delta with nothing to compare against.
+The prize-pool fetch is treated as a nicety: if it fails, the team count still updates and the last known
+prize pool is left alone rather than being blanked out.
 
 ## Setup
 

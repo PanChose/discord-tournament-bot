@@ -213,8 +213,11 @@ function renderTournamentList() {
 
             const usingMatcherino = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
             const slots = usingMatcherino ? t.matcherino_entrants : t.activeCount;
+            const hasPrizePool = t.matcherino_prize_pool !== null && t.matcherino_prize_pool !== undefined;
             const matcherinoLine = t.matcherino_bounty_id
                 ? `<div class="tournament-meta">🔗 Matcherino #${escapeHtml(t.matcherino_bounty_id)}${
+                      hasPrizePool ? ` — ${formatPrizePool(t.matcherino_prize_pool)} prize pool` : ""
+                  }${
                       usingMatcherino
                           ? ` — last checked ${t.matcherino_checked_at ? timeAgo(t.matcherino_checked_at) : "just now"}`
                           : " — not checked yet"
@@ -560,6 +563,12 @@ function resetEditorForm() {
 // Mirrors lib/matcherino.js's regex so the organizer sees this before saving.
 const MATCHERINO_URL_RE = /matcherino\.com\/(?:[^/?#]+\/)?tournaments\/(\d+)/i;
 
+// Mirrors lib/tournaments.js's formatPrizePool — this file can't require() it.
+function formatPrizePool(amount) {
+    const rounded = Math.round(amount * 100) / 100;
+    return `$${Number.isInteger(rounded) ? rounded : rounded.toFixed(2)}`;
+}
+
 function updateMatcherinoStatus() {
     const statusEl = document.getElementById("matcherino-status");
     const url = document.getElementById("f-external-url").value.trim();
@@ -572,11 +581,13 @@ function updateMatcherinoStatus() {
     const id = document.getElementById("tournament-id").value;
     const existing = id ? state.tournaments.find((t) => t.id === id) : null;
     const known = existing && existing.matcherino_bounty_id === match[1] && existing.matcherino_entrants !== null && existing.matcherino_entrants !== undefined;
+    const hasPrizePool = existing && existing.matcherino_prize_pool !== null && existing.matcherino_prize_pool !== undefined;
+    const prizeSuffix = hasPrizePool ? `, ${formatPrizePool(existing.matcherino_prize_pool)} prize pool` : "";
 
     statusEl.classList.remove("hidden");
     statusEl.classList.toggle("stale", !known);
     statusEl.textContent = known
-        ? `🔗 Matcherino tournament #${match[1]} — ${existing.matcherino_entrants} teams registered right now (auto-refreshes every ~4 min).`
+        ? `🔗 Matcherino tournament #${match[1]} — ${existing.matcherino_entrants} teams registered right now${prizeSuffix} (auto-refreshes every ~4 min).`
         : `🔗 Matcherino tournament #${match[1]} detected — the team count will start syncing automatically once this is published.`;
 }
 
@@ -652,6 +663,9 @@ function renderPreview() {
     if (data.game) fields.push(["Game", data.game]);
     fields.push(["Format", FORMAT_LABELS[data.format] || data.format]);
     fields.push(["Teams Registered", `${activeCount}/${data.maxParticipants}`]);
+    if (existing && existing.matcherino_prize_pool !== null && existing.matcherino_prize_pool !== undefined) {
+        fields.push(["Prize Pool", formatPrizePool(existing.matcherino_prize_pool)]);
+    }
     if (data.startsAt) {
         fields.push([
             "Starts",
