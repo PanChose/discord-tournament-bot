@@ -486,14 +486,6 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     color: var(--muted);
 }
 
-.legal-placeholder {
-    background: rgba(232, 183, 75, 0.15);
-    color: var(--warn);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-size: 0.93em;
-}
-
 /* --- Description formatting toolbar --- */
 .format-toolbar {
     display: flex;
