@@ -1,3 +1,5 @@
+## https://discord-tournament-bot-production.up.railway.app
+
 # Discord Tournament Bot + Web Panel
 
 A Discord bot for running community tournaments, plus a web control panel organizers use instead of
