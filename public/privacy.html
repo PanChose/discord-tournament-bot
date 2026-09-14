@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — Tournament Bot</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="legal-page">
+    <a href="/" class="legal-back">← Back to the panel</a>
+    <h1>Privacy Policy</h1>
+    <p class="legal-updated">Last updated: <span class="legal-placeholder">[fill in the date you publish this]</span></p>
+
+    <p>This Privacy Policy explains what data Tournament Bot ("the bot", "we", "us") collects when you use the
+    Discord bot or its web control panel, and how that data is used, stored, and protected.</p>
+
+    <h2>1. Who this covers</h2>
+    <p>This policy applies to anyone who interacts with the bot in a Discord server it's added to (registering
+    for a tournament, clicking Join/Leave, receiving a reminder DM) or who logs into the web control panel with
+    their Discord account to organize tournaments.</p>
+
+    <h2>2. Data we collect</h2>
+    <p>We collect only what's needed to run tournaments and the panel:</p>
+    <ul>
+        <li><strong>From everyone who registers for a tournament:</strong> your Discord user ID and username/tag,
+        plus the timestamp you registered — used to show the participant list, keep the slot counter accurate,
+        and send you a reminder DM if the organizer set one up.</li>
+        <li><strong>From organizers who log into the web panel:</strong> your Discord user ID, username, and
+        avatar, plus an OAuth2 access token and refresh token issued by Discord. We request the <code>identify</code>
+        and <code>guilds</code> OAuth scopes only — we never see or store your email address or your Discord
+        password. Access/refresh tokens are encrypted at rest (AES-256-GCM) and are only ever used server-side to
+        read your guild list and permissions on your behalf.</li>
+        <li><strong>Session cookie:</strong> a random, meaningless session ID stored in an <code>httpOnly</code>
+        cookie in your browser. It can't be read by page scripts and is useless outside our server.</li>
+        <li><strong>Tournament content organizers create:</strong> names, descriptions, banner/thumbnail images,
+        external links, and similar content organizers type into the panel or Discord modals.</li>
+    </ul>
+    <p>We do not collect payment information, and we do not knowingly collect any data beyond what's listed above.</p>
+
+    <h2>3. Third-party services</h2>
+    <ul>
+        <li><strong>Discord</strong> — the bot and panel run on top of Discord's API and OAuth2. Your use of
+        Discord itself is governed by <a href="https://discord.com/privacy" target="_blank" rel="noopener">Discord's own Privacy Policy</a>.</li>
+        <li><strong>Matcherino</strong> (optional, only if an organizer links a Matcherino tournament) — the bot
+        reads publicly available bracket data (team count, prize pool) for the linked tournament ID. No data about
+        you is sent to Matcherino.</li>
+        <li><strong>Anthropic (Claude API)</strong> (optional, only if an organizer clicks "Generate with AI") —
+        the game name, format, and prize text the organizer typed are sent to Anthropic to generate a description.
+        No participant or account data is included in that request.</li>
+    </ul>
+
+    <h2>4. How we use your data</h2>
+    <ul>
+        <li>To operate tournament registration (Join/Leave, slot counts, participant lists, CSV export for the organizer).</li>
+        <li>To send you DMs you've opted into by registering: a confirmation, an optional reminder, and a start-time role ping.</li>
+        <li>To let organizers log in and manage tournaments on servers where they have the Manage Server permission.</li>
+        <li>We do not sell your data, and we do not use it for advertising.</li>
+    </ul>
+
+    <h2>5. Data retention & deletion</h2>
+    <p>Tournament and registration data is kept for as long as the tournament exists in the database, so
+    organizers can review past participant lists. An organizer can delete a tournament (and its registrations)
+    at any time from the dashboard. Your web panel login session is deleted when you log out or expires
+    automatically. To request deletion of your data, contact us at
+    <span class="legal-placeholder">[your contact email]</span>.</p>
+
+    <h2>6. Security</h2>
+    <p>OAuth2 tokens are encrypted at rest. Session cookies are <code>httpOnly</code> and, in production, sent
+    only over HTTPS. Every privileged action (creating, editing, or closing a tournament) is re-checked
+    server-side against your actual Discord permissions — never assumed from the UI alone.</p>
+
+    <h2>7. Children's privacy</h2>
+    <p>This service is not directed at children under 13 (or the minimum Discord account age in your region),
+    consistent with Discord's own Terms of Service.</p>
+
+    <h2>8. Changes to this policy</h2>
+    <p>If this policy changes, the "Last updated" date at the top will change accordingly. Material changes will
+    be noted here.</p>
+
+    <h2>9. Contact</h2>
+    <p>Questions about this policy or your data? Contact <span class="legal-placeholder">[your contact email]</span>.</p>
+
+    <div class="legal-note">
+        This page is a starting template describing what the bot's code actually collects — it is not legal
+        advice. Replace the highlighted placeholders with your real contact details before publishing, and
+        have a lawyer review it if this bot is used commercially or at meaningful scale. See also the
+        <a href="/terms.html">Terms of Service</a>.
+    </div>
+</div>
+</body>
+</html>
