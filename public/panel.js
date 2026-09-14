@@ -6,6 +6,9 @@ const state = {
     roles: [],
     tournaments: [],
     bannerOverride: null, // dataURL from a local upload, takes precedence over the f-banner text field
+    thumbnailOverride: null,
+    authorIconOverride: null,
+    reactionEmoji: null, // null, or { id: string|null, name: string }
     pollTimer: null,
     emojis: null, // cached custom emojis for the current guild, fetched lazily on first use
 };
@@ -213,8 +216,11 @@ function renderTournamentList() {
 
             const usingMatcherino = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
             const slots = usingMatcherino ? t.matcherino_entrants : t.activeCount;
+            const hasPrizePool = t.matcherino_prize_pool !== null && t.matcherino_prize_pool !== undefined;
             const matcherinoLine = t.matcherino_bounty_id
                 ? `<div class="tournament-meta">🔗 Matcherino #${escapeHtml(t.matcherino_bounty_id)}${
+                      hasPrizePool ? ` — ${formatPrizePool(t.matcherino_prize_pool)} prize pool` : ""
+                  }${
                       usingMatcherino
                           ? ` — last checked ${t.matcherino_checked_at ? timeAgo(t.matcherino_checked_at) : "just now"}`
                           : " — not checked yet"
@@ -228,7 +234,7 @@ function renderTournamentList() {
                         <div class="tournament-meta">${escapeHtml(meta)}</div>
                         ${matcherinoLine}
                     </div>
-                    <div class="tournament-meta">${slots}/${t.max_participants} slots</div>
+                    <div class="tournament-meta">${slots}/${t.max_participants} teams</div>
                     <span class="badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
                     <div class="row-actions">${actions.join("")}</div>
                 </div>`;
@@ -324,8 +330,203 @@ async function showParticipants(tournament) {
 }
 
 // =========================================================================
+// Custom date/time picker — a small calendar + 12-hour time picker that
+// replaces the browser's native <input type="datetime-local"> popup, which
+// renders in the OS's own (usually light) theme and clashes with the rest
+// of the dark UI. Used for both "Starts" and "Remind at".
+// =========================================================================
+
+function createDateTimePicker(root, defaultLabel) {
+    const toggle = root.querySelector("[data-dt-toggle]");
+    const label = root.querySelector("[data-dt-label]");
+    const panel = root.querySelector("[data-dt-panel]");
+
+    const picker = { value: null, onChange: null };
+    let viewYear, viewMonth, hour12, minute, ampm;
+
+    function formatLabel(ms) {
+        if (!ms) return defaultLabel;
+        return new Date(ms).toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+
+    // Loads viewYear/viewMonth/hour12/minute/ampm from the current value (or
+    // "now, rounded to noon" when nothing's picked yet) whenever the panel opens.
+    function syncTimeFromValue() {
+        const d = picker.value ? new Date(picker.value) : new Date(new Date().setHours(12, 0, 0, 0));
+        viewYear = d.getFullYear();
+        viewMonth = d.getMonth();
+        const h24 = d.getHours();
+        hour12 = h24 % 12 === 0 ? 12 : h24 % 12;
+        ampm = h24 < 12 ? "AM" : "PM";
+        minute = d.getMinutes();
+    }
+
+    function hour24() {
+        const h = hour12 % 12;
+        return ampm === "AM" ? h : h + 12;
+    }
+
+    function setValue(ms) {
+        picker.value = ms || null;
+        label.textContent = formatLabel(picker.value);
+        toggle.classList.toggle("has-value", Boolean(picker.value));
+        if (picker.onChange) picker.onChange(picker.value);
+    }
+
+    function applyDay(day) {
+        setValue(new Date(viewYear, viewMonth, day, hour24(), minute, 0, 0).getTime());
+        renderCalendar();
+    }
+
+    function applyTimeChange() {
+        const base = picker.value ? new Date(picker.value) : new Date(viewYear, viewMonth, new Date().getDate());
+        setValue(new Date(base.getFullYear(), base.getMonth(), base.getDate(), hour24(), minute, 0, 0).getTime());
+    }
+
+    function shiftMonth(delta) {
+        viewMonth += delta;
+        if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear -= 1;
+        } else if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear += 1;
+        }
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const monthLabel = panel.querySelector('[data-el="month-label"]');
+        const grid = panel.querySelector('[data-el="grid"]');
+        monthLabel.textContent = new Date(viewYear, viewMonth, 1).toLocaleString([], { month: "long", year: "numeric" });
+
+        const startOffset = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7; // Monday-first
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+        const selected = picker.value ? new Date(picker.value) : null;
+        const today = new Date();
+
+        let html = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => `<div class="dt-cal-dow">${d}</div>`).join("");
+        for (let i = 0; i < startOffset; i++) html += `<div class="dt-cal-day empty"></div>`;
+        for (let day = 1; day <= daysInMonth; day++) {
+            const isSelected = selected && selected.getFullYear() === viewYear && selected.getMonth() === viewMonth && selected.getDate() === day;
+            const isToday = today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === day;
+            html += `<button type="button" class="dt-cal-day${isSelected ? " selected" : ""}${isToday ? " today" : ""}" data-day="${day}">${day}</button>`;
+        }
+        grid.innerHTML = html;
+        grid.querySelectorAll("[data-day]").forEach((btn) => {
+            btn.addEventListener("click", () => applyDay(parseInt(btn.dataset.day, 10)));
+        });
+    }
+
+    function syncControls() {
+        panel.querySelector('[data-el="hour"]').value = String(hour12);
+        panel.querySelector('[data-el="minute"]').value = String(minute);
+        panel.querySelectorAll("[data-ampm]").forEach((btn) => btn.classList.toggle("active", btn.dataset.ampm === ampm));
+    }
+
+    function renderPanel() {
+        const hourOptions = Array.from({ length: 12 }, (_, i) => i + 1)
+            .map((h) => `<option value="${h}">${String(h).padStart(2, "0")}</option>`)
+            .join("");
+        const minuteOptions = Array.from({ length: 60 }, (_, i) => i)
+            .map((m) => `<option value="${m}">${String(m).padStart(2, "0")}</option>`)
+            .join("");
+
+        panel.innerHTML = `
+            <div class="dt-cal-header">
+                <button type="button" data-act="prev">‹</button>
+                <span data-el="month-label"></span>
+                <button type="button" data-act="next">›</button>
+            </div>
+            <div class="dt-cal-grid" data-el="grid"></div>
+            <div class="dt-time-row">
+                <select data-el="hour">${hourOptions}</select>
+                <span>:</span>
+                <select data-el="minute">${minuteOptions}</select>
+                <div class="dt-ampm">
+                    <button type="button" data-ampm="AM">AM</button>
+                    <button type="button" data-ampm="PM">PM</button>
+                </div>
+            </div>
+            <div class="dt-actions">
+                <button type="button" class="secondary-btn" data-act="clear">Clear</button>
+                <button type="button" class="secondary-btn" data-act="today">Today</button>
+            </div>`;
+
+        panel.querySelector('[data-act="prev"]').addEventListener("click", () => shiftMonth(-1));
+        panel.querySelector('[data-act="next"]').addEventListener("click", () => shiftMonth(1));
+        panel.querySelector('[data-act="clear"]').addEventListener("click", () => {
+            setValue(null);
+            closePanel();
+        });
+        panel.querySelector('[data-act="today"]').addEventListener("click", () => {
+            const now = new Date();
+            viewYear = now.getFullYear();
+            viewMonth = now.getMonth();
+            applyDay(now.getDate());
+        });
+        panel.querySelector('[data-el="hour"]').addEventListener("change", (e) => {
+            hour12 = parseInt(e.target.value, 10);
+            applyTimeChange();
+        });
+        panel.querySelector('[data-el="minute"]').addEventListener("change", (e) => {
+            minute = parseInt(e.target.value, 10);
+            applyTimeChange();
+        });
+        panel.querySelectorAll("[data-ampm]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                ampm = btn.dataset.ampm;
+                applyTimeChange();
+                syncControls();
+            });
+        });
+
+        renderCalendar();
+        syncControls();
+    }
+
+    function openPanel() {
+        closeAllPopovers(panel);
+        syncTimeFromValue();
+        renderPanel();
+        panel.classList.remove("hidden");
+    }
+
+    function closePanel() {
+        panel.classList.add("hidden");
+    }
+
+    toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (panel.classList.contains("hidden")) openPanel();
+        else closePanel();
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!root.contains(e.target)) closePanel();
+    });
+
+    picker.set = setValue;
+    picker.get = () => picker.value;
+    return picker;
+}
+
+const startsAtPicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="starts"]'), "Pick a date & time");
+const remindAtPicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="remind"]'), "No reminder");
+startsAtPicker.onChange = schedulePreview;
+
+// =========================================================================
 // Editor: constructor form + live preview
 // =========================================================================
+
+// Banner/thumbnail/author-icon all store either a pasted URL (goes in the
+// text input) or a local upload (goes in state as a data: URL, text input
+// stays empty) — this fills both correctly from whichever the DB has.
+function setImageField(textInputId, overrideKey, value) {
+    const isUpload = Boolean(value) && value.startsWith("data:");
+    state[overrideKey] = isUpload ? value : null;
+    document.getElementById(textInputId).value = isUpload ? "" : value || "";
+}
 
 function editTournament(t) {
     document.querySelector('.tab-btn[data-tab="editor"]').click();
@@ -335,16 +536,19 @@ function editTournament(t) {
     document.getElementById("f-name").value = t.name || "";
     document.getElementById("f-game").value = t.game || "";
     document.getElementById("f-format").value = t.format || "single_elim";
-    document.getElementById("f-starts-at").value = msToLocalInputValue(t.starts_at);
+    startsAtPicker.set(t.starts_at || null);
     document.getElementById("f-max").value = t.max_participants || 32;
     document.getElementById("f-description").value = t.description || "";
     document.getElementById("f-external-url").value = t.external_url || "";
     document.getElementById("f-color").value = t.color || "#8b5cf6";
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
-    document.getElementById("f-reminder").value = t.reminder_hours || "";
-    state.bannerOverride = null;
-    document.getElementById("f-banner").value = t.banner && !t.banner.startsWith("data:") ? t.banner : "";
-    if (t.banner && t.banner.startsWith("data:")) state.bannerOverride = t.banner;
+    document.getElementById("f-ping-on-publish").checked = Boolean(t.ping_on_publish);
+    document.getElementById("f-author-name").value = t.author_name || "";
+    remindAtPicker.set(t.reminder_at || null);
+    setImageField("f-banner", "bannerOverride", t.banner);
+    setImageField("f-thumbnail", "thumbnailOverride", t.thumbnail);
+    setImageField("f-author-icon", "authorIconOverride", t.author_icon);
+    setReactionEmoji(t.reaction_emoji_name ? { id: t.reaction_emoji_id, name: t.reaction_emoji_name } : null);
     updateMatcherinoStatus();
     renderPreview();
 }
@@ -355,23 +559,33 @@ function resetEditorForm() {
     document.getElementById("f-name").value = "";
     document.getElementById("f-game").value = "";
     document.getElementById("f-format").value = "single_elim";
-    document.getElementById("f-starts-at").value = "";
+    startsAtPicker.set(null);
     document.getElementById("f-max").value = 32;
     document.getElementById("f-description").value = "";
     document.getElementById("f-external-url").value = "";
     document.getElementById("f-color").value = "#8b5cf6";
     document.getElementById("f-ping-role").value = "";
-    document.getElementById("f-reminder").value = "";
-    document.getElementById("f-banner").value = "";
+    document.getElementById("f-ping-on-publish").checked = false;
+    document.getElementById("f-author-name").value = "";
+    remindAtPicker.set(null);
+    setImageField("f-banner", "bannerOverride", null);
+    setImageField("f-thumbnail", "thumbnailOverride", null);
+    setImageField("f-author-icon", "authorIconOverride", null);
+    setReactionEmoji(null);
     document.getElementById("ai-prize").value = "";
     document.getElementById("ai-result").textContent = "";
-    state.bannerOverride = null;
     updateMatcherinoStatus();
     renderPreview();
 }
 
 // Mirrors lib/matcherino.js's regex so the organizer sees this before saving.
 const MATCHERINO_URL_RE = /matcherino\.com\/(?:[^/?#]+\/)?tournaments\/(\d+)/i;
+
+// Mirrors lib/tournaments.js's formatPrizePool — this file can't require() it.
+function formatPrizePool(amount) {
+    const rounded = Math.round(amount * 100) / 100;
+    return `$${Number.isInteger(rounded) ? rounded : rounded.toFixed(2)}`;
+}
 
 function updateMatcherinoStatus() {
     const statusEl = document.getElementById("matcherino-status");
@@ -385,11 +599,13 @@ function updateMatcherinoStatus() {
     const id = document.getElementById("tournament-id").value;
     const existing = id ? state.tournaments.find((t) => t.id === id) : null;
     const known = existing && existing.matcherino_bounty_id === match[1] && existing.matcherino_entrants !== null && existing.matcherino_entrants !== undefined;
+    const hasPrizePool = existing && existing.matcherino_prize_pool !== null && existing.matcherino_prize_pool !== undefined;
+    const prizeSuffix = hasPrizePool ? `, ${formatPrizePool(existing.matcherino_prize_pool)} prize pool` : "";
 
     statusEl.classList.remove("hidden");
     statusEl.classList.toggle("stale", !known);
     statusEl.textContent = known
-        ? `🔗 Matcherino tournament #${match[1]} — ${existing.matcherino_entrants} teams registered right now (auto-refreshes every ~4 min).`
+        ? `🔗 Matcherino tournament #${match[1]} — ${existing.matcherino_entrants} teams registered right now${prizeSuffix} (auto-refreshes every ~4 min).`
         : `🔗 Matcherino tournament #${match[1]} detected — the team count will start syncing automatically once this is published.`;
 }
 
@@ -397,30 +613,26 @@ document.getElementById("f-external-url").addEventListener("input", updateMatche
 
 document.getElementById("editor-reset-btn").addEventListener("click", resetEditorForm);
 
-function msToLocalInputValue(ms) {
-    if (!ms) return "";
-    const d = new Date(ms - new Date().getTimezoneOffset() * 60000);
-    return d.toISOString().slice(0, 16);
-}
-
-function localInputValueToMs(value) {
-    return value ? new Date(value).getTime() : null;
-}
-
 function collectFormData() {
     return {
         channelId: document.getElementById("channel-select").value || null,
         name: document.getElementById("f-name").value.trim(),
         game: document.getElementById("f-game").value.trim() || null,
         format: document.getElementById("f-format").value,
-        startsAt: localInputValueToMs(document.getElementById("f-starts-at").value),
+        startsAt: startsAtPicker.get(),
         maxParticipants: parseInt(document.getElementById("f-max").value, 10) || 32,
         description: document.getElementById("f-description").value.trim() || null,
         externalUrl: document.getElementById("f-external-url").value.trim() || null,
         banner: state.bannerOverride || document.getElementById("f-banner").value.trim() || null,
+        thumbnail: state.thumbnailOverride || document.getElementById("f-thumbnail").value.trim() || null,
+        authorName: document.getElementById("f-author-name").value.trim() || null,
+        authorIcon: state.authorIconOverride || document.getElementById("f-author-icon").value.trim() || null,
         color: document.getElementById("f-color").value,
         pingRoleId: document.getElementById("f-ping-role").value || null,
-        reminderHours: document.getElementById("f-reminder").value ? parseInt(document.getElementById("f-reminder").value, 10) : null,
+        pingOnPublish: document.getElementById("f-ping-on-publish").checked,
+        reminderAt: remindAtPicker.get(),
+        reactionEmojiId: state.reactionEmoji ? state.reactionEmoji.id : null,
+        reactionEmojiName: state.reactionEmoji ? state.reactionEmoji.name : null,
     };
 }
 
@@ -453,7 +665,21 @@ function schedulePreview() {
     previewDebounce = setTimeout(renderPreview, 150);
 }
 
-["f-name", "f-game", "f-format", "f-starts-at", "f-max", "f-description", "f-banner", "f-color", "tournament-id"].forEach((id) => {
+[
+    "f-name",
+    "f-game",
+    "f-format",
+    "f-max",
+    "f-description",
+    "f-banner",
+    "f-thumbnail",
+    "f-author-name",
+    "f-author-icon",
+    "f-color",
+    "f-ping-role",
+    "f-ping-on-publish",
+    "tournament-id",
+].forEach((id) => {
     document.getElementById(id).addEventListener("input", schedulePreview);
     document.getElementById(id).addEventListener("change", schedulePreview);
 });
@@ -466,16 +692,58 @@ function renderPreview() {
     const usingMatcherino = existing && existing.matcherino_bounty_id && existing.matcherino_entrants !== null && existing.matcherino_entrants !== undefined;
     const activeCount = usingMatcherino ? existing.matcherino_entrants : existing ? existing.activeCount : 0;
 
+    // Message content sits above the embed — only real notification the bot
+    // sends, since embeds never ping even with a mention inside them.
+    const contentEl = document.getElementById("pv-content");
+    if (data.pingOnPublish && data.pingRoleId) {
+        const role = state.roles.find((r) => r.id === data.pingRoleId);
+        contentEl.textContent = `@${role ? role.name : "role"}`;
+        contentEl.classList.remove("hidden");
+    } else {
+        contentEl.classList.add("hidden");
+    }
+
+    const authorEl = document.getElementById("pv-author");
+    if (data.authorName) {
+        document.getElementById("pv-author-name").textContent = data.authorName;
+        const authorIconEl = document.getElementById("pv-author-icon");
+        if (data.authorIcon) {
+            authorIconEl.src = data.authorIcon;
+            authorIconEl.classList.remove("hidden");
+        } else {
+            authorIconEl.classList.add("hidden");
+        }
+        authorEl.classList.remove("hidden");
+    } else {
+        authorEl.classList.add("hidden");
+    }
+
+    const thumbnailEl = document.getElementById("pv-thumbnail");
+    if (data.thumbnail) {
+        thumbnailEl.src = data.thumbnail;
+        thumbnailEl.classList.remove("hidden");
+    } else {
+        thumbnailEl.classList.add("hidden");
+    }
+
     document.getElementById("pv-title").textContent = data.name || "Tournament name";
     const descEl = document.getElementById("pv-desc");
-    descEl.textContent = data.description || "";
+    descEl.innerHTML = renderDiscordMarkup(data.description || "");
     descEl.classList.toggle("hidden", !data.description);
 
     const fields = [];
     if (data.game) fields.push(["Game", data.game]);
     fields.push(["Format", FORMAT_LABELS[data.format] || data.format]);
-    fields.push(["Slots", `${activeCount}/${data.maxParticipants}`]);
-    if (data.startsAt) fields.push(["Starts", new Date(data.startsAt).toLocaleString()]);
+    fields.push(["Teams Registered", `${activeCount}/${data.maxParticipants}`]);
+    if (existing && existing.matcherino_prize_pool !== null && existing.matcherino_prize_pool !== undefined) {
+        fields.push(["Prize Pool", formatPrizePool(existing.matcherino_prize_pool)]);
+    }
+    if (data.startsAt) {
+        fields.push([
+            "Starts",
+            new Date(data.startsAt).toLocaleString([], { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }),
+        ]);
+    }
     document.getElementById("pv-fields").innerHTML = fields
         .map(([name, value]) => `<div class="dp-field"><span class="dp-field-name">${escapeHtml(name)}</span> — <span class="dp-field-value">${escapeHtml(value)}</span></div>`)
         .join("");
@@ -488,47 +756,59 @@ function renderPreview() {
         imgEl.classList.add("hidden");
     }
 
-    document.getElementById("pv-footer").textContent = STATUS_LABELS[status];
+    // Mirrors how a real Discord embed footer looks with .setTimestamp() —
+    // the status text plus a live "Today at HH:MM" clock.
+    const nowLabel = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    document.getElementById("pv-footer").textContent = `${STATUS_LABELS[status]} • Today at ${nowLabel}`;
     document.querySelector(".dp-embed").style.borderLeftColor = data.color;
 
     const registerBtn = document.getElementById("pv-register-btn");
     const isFull = activeCount >= data.maxParticipants;
-    registerBtn.textContent = isFull ? "Slots full" : "✅ Join";
+    registerBtn.textContent = isFull ? "Full" : "✅ Join";
     registerBtn.style.opacity = status === "published" && !isFull ? "1" : "0.5";
 }
 
-// --- Banner upload (drag & drop or click) ---
-const bannerDropzone = document.getElementById("banner-dropzone");
-const bannerFileInput = document.getElementById("banner-file");
+// --- Image uploads (drag & drop or click) — banner, thumbnail, author icon ---
+// All three behave identically (a local upload becomes a data: URL that takes
+// precedence over the paired text input's pasted link), so one factory wires
+// each instead of repeating the same dropzone plumbing three times.
+function wireImageDropzone(dropzoneId, fileInputId, textInputId, overrideKey) {
+    const dropzone = document.getElementById(dropzoneId);
+    const fileInput = document.getElementById(fileInputId);
+    const textInput = document.getElementById(textInputId);
 
-bannerDropzone.addEventListener("click", () => bannerFileInput.click());
-bannerDropzone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    bannerDropzone.classList.add("dragover");
-});
-bannerDropzone.addEventListener("dragleave", () => bannerDropzone.classList.remove("dragover"));
-bannerDropzone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    bannerDropzone.classList.remove("dragover");
-    if (e.dataTransfer.files[0]) handleBannerFile(e.dataTransfer.files[0]);
-});
-bannerFileInput.addEventListener("change", () => {
-    if (bannerFileInput.files[0]) handleBannerFile(bannerFileInput.files[0]);
-});
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            state[overrideKey] = reader.result;
+            textInput.value = "";
+            renderPreview();
+        };
+        reader.readAsDataURL(file);
+    }
 
-function handleBannerFile(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-        state.bannerOverride = reader.result;
-        document.getElementById("f-banner").value = "";
-        renderPreview();
-    };
-    reader.readAsDataURL(file);
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+    textInput.addEventListener("input", () => {
+        state[overrideKey] = null;
+    });
 }
 
-document.getElementById("f-banner").addEventListener("input", () => {
-    state.bannerOverride = null;
-});
+wireImageDropzone("banner-dropzone", "banner-file", "f-banner", "bannerOverride");
+wireImageDropzone("thumbnail-dropzone", "thumbnail-file", "f-thumbnail", "thumbnailOverride");
+wireImageDropzone("author-icon-dropzone", "author-icon-file", "f-author-icon", "authorIconOverride");
 
 // =========================================================================
 // Description toolbar: Discord markdown shortcuts + role/channel/user mention
@@ -547,6 +827,62 @@ const FORMAT_MAP = {
     bullet: ["- ", "", "list item"],
     header: ["# ", "", "header"],
 };
+
+// Turns the raw markdown typed into the description into the same HTML shape
+// Discord itself renders, so the "Live preview" actually looks like the real
+// embed instead of showing raw ** and <:emoji:id> syntax. Best-effort — it
+// covers the toolbar's own formatting plus emoji/mention tags, not the full
+// breadth of Discord's markdown grammar.
+function renderDiscordMarkup(raw) {
+    if (!raw) return "";
+    let html = escapeHtml(raw);
+
+    html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<div class="dp-code-block">${code}</div>`);
+    html = html.replace(/`([^`]+)`/g, (_, code) => `<span class="dp-code">${code}</span>`);
+
+    // Custom emoji <:name:id> / <a:name:id> — Discord's CDN serves these
+    // straight from the id, no need to look them up in the fetched emoji list.
+    html = html.replace(/&lt;(a?):(\w+):(\d+)&gt;/g, (_, animated, name, id) => {
+        const ext = animated ? "gif" : "png";
+        return `<img class="dp-emoji" src="https://cdn.discordapp.com/emojis/${id}.${ext}" alt=":${name}:" title=":${name}:" />`;
+    });
+
+    // Role / channel / user mentions — resolved against the currently loaded
+    // guild data where possible, since we only have an id at this point.
+    html = html.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => {
+        const role = state.roles.find((r) => r.id === id);
+        return `<span class="dp-mention">@${escapeHtml(role ? role.name : "role")}</span>`;
+    });
+    html = html.replace(/&lt;#(\d+)&gt;/g, (_, id) => {
+        const channel = state.channels.find((c) => c.id === id);
+        return `<span class="dp-mention">#${escapeHtml(channel ? channel.name : "channel")}</span>`;
+    });
+    html = html.replace(/&lt;@(\d+)&gt;/g, () => `<span class="dp-mention">@user</span>`);
+    html = html.replace(/(^|\s)@(everyone|here)\b/g, (_, pre, kw) => `${pre}<span class="dp-mention">@${kw}</span>`);
+
+    html = html.replace(/\*\*\*([^*]+)\*\*\*/g, "<b><i>$1</i></b>");
+    html = html.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    html = html.replace(/__([^_]+)__/g, "<u>$1</u>");
+    html = html.replace(/~~([^~]+)~~/g, "<s>$1</s>");
+    html = html.replace(/\|\|([^|]+)\|\|/g, '<span class="dp-spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
+    html = html.replace(/\*([^*\n]+)\*/g, "<i>$1</i>");
+    html = html.replace(/(?<![\w:])_([^_\n]+)_(?![\w:])/g, "<i>$1</i>");
+
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    html = html
+        .split("\n")
+        .map((line) => {
+            const header = /^(#{1,3})\s+(.*)$/.exec(line);
+            if (header) return `<div class="dp-h${header[1].length}">${header[2]}</div>`;
+            if (/^&gt;\s?/.test(line)) return `<div class="dp-quote">${line.replace(/^&gt;\s?/, "")}</div>`;
+            if (/^-\s+/.test(line)) return `<div class="dp-bullet">• ${line.replace(/^-\s+/, "")}</div>`;
+            return line;
+        })
+        .join("\n");
+
+    return html;
+}
 
 function wrapSelection(textarea, prefix, suffix, placeholder) {
     const start = textarea.selectionStart;
@@ -603,6 +939,7 @@ function toggleDropdown(name, renderFn) {
         closeDropdown();
         return;
     }
+    closeAllPopovers(formatDropdown);
     formatDropdown.dataset.for = name;
     formatDropdown.innerHTML = "";
     renderFn(formatDropdown);
@@ -666,44 +1003,106 @@ document.getElementById("mention-user-btn").addEventListener("click", () => {
     });
 });
 
-document.getElementById("emoji-picker-btn").addEventListener("click", async () => {
-    if (!formatDropdown.classList.contains("hidden") && formatDropdown.dataset.for === "emoji") {
-        closeDropdown();
-        return;
-    }
-    formatDropdown.dataset.for = "emoji";
-    formatDropdown.innerHTML = `<div class="dd-empty">Loading…</div>`;
-    formatDropdown.classList.remove("hidden");
+// Closes every other popover (the mention/emoji dropdown, both date/time
+// pickers, and the reaction-emoji dropdown) except the one just opened —
+// keeps only one of these open at a time.
+function closeAllPopovers(exceptEl) {
+    document.querySelectorAll(".dt-panel:not(.hidden)").forEach((p) => p.classList.add("hidden"));
+    document.querySelectorAll(".dropdown-menu").forEach((d) => {
+        if (d === exceptEl) return;
+        d.classList.add("hidden");
+        d.innerHTML = "";
+        delete d.dataset.for;
+    });
+}
 
-    if (state.emojis === null) {
-        try {
-            const { emojis } = await apiFetch(`/api/guilds/${state.guildId}/emojis`);
-            state.emojis = emojis;
-        } catch (err) {
-            state.emojis = [];
+// Fetches (and caches) the guild's custom emojis and renders them as a grid
+// inside dropdownEl, calling onPick(emoji) when one is clicked — shared by
+// the description's emoji button and the auto-react emoji button below.
+function wireEmojiPicker(dropdownEl, triggerBtn, onPick) {
+    function close() {
+        dropdownEl.classList.add("hidden");
+        dropdownEl.innerHTML = "";
+    }
+
+    triggerBtn.addEventListener("click", async () => {
+        const wasOpen = !dropdownEl.classList.contains("hidden");
+        closeAllPopovers(dropdownEl);
+        if (wasOpen) return close();
+
+        dropdownEl.innerHTML = `<div class="dd-empty">Loading…</div>`;
+        dropdownEl.classList.remove("hidden");
+
+        if (state.emojis === null) {
+            try {
+                const { emojis } = await apiFetch(`/api/guilds/${state.guildId}/emojis`);
+                state.emojis = emojis;
+            } catch (err) {
+                state.emojis = [];
+            }
         }
+        if (dropdownEl.classList.contains("hidden")) return; // closed while that fetch was in flight
+
+        dropdownEl.innerHTML = "";
+        if (!state.emojis.length) {
+            dropdownEl.innerHTML = `<div class="dd-empty">No custom emojis on this server.</div>`;
+            return;
+        }
+        for (const emoji of state.emojis) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "dd-item dd-emoji-item";
+            btn.title = `:${emoji.name}:`;
+            btn.innerHTML = `<img src="${emoji.url}" alt="${escapeHtml(emoji.name)}" />`;
+            btn.addEventListener("click", () => {
+                onPick(emoji);
+                close();
+            });
+            dropdownEl.appendChild(btn);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!triggerBtn.contains(e.target) && !dropdownEl.contains(e.target)) close();
+    });
+}
+
+wireEmojiPicker(formatDropdown, document.getElementById("emoji-picker-btn"), (emoji) => {
+    insertAtCursor(document.getElementById("f-description"), emoji.tag);
+});
+
+// --- Auto-react emoji: either a custom server emoji (picked below) or any
+// pasted/typed standard unicode emoji — mutually exclusive with each other.
+function setReactionEmoji(value, { syncUnicodeInput = true } = {}) {
+    state.reactionEmoji = value;
+    const chip = document.getElementById("reaction-chip");
+    const content = document.getElementById("reaction-chip-content");
+
+    if (!value) {
+        content.textContent = "— none —";
+        chip.classList.remove("has-value");
+    } else if (value.id) {
+        content.innerHTML = `<img src="https://cdn.discordapp.com/emojis/${value.id}.png" alt="${escapeHtml(value.name)}" /> :${escapeHtml(value.name)}:`;
+        chip.classList.add("has-value");
+    } else {
+        content.textContent = value.name;
+        chip.classList.add("has-value");
     }
 
-    // The picker may have been closed (or switched to another one) while that fetch was in flight.
-    if (formatDropdown.dataset.for !== "emoji") return;
+    if (syncUnicodeInput) {
+        document.getElementById("f-reaction-unicode").value = value && !value.id ? value.name : "";
+    }
+}
 
-    formatDropdown.innerHTML = "";
-    if (!state.emojis.length) {
-        formatDropdown.innerHTML = `<div class="dd-empty">No custom emojis on this server.</div>`;
-        return;
-    }
-    for (const emoji of state.emojis) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "dd-item dd-emoji-item";
-        btn.title = `:${emoji.name}:`;
-        btn.innerHTML = `<img src="${emoji.url}" alt="${escapeHtml(emoji.name)}" />`;
-        btn.addEventListener("click", () => {
-            insertAtCursor(document.getElementById("f-description"), emoji.tag);
-            closeDropdown();
-        });
-        formatDropdown.appendChild(btn);
-    }
+document.getElementById("reaction-chip").addEventListener("click", () => setReactionEmoji(null));
+
+document.getElementById("f-reaction-unicode").addEventListener("input", (e) => {
+    const value = e.target.value.trim();
+    setReactionEmoji(value ? { id: null, name: value } : null, { syncUnicodeInput: false });
+});
+
+wireEmojiPicker(document.getElementById("reaction-dropdown"), document.getElementById("reaction-emoji-btn"), (emoji) => {
+    setReactionEmoji({ id: emoji.id, name: emoji.name });
 });
 
 // --- AI description generator ---

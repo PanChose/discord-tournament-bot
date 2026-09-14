@@ -15,6 +15,7 @@ const {
     publishTournament,
     closeTournamentAnnouncement,
     refreshAnnouncementMessage,
+    applyReaction,
 } = require("./lib/discordClient");
 const tournamentsLib = require("./lib/tournaments");
 const matcherinoSync = require("./lib/matcherinoSync");
@@ -189,7 +190,12 @@ app.patch("/api/tournaments/:id", requireAuth, async (req, res) => {
     if (!tournament) return;
     try {
         const updated = tournamentsLib.updateTournament(tournament.id, req.body);
-        if (updated.status === "published") await refreshAnnouncementMessage(updated);
+        if (updated.status === "published") {
+            await refreshAnnouncementMessage(updated);
+            const reactionChanged =
+                updated.reaction_emoji_id !== tournament.reaction_emoji_id || updated.reaction_emoji_name !== tournament.reaction_emoji_name;
+            if (reactionChanged) await applyReaction(updated);
+        }
         res.json({ tournament: updated });
     } catch (err) {
         res.status(500).json({ error: err.message });
