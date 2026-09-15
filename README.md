@@ -1,4 +1,4 @@
-## https://discord-tournament-bot-production.up.railway.app
+## https://announcementsbot.xyz
 
 # Discord Tournament Bot + Web Panel
 
