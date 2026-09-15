@@ -1,5 +1,8 @@
 # Discord Tournament Bot + Web Panel
 
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)
+
 A Discord bot for running community tournaments, plus a web control panel organizers use instead of
 typing commands: build the announcement visually with a live preview, publish it with one click, and
 watch registrations come in in real time — all synced back to the same Discord message.
@@ -196,7 +199,7 @@ discord-tournament-bot/
 │   ├── discordClient.js        # discord.js client: slash commands, buttons, embeds
 │   ├── reminders.js             # polls for due reminder DMs / start-time role pings
 │   ├── matcherino.js             # Matcherino bracket API client (bounty id + entrants count)
-│   ├── matcherinoSync.js          # polls it every ~4 min, updates the embed + posts deltas
+│   ├── matcherinoSync.js          # polls it every ~4 min, silently updates the embed's fields
 │   └── ai.js                       # Claude API — tournament description generator
 ├── public/                # Web panel (vanilla HTML/CSS/JS, no build step)
 ├── data/                   # SQLite database file (gitignored)
@@ -210,6 +213,12 @@ discord-tournament-bot/
 - Every privileged bot action re-checks the Manage Server permission server-side.
 - Never commit `.env` — already covered by `.gitignore`.
 
+## License
+
+[MIT](LICENSE) — do whatever you want with it, no warranty attached. This project uses the Discord API
+and, optionally, the Matcherino and Anthropic APIs; using those is subject to their own respective
+terms.
+
 ## Ready-to-show checklist
 
 - [ ] Bot deployed and added to a public demo server
@@ -217,3 +226,4 @@ discord-tournament-bot/
 - [ ] 15-20s demo clip: create → publish → register → live slot counter update
 - [x] README with an Architecture section and the non-trivial parts called out
 - [x] No real tokens committed — `.env` + `.gitignore` in place
+- [x] LICENSE file (MIT) + Terms of Service / Privacy Policy pages

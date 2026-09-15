@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Discord tournament bot with a web control panel (Discord OAuth2 login, live tournament announcements, registration tracking)",
   "main": "server.js",
+  "license": "MIT",
   "type": "commonjs",
   "scripts": {
     "start": "node server.js"
