@@ -27,7 +27,9 @@ watch registrations come in in real time — all synced back to the same Discord
   field and the bot polls Matcherino's own bracket API every ~4 minutes for the real entrants count
   and prize pool, silently keeping the announcement's "Teams Registered" and "Prize Pool" fields in
   sync with it instead of (or alongside) Discord Join clicks — no extra channel message per change,
-  just the same embed staying current.
+  just the same embed staying current. The web panel's dashboard also picks up the bracket's own
+  lifecycle status, so a linked tournament shows **In Progress** or **Finalized** there once it moves
+  past registration — not just Draft/Registration Open/Closed.
 - **Announcement branding & notifications**: an embed author line (small icon + name above the title),
   a thumbnail icon, an auto-react emoji (custom server emoji or any standard one) the bot reacts with
   on publish, and an optional real role ping in the message itself when it goes out — separate from the

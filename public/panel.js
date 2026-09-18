@@ -21,6 +21,25 @@ const FORMAT_LABELS = {
 
 const STATUS_LABELS = { draft: "Draft", published: "Registration Open", closed: "Registration Closed" };
 
+// Mirrors lib/tournaments.js's DASHBOARD_STATUS_LABELS / dashboardStatusKey —
+// this file can't require() them. Shows "In Progress"/"Finalized" once a
+// linked Matcherino bracket reports one of those, instead of just
+// registration open/closed.
+const DASHBOARD_STATUS_LABELS = { ...STATUS_LABELS, in_progress: "In Progress", finalized: "Finalized" };
+
+function matcherinoStatusCategory(status) {
+    if (!status) return null;
+    const s = status.toLowerCase();
+    if (s.includes("progress") || s.includes("active") || s.includes("live")) return "in_progress";
+    if (s.includes("complet") || s.includes("final") || s.includes("finish") || s.includes("ended")) return "finalized";
+    return null;
+}
+
+function dashboardStatusKey(t) {
+    if (t.status === "draft") return "draft";
+    return matcherinoStatusCategory(t.matcherino_status) || t.status;
+}
+
 async function apiFetch(url, opts = {}) {
     const res = await fetch(url, {
         ...opts,
@@ -235,7 +254,7 @@ function renderTournamentList() {
                         ${matcherinoLine}
                     </div>
                     <div class="tournament-meta">${slots}/${t.max_participants} teams</div>
-                    <span class="badge badge-${t.status}">${STATUS_LABELS[t.status]}</span>
+                    <span class="badge badge-${dashboardStatusKey(t)}">${DASHBOARD_STATUS_LABELS[dashboardStatusKey(t)]}</span>
                     <div class="row-actions">${actions.join("")}</div>
                 </div>`;
         })
@@ -1019,7 +1038,7 @@ function closeAllPopovers(exceptEl) {
 // Fetches (and caches) the guild's custom emojis and renders them as a grid
 // inside dropdownEl, calling onPick(emoji) when one is clicked — shared by
 // the description's emoji button and the auto-react emoji button below.
-function wireEmojiPicker(dropdownEl, triggerBtn, onPick) {
+function wireEmojiPicker(dropdownEl, triggerBtn, onPick, { closeOnPick = true } = {}) {
     function close() {
         dropdownEl.classList.add("hidden");
         dropdownEl.innerHTML = "";
@@ -1056,7 +1075,7 @@ function wireEmojiPicker(dropdownEl, triggerBtn, onPick) {
             btn.innerHTML = `<img src="${emoji.url}" alt="${escapeHtml(emoji.name)}" />`;
             btn.addEventListener("click", () => {
                 onPick(emoji);
-                close();
+                if (closeOnPick) close();
             });
             dropdownEl.appendChild(btn);
         }
@@ -1067,9 +1086,14 @@ function wireEmojiPicker(dropdownEl, triggerBtn, onPick) {
     });
 }
 
-wireEmojiPicker(formatDropdown, document.getElementById("emoji-picker-btn"), (emoji) => {
-    insertAtCursor(document.getElementById("f-description"), emoji.tag);
-});
+wireEmojiPicker(
+    formatDropdown,
+    document.getElementById("emoji-picker-btn"),
+    (emoji) => {
+        insertAtCursor(document.getElementById("f-description"), emoji.tag);
+    },
+    { closeOnPick: false } // stays open so several emoji can be inserted in a row
+);
 
 // --- Auto-react emoji: either a custom server emoji (picked below) or any
 // pasted/typed standard unicode emoji — mutually exclusive with each other.
