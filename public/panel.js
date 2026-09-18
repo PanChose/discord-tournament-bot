@@ -231,6 +231,7 @@ function renderTournamentList() {
             if (t.matcherino_bounty_id) {
                 actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">🔄 Sync</button>`);
             }
+            actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">📋 Clone</button>`);
             actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">Delete</button>`);
 
             const usingMatcherino = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
@@ -238,6 +239,8 @@ function renderTournamentList() {
             const hasPrizePool = t.matcherino_prize_pool !== null && t.matcherino_prize_pool !== undefined;
             const matcherinoLine = t.matcherino_bounty_id
                 ? `<div class="tournament-meta">🔗 Matcherino #${escapeHtml(t.matcherino_bounty_id)}${
+                      t.matcherino_status ? ` — ${escapeHtml(capitalize(t.matcherino_status))}` : ""
+                  }${
                       hasPrizePool ? ` — ${formatPrizePool(t.matcherino_prize_pool)} prize pool` : ""
                   }${
                       usingMatcherino
@@ -282,7 +285,23 @@ document.getElementById("tournament-list").addEventListener("click", async (e) =
     if (action === "delete") return deleteTournament(id);
     if (action === "participants") return showParticipants(tournament);
     if (action === "matcherino-sync") return syncMatcherino(id, btn);
+    if (action === "clone") return cloneTournament(id, btn);
 });
+
+async function cloneTournament(id, btn) {
+    const originalText = btn.textContent;
+    btn.textContent = "⏳ …";
+    btn.disabled = true;
+    try {
+        const { tournament } = await apiFetch(`/api/tournaments/${id}/clone`, { method: "POST" });
+        await loadTournaments();
+        editTournament(tournament); // jump straight into the new draft to fill in start time etc.
+    } catch (err) {
+        alert(err.message);
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
 
 async function syncMatcherino(id, btn) {
     const originalText = btn.textContent;
@@ -604,6 +623,10 @@ const MATCHERINO_URL_RE = /matcherino\.com\/(?:[^/?#]+\/)?tournaments\/(\d+)/i;
 function formatPrizePool(amount) {
     const rounded = Math.round(amount * 100) / 100;
     return `$${Number.isInteger(rounded) ? rounded : rounded.toFixed(2)}`;
+}
+
+function capitalize(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
 }
 
 function updateMatcherinoStatus() {
@@ -968,6 +991,9 @@ function toggleDropdown(name, renderFn) {
 document.addEventListener("click", (e) => {
     const triggerIds = ["mention-role-btn", "mention-channel-btn", "mention-user-btn", "emoji-picker-btn"];
     if (triggerIds.includes(e.target.closest("button")?.id) || formatDropdown.contains(e.target)) return;
+    // Clicking back into the description to reposition the cursor (e.g. before
+    // inserting another emoji) shouldn't close the picker sitting above it.
+    if (e.target.id === "f-description") return;
     closeDropdown();
 });
 
@@ -1038,7 +1064,7 @@ function closeAllPopovers(exceptEl) {
 // Fetches (and caches) the guild's custom emojis and renders them as a grid
 // inside dropdownEl, calling onPick(emoji) when one is clicked — shared by
 // the description's emoji button and the auto-react emoji button below.
-function wireEmojiPicker(dropdownEl, triggerBtn, onPick, { closeOnPick = true } = {}) {
+function wireEmojiPicker(dropdownEl, triggerBtn, onPick, { closeOnPick = true, ignoreClicksOn = [] } = {}) {
     function close() {
         dropdownEl.classList.add("hidden");
         dropdownEl.innerHTML = "";
@@ -1082,7 +1108,9 @@ function wireEmojiPicker(dropdownEl, triggerBtn, onPick, { closeOnPick = true } 
     });
 
     document.addEventListener("click", (e) => {
-        if (!triggerBtn.contains(e.target) && !dropdownEl.contains(e.target)) close();
+        if (triggerBtn.contains(e.target) || dropdownEl.contains(e.target)) return;
+        if (ignoreClicksOn.some((el) => el && el.contains(e.target))) return;
+        close();
     });
 }
 
@@ -1092,7 +1120,7 @@ wireEmojiPicker(
     (emoji) => {
         insertAtCursor(document.getElementById("f-description"), emoji.tag);
     },
-    { closeOnPick: false } // stays open so several emoji can be inserted in a row
+    { closeOnPick: false, ignoreClicksOn: [document.getElementById("f-description")] } // stays open across picks and while repositioning the cursor
 );
 
 // --- Auto-react emoji: either a custom server emoji (picked below) or any

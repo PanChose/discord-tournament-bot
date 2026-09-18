@@ -18,7 +18,8 @@ watch registrations come in in real time — all synced back to the same Discord
 - **Web panel**: sign in with your own Discord account (OAuth2 — no separate password), pick a server
   you organize for, build the tournament with a form that renders a live Discord-style preview as you
   type, and manage everything from a dashboard (publish / edit / close / delete, participant list,
-  CSV export).
+  CSV export, and **Clone** to spin up a new draft with the same branding/content — minus the old
+  start time, reminder, and Matcherino link, since those belong to a specific event).
 - **Description editor toolbar**: bold/italic/underline/strikethrough/spoiler/code/quote/list/header
   buttons, a link inserter, role/channel/user mention pickers, and a picker for the server's own custom
   emojis (pulled live from Discord) — everything gets inserted as the right Discord markdown right at

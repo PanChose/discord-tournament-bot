@@ -156,7 +156,7 @@ main {
 /* --- Two-column editor layout --- */
 .layout {
     display: grid;
-    grid-template-columns: 460px 1fr;
+    grid-template-columns: 560px 1fr;
     gap: 20px;
     align-items: start;
 }
@@ -297,8 +297,8 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     border-left: 4px solid var(--accent);
     border-radius: 4px;
     padding: 10px 12px;
-    max-width: 432px;
-    max-height: 420px;
+    max-width: 520px;
+    max-height: 560px;
     overflow-y: auto;
     overflow-x: hidden;
 }
