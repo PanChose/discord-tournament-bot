@@ -1068,7 +1068,7 @@ function closeAllPopovers(exceptEl) {
 // Fetches (and caches) the guild's custom emojis and renders them as a grid
 // inside dropdownEl, calling onPick(emoji) when one is clicked — shared by
 // the description's emoji button and the auto-react emoji button below.
-function wireEmojiPicker(dropdownEl, triggerBtn, onPick, { closeOnPick = true, ignoreClicksOn = [] } = {}) {
+function wireEmojiPicker(dropdownEl, triggerBtn, onPick, { closeOnPick = true, ignoreClicksOn = [], skipOutsideClickHandler = false } = {}) {
     function close() {
         dropdownEl.classList.add("hidden");
         dropdownEl.innerHTML = "";
@@ -1112,6 +1112,7 @@ function wireEmojiPicker(dropdownEl, triggerBtn, onPick, { closeOnPick = true, i
     });
 
     document.addEventListener("click", (e) => {
+        if (skipOutsideClickHandler) return; // another listener already owns closing this one (see below)
         if (triggerBtn.contains(e.target) || dropdownEl.contains(e.target)) return;
         if (ignoreClicksOn.some((el) => el && el.contains(e.target))) return;
         close();
@@ -1124,7 +1125,14 @@ wireEmojiPicker(
     (emoji) => {
         insertAtCursor(document.getElementById("f-description"), emoji.tag);
     },
-    { closeOnPick: false, ignoreClicksOn: [document.getElementById("f-description")] } // stays open across picks and while repositioning the cursor
+    {
+        closeOnPick: false, // stays open across picks and while repositioning the cursor
+        // format-dropdown is shared with the @Role/#Chan/@User buttons, whose own
+        // document-click listener (above) already knows about all four triggers
+        // and the textarea exemption — a second, narrower one here would fight it
+        // and close the dropdown the instant one of those other buttons is clicked.
+        skipOutsideClickHandler: true,
+    }
 );
 
 // --- Auto-react emoji: either a custom server emoji (picked below) or any
