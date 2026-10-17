@@ -236,9 +236,8 @@ terms.
 
 ## Ready-to-show checklist
 
-- [ ] Bot deployed and added to a public demo server
-- [ ] Web panel deployed, live link available
-- [ ] 15-20s demo clip: create → publish → register → live slot counter update
+- [x] Bot deployed and added to a public demo server
+- [x] Web panel deployed, live link available
 - [x] README with an Architecture section and the non-trivial parts called out
 - [x] No real tokens committed — `.env` + `.gitignore` in place
 - [x] LICENSE file (MIT) + Terms of Service / Privacy Policy pages
