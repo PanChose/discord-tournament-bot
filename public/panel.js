@@ -234,8 +234,11 @@ function renderTournamentList() {
             actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">📋 Clone</button>`);
             actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">Delete</button>`);
 
-            const usingMatcherino = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
-            const slots = usingMatcherino ? t.matcherino_entrants : t.activeCount;
+            // Once a Matcherino link exists, the count only ever moves via the
+            // sync — Discord Join/Leave clicks never bump it, even before the
+            // first successful sync (shows 0 until then).
+            const hasMatcherinoReading = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
+            const slots = t.matcherino_bounty_id ? t.matcherino_entrants ?? 0 : t.activeCount;
             const hasPrizePool = t.matcherino_prize_pool !== null && t.matcherino_prize_pool !== undefined;
             const matcherinoLine = t.matcherino_bounty_id
                 ? `<div class="tournament-meta">🔗 Matcherino #${escapeHtml(t.matcherino_bounty_id)}${
@@ -243,7 +246,7 @@ function renderTournamentList() {
                   }${
                       hasPrizePool ? ` — ${formatPrizePool(t.matcherino_prize_pool)} prize pool` : ""
                   }${
-                      usingMatcherino
+                      hasMatcherinoReading
                           ? ` — last checked ${t.matcherino_checked_at ? timeAgo(t.matcherino_checked_at) : "just now"}`
                           : " — not checked yet"
                   }</div>`
@@ -731,8 +734,9 @@ function renderPreview() {
     const isEditing = Boolean(document.getElementById("tournament-id").value);
     const existing = isEditing ? state.tournaments.find((t) => t.id === document.getElementById("tournament-id").value) : null;
     const status = existing ? existing.status : "draft";
-    const usingMatcherino = existing && existing.matcherino_bounty_id && existing.matcherino_entrants !== null && existing.matcherino_entrants !== undefined;
-    const activeCount = usingMatcherino ? existing.matcherino_entrants : existing ? existing.activeCount : 0;
+    // Once a Matcherino link exists, the shown count only ever comes from the
+    // sync — Join/Leave clicks never move it, even before the first sync.
+    const activeCount = existing && existing.matcherino_bounty_id ? existing.matcherino_entrants ?? 0 : existing ? existing.activeCount : 0;
 
     // Message content sits above the embed — only real notification the bot
     // sends, since embeds never ping even with a mention inside them.
