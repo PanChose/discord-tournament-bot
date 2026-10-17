@@ -46,6 +46,17 @@ watch registrations come in in real time — all synced back to the same Discord
 | **Participant** | Join/Leave via the buttons on the announcement, or `/register` / `/unregister`. |
 | **Viewer** | Sees the announcement and the live slot counter like any other message in the channel. |
 
+### Multi-tenant by design
+
+One deployment, any number of independent servers — there's no "bot owner" restriction. Anyone can
+invite the bot to a Discord server they administer and get their own slice of the panel, with zero
+cross-server visibility: `GET /api/me` (`server.js`) intersects "servers this logged-in Discord user has
+Manage Server on" with "servers the bot is actually in," so the guild dropdown only ever lists servers
+that pass both checks. Every tournament is scoped to one `guild_id`, and every privileged endpoint
+(`requireOrganizerOf` in `server.js`) re-checks that guild membership server-side before touching
+anything — a user on server A can never see or edit a tournament that lives on server B, even by guessing
+its id in a request.
+
 ## Discord commands
 
 - `/tournament create` — opens a form (Discord modal) for a quick draft without leaving Discord
@@ -157,15 +168,14 @@ prize pool is left alone rather than being blanked out.
    - **OAuth2 → Redirects**: add `http://localhost:3000/auth/discord/callback` (must match
      `DISCORD_REDIRECT_URI` exactly) — add your production URL's callback here too once you deploy
    - **OAuth2 → URL Generator**: scopes `bot` + `applications.commands`, permissions at least
-     `Send Messages`, `Read Messages/View Channels`, `Manage Messages` (to edit its own announcements).
-     Open the generated link to add the bot to your server.
-   - **Installation → Authorization Flow**: turn off **Public Bot** so only you can add it elsewhere
-     (this repo also enforces that in code via `OWNER_DISCORD_ID`, as a backup)
+     `Send Messages`, `Read Messages/View Channels`, `Manage Messages` (to edit its own announcements),
+     `Add Reactions`. Open the generated link to add the bot to your server.
+   - **Installation → Authorization Flow**: leave **Public Bot** turned on — anyone can invite the bot
+     to their own server and manage it through the panel, scoped to servers where they themselves have
+     Manage Server (see "Multi-tenant by design" below).
 
    **Security**
    - `ENCRYPTION_KEY`: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-   - `OWNER_DISCORD_ID` (optional but recommended): User Settings → Advanced → Developer Mode, then
-     right-click your name → Copy User ID
 
    **Optional**
    - `ANTHROPIC_API_KEY`: from [console.anthropic.com](https://console.anthropic.com/) — only needed
