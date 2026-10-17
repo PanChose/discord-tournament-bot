@@ -202,6 +202,20 @@ app.patch("/api/tournaments/:id", requireAuth, async (req, res) => {
     }
 });
 
+// Duplicates a tournament's branding/content into a new draft named
+// "<original> (Cloned)" — see lib/tournaments.js:cloneTournament for exactly
+// what does and doesn't carry over.
+app.post("/api/tournaments/:id/clone", requireAuth, async (req, res) => {
+    const tournament = await loadOwnedTournament(req, res);
+    if (!tournament) return;
+    try {
+        const clone = tournamentsLib.cloneTournament(tournament, req.session.discord_user_id);
+        res.json({ tournament: clone });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.delete("/api/tournaments/:id", requireAuth, async (req, res) => {
     const tournament = await loadOwnedTournament(req, res);
     if (!tournament) return;
