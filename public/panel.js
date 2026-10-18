@@ -226,12 +226,12 @@ function renderTournamentList() {
             }
             if (t.status !== "draft") {
                 actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">Participants</button>`);
-                actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">🔁 Republish</button>`);
+                actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">Republish</button>`);
             }
             if (t.matcherino_bounty_id) {
-                actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">🔄 Sync</button>`);
+                actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">Sync</button>`);
             }
-            actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">📋 Clone</button>`);
+            actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">Clone</button>`);
             actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">Delete</button>`);
 
             // Once a Matcherino link exists, the count only ever moves via the
@@ -598,7 +598,7 @@ remindAtPicker.onChange = () => updateSectionBadges();
 // Reuses the same calendar UI as a one-shot "insert a Discord timestamp into
 // the description" tool — it never keeps a value, it just writes <t:...:F>
 // at the cursor and resets itself back to the 🕒 icon.
-const descTimePicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="desc-time"]'), "🕒");
+const descTimePicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="desc-time"]'), "Time");
 descTimePicker.onChange = (ms) => {
     if (!ms) return;
     insertAtCursor(document.getElementById("f-description"), `<t:${Math.floor(ms / 1000)}:F>`);

@@ -30,7 +30,7 @@
             <span id="bot-status" class="status">…</span>
         </div>
         <div class="header-right">
-            <a id="invite-bot-link-app" class="secondary-btn invite-btn" href="#" target="_blank" rel="noopener">➕ Add to another server</a>
+            <a id="invite-bot-link-app" class="secondary-btn invite-btn" href="#" target="_blank" rel="noopener">Add to another server</a>
             <select id="guild-select"></select>
             <span id="user-tag" class="user-tag"></span>
             <button id="logout-btn" class="secondary-btn" type="button">Log out</button>
@@ -53,7 +53,7 @@
             <section id="participants-card" class="card hidden">
                 <div class="card-head-row">
                     <h2 id="participants-title">Participants</h2>
-                    <a id="csv-export-link" class="secondary-btn csv-btn" href="#">⬇️ Export CSV</a>
+                    <a id="csv-export-link" class="secondary-btn csv-btn" href="#">Export CSV</a>
                 </div>
                 <table class="participants-table">
                     <thead><tr><th>User</th><th>Registered</th></tr></thead>
@@ -107,14 +107,14 @@
                     <section class="card">
                         <div class="card-head-row">
                             <h2 id="editor-heading">New tournament</h2>
-                            <button type="button" id="editor-reset-btn" class="secondary-btn">🗑️ Clear</button>
+                            <button type="button" id="editor-reset-btn" class="secondary-btn">Clear</button>
                         </div>
 
                         <input type="hidden" id="tournament-id" />
 
                         <div class="form-section" data-section="basics">
                             <button type="button" class="section-header" data-section-toggle>
-                                <span class="section-title">📋 Basics</span>
+                                <span class="section-title">Basics</span>
                                 <span class="section-badge" data-section-badge></span>
                                 <span class="section-chevron">▾</span>
                             </button>
@@ -145,7 +145,6 @@
                                         <label>Start date/time</label>
                                         <div class="dt-field" data-dt="starts">
                                             <button type="button" class="dt-toggle" data-dt-toggle>
-                                                <span>📅</span>
                                                 <span data-dt-label>Pick a date &amp; time</span>
                                             </button>
                                             <div class="dt-panel hidden" data-dt-panel></div>
@@ -166,7 +165,7 @@
 
                         <div class="form-section" data-section="description">
                             <button type="button" class="section-header" data-section-toggle>
-                                <span class="section-title">📝 Description</span>
+                                <span class="section-title">Description</span>
                                 <span class="section-badge" data-section-badge></span>
                                 <span class="section-chevron">▾</span>
                             </button>
@@ -182,14 +181,14 @@
                                     <button type="button" data-fmt="quote" title="Quote">❝</button>
                                     <button type="button" data-fmt="bullet" title="Bullet list">•</button>
                                     <button type="button" data-fmt="header" title="Header">H</button>
-                                    <button type="button" data-fmt="link" title="Link">🔗</button>
+                                    <button type="button" data-fmt="link" title="Link">Link</button>
                                     <span class="toolbar-sep"></span>
                                     <button type="button" id="mention-role-btn" title="Mention a role">@Role</button>
                                     <button type="button" id="mention-channel-btn" title="Mention a channel">#Chan</button>
                                     <button type="button" id="mention-user-btn" title="Mention a user by ID">@User</button>
-                                    <button type="button" id="emoji-picker-btn" title="Insert a custom server emoji">😀</button>
+                                    <button type="button" id="emoji-picker-btn" title="Insert a custom server emoji">Emoji</button>
                                     <div class="dt-field" data-dt="desc-time">
-                                        <button type="button" data-dt-toggle title="Insert a date/time"><span data-dt-label>🕒</span></button>
+                                        <button type="button" data-dt-toggle title="Insert a date/time"><span data-dt-label>Time</span></button>
                                         <div class="dt-panel hidden" data-dt-panel></div>
                                     </div>
                                 </div>
@@ -200,7 +199,7 @@
 
                         <div class="form-section collapsed" data-section="integrations">
                             <button type="button" class="section-header" data-section-toggle>
-                                <span class="section-title">✨ AI Description Generator</span>
+                                <span class="section-title">AI Description Generator</span>
                                 <span class="section-badge" data-section-badge></span>
                                 <span class="section-chevron">▾</span>
                             </button>
@@ -208,7 +207,7 @@
                                 <p class="ai-unavailable">⚠ Currently unavailable</p>
                                 <div class="ai-row">
                                     <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" disabled />
-                                    <button type="button" id="ai-generate-btn" class="secondary-btn" disabled>✨ Generate with AI</button>
+                                    <button type="button" id="ai-generate-btn" class="secondary-btn" disabled>Generate with AI</button>
                                 </div>
                                 <p id="ai-result" class="result"></p>
                             </div>
@@ -216,7 +215,7 @@
 
                         <div class="form-section collapsed" data-section="branding">
                             <button type="button" class="section-header" data-section-toggle>
-                                <span class="section-title">🎨 Branding</span>
+                                <span class="section-title">Branding</span>
                                 <span class="section-badge" data-section-badge></span>
                                 <span class="section-chevron">▾</span>
                             </button>
@@ -257,7 +256,7 @@
 
                         <div class="form-section collapsed" data-section="notifications">
                             <button type="button" class="section-header" data-section-toggle>
-                                <span class="section-title">🔔 Notifications &amp; Engagement</span>
+                                <span class="section-title">Notifications &amp; Engagement</span>
                                 <span class="section-badge" data-section-badge></span>
                                 <span class="section-chevron">▾</span>
                             </button>
@@ -271,7 +270,6 @@
                                 <label>Send a reminder DM at (optional)</label>
                                 <div class="dt-field" data-dt="remind">
                                     <button type="button" class="dt-toggle" data-dt-toggle>
-                                        <span>⏰</span>
                                         <span data-dt-label>No reminder</span>
                                     </button>
                                     <div class="dt-panel hidden" data-dt-panel></div>
@@ -284,7 +282,7 @@
                                     <button type="button" class="reaction-chip" id="reaction-chip">
                                         <span id="reaction-chip-content">— none —</span>
                                     </button>
-                                    <button type="button" class="secondary-btn" id="reaction-emoji-btn" title="Pick a custom server emoji">😀 Custom</button>
+                                    <button type="button" class="secondary-btn" id="reaction-emoji-btn" title="Pick a custom server emoji">Custom</button>
                                     <input type="text" id="f-reaction-unicode" placeholder="or paste any emoji 🎉" maxlength="8" />
                                 </div>
                                 <div id="reaction-dropdown" class="dropdown-menu hidden"></div>
@@ -292,7 +290,7 @@
                             </div>
                         </div>
 
-                        <button id="save-btn" type="button">💾 Save draft</button>
+                        <button id="save-btn" type="button">Save draft</button>
                         <p id="save-result" class="result"></p>
                     </section>
                 </section>
@@ -314,7 +312,7 @@
         <select id="republish-channel-select"></select>
         <div class="modal-actions">
             <button type="button" class="secondary-btn" id="republish-cancel-btn">Cancel</button>
-            <button type="button" id="republish-confirm-btn">✅ Confirm</button>
+            <button type="button" id="republish-confirm-btn">Confirm</button>
         </div>
         <p id="republish-result" class="result"></p>
     </div>
