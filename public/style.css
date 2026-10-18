@@ -159,7 +159,7 @@ button {
 
 button:hover { background: var(--accent-hover); }
 
-#publish-btn { background: var(--ok); }
+#publish-btn { background: var(--ok); padding: 16px 20px; font-size: 16px; }
 #publish-btn:hover { background: #46b87a; }
 
 /* The browser's default mouse-click focus ring made a small icon button (e.g.
@@ -300,21 +300,29 @@ main {
     gap: 6px;
     width: 200px;
     flex-shrink: 0;
-    position: sticky;
-    top: 24px;
+    position: fixed;
+    top: calc(var(--header-h, 72px) + 24px);
+    left: 16px;
 }
 
+/* Sidebar is fixed (out of flow), so content-area gets the full width here —
+   centering its content against the whole screen instead of "whatever's left
+   after the sidebar". The left spacer's floor keeps centered content from
+   ever sliding under the fixed sidebar at in-between viewport widths. */
 .content-area {
     flex: 1;
     min-width: 0;
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: minmax(232px, 1fr) minmax(0, 1100px) minmax(16px, 1fr);
 }
 
 .content-area > .tab-panel {
+    grid-column: 2;
     width: 100%;
     max-width: 1100px;
 }
+
+#editor-tab { max-width: 1280px; }
 
 .tab-btn {
     width: 100%;
@@ -343,12 +351,13 @@ main {
         position: static;
     }
     .sidebar .tab-btn { width: auto; flex: 1 1 auto; text-align: center; }
+    .content-area { grid-template-columns: minmax(16px, 1fr) minmax(0, 1100px) minmax(16px, 1fr); }
 }
 
 /* --- Two-column editor layout --- */
 .layout {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 380px 1fr;
     gap: 20px;
     align-items: start;
 }
@@ -615,7 +624,33 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     border: none;
     color: var(--text);
     text-align: center;
+    position: relative;
 }
+
+.tile-color-btn {
+    position: absolute;
+    top: -4px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg, var(--bg));
+    background: var(--border);
+    font-size: 11px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.tournament-tile:hover .tile-color-btn,
+.tile-color-btn:focus { opacity: 1; }
 
 .tile-icon {
     width: 72px;
@@ -686,6 +721,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .detail-actions-danger {
     display: flex;
+    justify-content: space-between;
     gap: 8px;
     margin-top: 18px;
     padding-top: 14px;

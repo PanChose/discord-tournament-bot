@@ -121,6 +121,7 @@ const TRANSLATIONS = {
         "action.participants": "Participants",
         "action.republish": "Republish",
         "action.sync": "Sync",
+        "action.changeColor": "Change color",
         "action.clone": "Clone",
         "action.delete": "Delete",
     },
@@ -197,6 +198,7 @@ const TRANSLATIONS = {
         "action.participants": "Участники",
         "action.republish": "Переопубликовать",
         "action.sync": "Синхр.",
+        "action.changeColor": "Изменить цвет",
         "action.clone": "Клонировать",
         "action.delete": "Удалить",
     },
@@ -273,6 +275,7 @@ const TRANSLATIONS = {
         "action.participants": "Participantes",
         "action.republish": "Volver a publicar",
         "action.sync": "Sincronizar",
+        "action.changeColor": "Cambiar color",
         "action.clone": "Clonar",
         "action.delete": "Eliminar",
     },
@@ -349,6 +352,7 @@ const TRANSLATIONS = {
         "action.participants": "Participanți",
         "action.republish": "Republică",
         "action.sync": "Sincronizează",
+        "action.changeColor": "Schimbă culoarea",
         "action.clone": "Clonează",
         "action.delete": "Șterge",
     },
@@ -425,6 +429,7 @@ const TRANSLATIONS = {
         "action.participants": "Partecipanti",
         "action.republish": "Ripubblica",
         "action.sync": "Sincronizza",
+        "action.changeColor": "Cambia colore",
         "action.clone": "Clona",
         "action.delete": "Elimina",
     },
@@ -501,6 +506,7 @@ const TRANSLATIONS = {
         "action.participants": "Deelnemers",
         "action.republish": "Opnieuw publiceren",
         "action.sync": "Synchroniseren",
+        "action.changeColor": "Kleur wijzigen",
         "action.clone": "Klonen",
         "action.delete": "Verwijderen",
     },
@@ -577,6 +583,7 @@ const TRANSLATIONS = {
         "action.participants": "Participantes",
         "action.republish": "Republicar",
         "action.sync": "Sincronizar",
+        "action.changeColor": "Mudar cor",
         "action.clone": "Clonar",
         "action.delete": "Eliminar",
     },
@@ -653,6 +660,7 @@ const TRANSLATIONS = {
         "action.participants": "Συμμετέχοντες",
         "action.republish": "Επανέκδοση",
         "action.sync": "Συγχρονισμός",
+        "action.changeColor": "Αλλαγή χρώματος",
         "action.clone": "Κλωνοποίηση",
         "action.delete": "Διαγραφή",
     },
@@ -729,6 +737,7 @@ const TRANSLATIONS = {
         "action.participants": "Participants",
         "action.republish": "Republier",
         "action.sync": "Synchroniser",
+        "action.changeColor": "Changer la couleur",
         "action.clone": "Cloner",
         "action.delete": "Supprimer",
     },
@@ -939,6 +948,8 @@ function showApp() {
     document.getElementById("loading-screen").classList.add("hidden");
     document.getElementById("login-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.remove("hidden");
+    // The header was display:none (and offsetHeight 0) until now — remeasure.
+    syncHeaderHeight();
 }
 
 // =========================================================================
@@ -1126,11 +1137,24 @@ function populateChannelAndRoleSelects() {
 }
 
 // =========================================================================
+// Keep the fixed sidebar clear of the header (header height isn't constant —
+// it wraps onto a second line on narrower screens), re-measured on resize.
+// =========================================================================
+
+function syncHeaderHeight() {
+    const header = document.querySelector("header");
+    if (header) document.documentElement.style.setProperty("--header-h", `${header.offsetHeight}px`);
+}
+
+syncHeaderHeight();
+window.addEventListener("resize", syncHeaderHeight);
+
+// =========================================================================
 // Tabs
 // =========================================================================
 
 document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
         document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
         document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
         btn.classList.add("active");
@@ -1141,7 +1165,11 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
         } else {
             stopPolling();
         }
-        if (btn.dataset.tab === "editor" && !document.getElementById("tournament-id").value) {
+        // e.isTrusted is false when editTournament()/cloneTournament() trigger
+        // this same button programmatically to switch tabs for editing — only
+        // a real click on the sidebar's own "+ New tournament" button should
+        // blow away whatever was being edited and start a blank draft.
+        if (btn.dataset.tab === "editor" && e.isTrusted) {
             resetEditorForm();
         }
         if (btn.dataset.tab === "stats") loadStats();
@@ -1317,8 +1345,14 @@ function tournamentTileHtml(t) {
         ? `<img src="${escapeHtml(image)}" alt="" />`
         : `<span>${escapeHtml((t.name || "?").trim().charAt(0).toUpperCase() || "?")}</span>`;
     const iconStyle = image ? "" : ` style="background:${escapeHtml(t.color || "#5865f2")}"`;
+    // Only offered when there's no custom image — the color only shows up on
+    // the lettered-avatar icon, so a swatch control would have nothing to preview otherwise.
+    const colorBtn = image
+        ? ""
+        : `<span class="tile-color-btn" data-id="${t.id}" data-color="${escapeHtml(t.color || "#5865f2")}" title="${tr("action.changeColor")}" aria-label="${tr("action.changeColor")}">🎨</span>`;
     return `
         <button type="button" class="tournament-tile" data-id="${t.id}" title="${escapeHtml(t.name)}">
+            ${colorBtn}
             <div class="tile-icon"${iconStyle}>${icon}</div>
             <div class="tile-name">${escapeHtml(t.name)}</div>
         </button>`;
@@ -1347,12 +1381,12 @@ function buildTournamentActions(t) {
     secondary.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">${tr("action.clone")}</button>`);
 
     // Close and Delete both end up here, not beside Edit — they're the two
-    // "this changes something you can't casually undo" actions.
-    const danger = [];
+    // "this changes something you can't casually undo" actions. Delete is
+    // pinned to the bottom-left, Close (when present) to the bottom-right.
+    const danger = [`<button data-action="delete" data-id="${t.id}" class="danger-btn">${tr("action.delete")}</button>`];
     if (t.status === "published") {
         danger.push(`<button data-action="close" data-id="${t.id}" class="danger-btn">${tr("action.close")}</button>`);
     }
-    danger.push(`<button data-action="delete" data-id="${t.id}" class="danger-btn">${tr("action.delete")}</button>`);
 
     return `
         <div class="detail-actions-primary">${primary.join("")}</div>
@@ -1413,10 +1447,29 @@ function timeAgo(ms) {
 }
 
 document.getElementById("tournament-list").addEventListener("click", (e) => {
+    const colorBtn = e.target.closest(".tile-color-btn");
+    if (colorBtn) {
+        const input = document.getElementById("tile-color-input");
+        input.dataset.id = colorBtn.dataset.id;
+        input.value = colorBtn.dataset.color || "#5865f2";
+        input.click();
+        return;
+    }
     const tile = e.target.closest(".tournament-tile");
     if (!tile) return;
     const tournament = state.tournaments.find((t) => t.id === tile.dataset.id);
     if (tournament) openTournamentDetail(tournament);
+});
+
+document.getElementById("tile-color-input").addEventListener("change", async (e) => {
+    const id = e.target.dataset.id;
+    if (!id) return;
+    try {
+        await apiFetch(`/api/tournaments/${id}`, { method: "PATCH", body: JSON.stringify({ color: e.target.value }) });
+        await loadTournaments();
+    } catch (err) {
+        alert(err.message);
+    }
 });
 
 // Every action button lives inside the detail modal now (see
@@ -1923,6 +1976,8 @@ document.getElementById("save-btn").addEventListener("click", async () => {
 document.getElementById("publish-btn").addEventListener("click", async () => {
     const id = document.getElementById("tournament-id").value;
     if (!id) return;
+    const ok = await showConfirmModal("Publish this tournament?", "This posts the announcement to Discord and opens registration. Continue?");
+    if (!ok) return;
     const resultEl = document.getElementById("save-result");
     resultEl.textContent = "Publishing…";
     try {
