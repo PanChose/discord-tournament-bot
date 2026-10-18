@@ -984,32 +984,30 @@ const WHATS_NEW = {
         {
             label: "✨ New Features",
             items: [
-                "Everyone can now add the bot to their own server and manage it independently",
-                "Clone a tournament as a new draft",
-                "Republish an announcement to a different channel",
-                "New Settings tab: light/dark theme, 9 languages, delete all tournaments",
-                "Custom reminder DM text, plus a button to insert a date/time into the description",
-                "Banner that tells you when a new update has been deployed while you're on the site",
+                "New Statistics tab — average teams per tournament, prize pools and more, charted",
+                "Change a tournament's icon color right from the Dashboard, no need to open the editor",
+                "Publish button right in the editor (with a confirmation before it goes live)",
+                "Jump-to-section nav in the editor so long forms are easy to navigate",
+                "The editor now warns you before you lose unsaved changes, and highlights what's unsaved",
+                "@everyone is now a selectable ping role, alongside your server's own roles",
             ],
         },
         {
             label: "🎨 Redesign",
             items: [
-                "Editor reorganized into collapsible sections (Basics, Description, Branding, Notifications...)",
-                "Removed emoji clutter from buttons across the panel",
-                "Pop-ups now fade/scale in and out instead of snapping open",
-                "Cleaner login flow with a loading screen instead of a flash of the login button",
+                "Dashboard rebuilt as a Discord-style grid — click a tournament's tile to see its full details",
+                "Left sidebar navigation replaces the old top tab row",
+                "All confirmations (close, delete, publish) now open as a centered pop-up instead of the browser's default prompt",
+                "Dashboard, editor and every other tab now center on the full screen instead of being squeezed next to the sidebar",
+                "A proper pass on phone-sized screens across the whole panel",
             ],
         },
         {
             label: "🐛 Bug Fixes",
             items: [
-                "Join no longer bumps the team counter for Matcherino-linked tournaments (only the sync does)",
-                "Join is now disabled once a linked Matcherino bracket is in progress or finished",
-                "Fixed @Role/#Chan/@User buttons doing nothing in the description editor",
-                "Fixed the date/time picker popup getting cut off in some sections",
-                "Saving a draft now keeps you in the editor instead of jumping to the dashboard",
-                "Fixed being able to spam the login button right after signing in",
+                "\"+ New tournament\" no longer reopens whatever you were last editing",
+                "Close and Delete moved into their own clearly separated danger zone in the tournament pop-up",
+                "What's New is shorter and scrolls instead of covering the whole screen",
             ],
         },
     ],
@@ -1131,9 +1129,23 @@ function populateChannelAndRoleSelects() {
     const channelSelect = document.getElementById("channel-select");
     channelSelect.innerHTML = state.channels.map((c) => `<option value="${c.id}">#${escapeHtml(c.name)}</option>`).join("");
 
+    // Discord's @everyone role always shares the guild's own id, and a role
+    // mention tag built from that id (<@&guildId>) renders/pings as @everyone
+    // — the backend's role list excludes it (it's not a normal assignable
+    // role), so it's added here as its own option instead.
     const roleSelect = document.getElementById("f-ping-role");
     roleSelect.innerHTML =
-        `<option value="">— none —</option>` + state.roles.map((r) => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
+        `<option value="">— none —</option>` +
+        `<option value="${state.guildId}">@everyone</option>` +
+        state.roles.map((r) => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
+}
+
+// Resolves a role id to a display name for the live preview, including the
+// @everyone pseudo-role (see populateChannelAndRoleSelects above).
+function roleNameFor(id) {
+    if (id === state.guildId) return "everyone";
+    const role = state.roles.find((r) => r.id === id);
+    return role ? role.name : null;
 }
 
 // =========================================================================
@@ -1154,7 +1166,24 @@ window.addEventListener("resize", syncHeaderHeight);
 // =========================================================================
 
 document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
+        // Leaving the editor tab (or re-clicking "+ New tournament" to reset
+        // it) while it holds unsaved edits would silently throw them away —
+        // confirm first. Only matters for genuine clicks: editTournament()/
+        // cloneTournament() trigger this same button programmatically, and by
+        // then the user is already on the dashboard tab (not editor), so this
+        // never double-prompts them.
+        const activeBtn = document.querySelector(".tab-btn.active");
+        const leavingDirtyEditor =
+            activeBtn && activeBtn.dataset.tab === "editor" && (btn.dataset.tab !== "editor" || e.isTrusted) && isEditorDirty();
+        if (leavingDirtyEditor) {
+            const ok = await showConfirmModal(
+                "Unsaved changes",
+                "You have unsaved changes in the editor. Are you sure you want to leave? They will be lost."
+            );
+            if (!ok) return;
+        }
+
         document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
         document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
         btn.classList.add("active");
@@ -1459,6 +1488,15 @@ document.getElementById("tournament-list").addEventListener("click", (e) => {
     if (!tile) return;
     const tournament = state.tournaments.find((t) => t.id === tile.dataset.id);
     if (tournament) openTournamentDetail(tournament);
+});
+
+// Fires continuously while dragging inside the picker — update the tile
+// right away instead of waiting for it to close (that's the "change" event,
+// below, which is also when the color actually gets saved).
+document.getElementById("tile-color-input").addEventListener("input", (e) => {
+    const id = e.target.dataset.id;
+    const icon = document.querySelector(`.tournament-tile[data-id="${id}"] .tile-icon`);
+    if (icon) icon.style.background = e.target.value;
 });
 
 document.getElementById("tile-color-input").addEventListener("change", async (e) => {
@@ -1845,6 +1883,7 @@ function editTournament(t) {
     updateMatcherinoStatus();
     updateEditorPublishButton(t.status);
     renderPreview();
+    captureEditorBaseline();
 }
 
 // The editor's own Publish button only makes sense for a saved draft — a
@@ -1878,6 +1917,7 @@ function resetEditorForm() {
     updateMatcherinoStatus();
     updateEditorPublishButton(null); // nothing saved yet — nothing to publish
     renderPreview();
+    captureEditorBaseline();
 }
 
 // Mirrors lib/matcherino.js's regex so the organizer sees this before saving.
@@ -1943,6 +1983,46 @@ function collectFormData() {
     };
 }
 
+// --- Unsaved-changes tracking ---------------------------------------------
+// A snapshot of collectFormData() taken right after the form was last loaded
+// (reset/edit) or saved. Comparing against it tells us whether the editor
+// has anything the user would lose by navigating away.
+let editorBaseline = null;
+
+function captureEditorBaseline() {
+    editorBaseline = collectFormData();
+}
+
+function isEditorDirty() {
+    if (!editorBaseline) return false;
+    const current = collectFormData();
+    return Object.keys(editorBaseline).some((key) => JSON.stringify(current[key]) !== JSON.stringify(editorBaseline[key]));
+}
+
+// Which collectFormData() keys live in which accordion section, so a changed
+// field can highlight the section it's actually in.
+const SECTION_FIELDS = {
+    basics: ["channelId", "name", "game", "format", "startsAt", "maxParticipants", "externalUrl"],
+    description: ["description"],
+    branding: ["banner", "thumbnail", "authorName", "authorIcon", "color"],
+    notifications: ["pingRoleId", "pingOnPublish", "reminderAt", "reminderMessage", "reactionEmojiId", "reactionEmojiName"],
+};
+
+function updateDirtyHighlights() {
+    const current = editorBaseline ? collectFormData() : null;
+    for (const section of ["basics", "description", "integrations", "branding", "notifications"]) {
+        const fields = SECTION_FIELDS[section] || [];
+        const dirty = Boolean(current) && fields.some((key) => JSON.stringify(current[key]) !== JSON.stringify(editorBaseline[key]));
+        document.querySelector(`.form-section[data-section="${section}"]`)?.classList.toggle("dirty", dirty);
+    }
+}
+
+window.addEventListener("beforeunload", (e) => {
+    if (!isEditorDirty()) return;
+    e.preventDefault();
+    e.returnValue = "";
+});
+
 document.getElementById("save-btn").addEventListener("click", async () => {
     const data = collectFormData();
     if (!data.name) return (document.getElementById("save-result").textContent = "❌ Name is required");
@@ -1959,6 +2039,7 @@ document.getElementById("save-btn").addEventListener("click", async () => {
             ({ tournament: saved } = await apiFetch("/api/tournaments", { method: "POST", body: JSON.stringify({ guildId: state.guildId, ...data }) }));
         }
         resultEl.textContent = "✅ Saved";
+        captureEditorBaseline();
         await loadTournaments();
         // Stay on the editor instead of jumping to the dashboard — saving a
         // draft is something you do mid-edit, not a sign you're done with it.
@@ -1983,6 +2064,7 @@ document.getElementById("publish-btn").addEventListener("click", async () => {
     try {
         const { tournament: published } = await apiFetch(`/api/tournaments/${id}/publish`, { method: "POST" });
         resultEl.textContent = "✅ Published";
+        captureEditorBaseline();
         await loadTournaments();
         updateEditorPublishButton(published.status);
         renderPreview();
@@ -2030,8 +2112,7 @@ function renderPreview() {
     // sends, since embeds never ping even with a mention inside them.
     const contentEl = document.getElementById("pv-content");
     if (data.pingRoleId) {
-        const role = state.roles.find((r) => r.id === data.pingRoleId);
-        contentEl.textContent = `@${role ? role.name : "role"}`;
+        contentEl.textContent = `@${roleNameFor(data.pingRoleId) || "role"}`;
         contentEl.classList.remove("hidden");
     } else {
         contentEl.classList.add("hidden");
@@ -2110,6 +2191,16 @@ document.querySelectorAll("[data-section-toggle]").forEach((btn) => {
     btn.addEventListener("click", () => btn.closest(".form-section").classList.toggle("collapsed"));
 });
 
+// --- Jump-to-section nav (right of the editor) ---
+document.querySelectorAll(".section-nav-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const section = document.querySelector(`.form-section[data-section="${btn.dataset.jump}"]`);
+        if (!section) return;
+        section.classList.remove("collapsed");
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+});
+
 function setSectionBadge(section, text, variant) {
     const el = document.querySelector(`.form-section[data-section="${section}"] [data-section-badge]`);
     if (!el) return;
@@ -2140,6 +2231,8 @@ function updateSectionBadges() {
     if (remindAtPicker.get()) notifCount++;
     if (state.reactionEmoji) notifCount++;
     setSectionBadge("notifications", `${notifCount}/3 active`, notifCount ? "badge-active" : null);
+
+    updateDirtyHighlights();
 }
 
 // --- Image uploads (drag & drop or click) — banner, thumbnail, author icon ---
@@ -2224,8 +2317,7 @@ function renderDiscordMarkup(raw) {
     // Role / channel / user mentions — resolved against the currently loaded
     // guild data where possible, since we only have an id at this point.
     html = html.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => {
-        const role = state.roles.find((r) => r.id === id);
-        return `<span class="dp-mention">@${escapeHtml(role ? role.name : "role")}</span>`;
+        return `<span class="dp-mention">@${escapeHtml(roleNameFor(id) || "role")}</span>`;
     });
     html = html.replace(/&lt;#(\d+)&gt;/g, (_, id) => {
         const channel = state.channels.find((c) => c.id === id);

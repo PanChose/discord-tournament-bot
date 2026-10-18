@@ -322,7 +322,7 @@ main {
     max-width: 1100px;
 }
 
-#editor-tab { max-width: 1280px; }
+#editor-tab { max-width: 1500px; }
 
 .tab-btn {
     width: 100%;
@@ -354,20 +354,52 @@ main {
     .content-area { grid-template-columns: minmax(16px, 1fr) minmax(0, 1100px) minmax(16px, 1fr); }
 }
 
-/* --- Two-column editor layout --- */
+/* --- Three-column editor layout: preview, form, jump-to-section nav --- */
 .layout {
     display: grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 380px 1fr 200px;
     gap: 20px;
     align-items: start;
 }
 
-.preview-col { position: sticky; top: 20px; }
+.preview-col { position: sticky; top: calc(var(--header-h, 72px) + 20px); }
+
+.section-nav {
+    position: sticky;
+    top: calc(var(--header-h, 72px) + 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.section-nav-btn {
+    width: 100%;
+    margin: 0;
+    padding: 10px 12px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.section-nav-btn:hover { background: var(--hover-bg); color: var(--text); }
+.section-nav-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 @media (max-width: 1000px) {
     .layout { grid-template-columns: 1fr; }
     .preview-col { position: static; order: 2; }
     .form-col { order: 1; }
+    .section-nav {
+        order: 0;
+        position: static;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 4px;
+    }
+    .section-nav-btn { width: auto; flex: 0 0 auto; white-space: nowrap; }
 }
 
 .card-head-row {
@@ -651,6 +683,22 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .tournament-tile:hover .tile-color-btn,
 .tile-color-btn:focus { opacity: 1; }
+
+/* Kept technically visible (not display:none) so the browser's native color
+   picker still opens on .click(), but pinned over the center of the screen
+   and shrunk to invisible so it never shows as its own little swatch. */
+#tile-color-input {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    opacity: 0;
+    pointer-events: none;
+}
 
 .tile-icon {
     width: 72px;
@@ -1156,6 +1204,18 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .form-section.collapsed .section-body { display: none; }
 
+/* Unsaved-changes indicator — a small dot ahead of the title plus an amber
+   border, so it's obvious at a glance which sections have edits not yet saved. */
+.form-section.dirty { border-color: var(--warn); }
+.form-section.dirty .section-header::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--warn);
+}
+
 /* --- Generic modal (republish picker, clear/delete-all confirmations,
    What's New) — fades/scales in on open, out on close. JS toggles "hidden"
    for actual display:none and "is-open" a frame later/before for the
@@ -1209,10 +1269,19 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .modal-close-btn:hover { background: var(--hover-bg); color: var(--text); }
 
+#whats-new-modal .modal-card {
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
 .whats-new-list {
     margin: 10px 0 4px;
     font-size: 14px;
     color: var(--text);
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .whats-new-category { margin-bottom: 14px; }
