@@ -887,7 +887,7 @@ async function loadInviteLink() {
 // =========================================================================
 
 const WHATS_NEW = {
-    version: "2026.02.2",
+    version: "2026.02.3",
     categories: [
         {
             label: "✨ New Features",
@@ -895,6 +895,7 @@ const WHATS_NEW = {
                 "Republish an announcement to a different channel",
                 "New Settings tab: light/dark theme, 9 languages, delete all tournaments",
                 "Custom reminder DM text, plus a button to insert a date/time into the description",
+                "Banner that tells you when a new update has been deployed while you're on the site",
             ],
         },
         {
@@ -902,6 +903,7 @@ const WHATS_NEW = {
             items: [
                 "Editor reorganized into collapsible sections (Basics, Description, Branding, Notifications...)",
                 "Removed emoji clutter from buttons across the panel",
+                "Pop-ups now fade/scale in and out instead of snapping open",
             ],
         },
         {
@@ -909,6 +911,7 @@ const WHATS_NEW = {
             items: [
                 "Fixed the date/time picker popup getting cut off in some sections",
                 "Saving a draft now keeps you in the editor instead of jumping to the dashboard",
+                "Fixed being able to spam the login button right after signing in (now shows a loading screen)",
             ],
         },
     ],
