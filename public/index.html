@@ -59,14 +59,15 @@
         </div>
     </header>
 
-    <main>
-        <nav class="tabs">
+    <main class="app-main">
+        <nav class="sidebar">
             <button type="button" class="tab-btn active" data-tab="dashboard" data-i18n="tabs.dashboard">Dashboard</button>
             <button type="button" class="tab-btn" data-tab="editor" data-i18n="tabs.newTournament">＋ New tournament</button>
             <button type="button" class="tab-btn" data-tab="stats" data-i18n="tabs.statistics">Statistics</button>
-            <button type="button" class="tab-btn nav-hidden" data-tab="settings">Settings</button>
+            <button type="button" class="tab-btn" data-tab="settings" data-i18n="header.settings">Settings</button>
         </nav>
 
+        <div class="content-area">
         <!-- ============== DASHBOARD ============== -->
         <section id="dashboard-tab" class="tab-panel">
             <section class="card">
@@ -313,6 +314,7 @@
                         </div>
 
                         <button id="save-btn" type="button" data-i18n="editor.save">Save draft</button>
+                        <button id="publish-btn" type="button" class="hidden" data-i18n="action.publish">Publish</button>
                         <p id="save-result" class="result"></p>
                     </section>
                 </section>
@@ -375,6 +377,7 @@
                 <button type="button" id="delete-all-btn" class="danger-btn full-width-btn" data-i18n="settings.deleteAll">Delete all tournaments</button>
             </section>
         </section>
+        </div>
     </main>
     <footer class="site-footer">
         <a href="/terms.html">Terms of Service</a>
@@ -387,6 +390,13 @@
         <button type="button" id="whats-new-close-btn" class="modal-close-btn" title="Close" aria-label="Close">✕</button>
         <h2 data-i18n="whatsNew.title">✨ What's New</h2>
         <div id="whats-new-list" class="whats-new-list"></div>
+    </div>
+</div>
+
+<div id="tournament-detail-modal" class="modal-overlay hidden">
+    <div class="modal-card tournament-detail-card">
+        <button type="button" id="tournament-detail-close-btn" class="modal-close-btn" title="Close" aria-label="Close">✕</button>
+        <div id="tournament-detail-body"></div>
     </div>
 </div>
 

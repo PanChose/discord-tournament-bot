@@ -1253,6 +1253,12 @@ function renderStats(stats) {
     }
 }
 
+// Order sections appear in on the dashboard — only non-empty groups render.
+const DASHBOARD_GROUP_ORDER = ["draft", "published", "in_progress", "finalized", "closed"];
+
+// Shows just an icon + name on the dashboard grid (Discord dev-portal style);
+// everything else (meta, Matcherino line, slot count, action buttons) only
+// renders once you click into a tile — see openTournamentDetail().
 function renderTournamentList() {
     const container = document.getElementById("tournament-list");
     if (!state.tournaments.length) {
@@ -1260,62 +1266,103 @@ function renderTournamentList() {
         return;
     }
 
-    container.innerHTML = state.tournaments
-        .map((t) => {
-            const meta = [t.game, FORMAT_LABELS[t.format] || t.format, t.starts_at ? new Date(t.starts_at).toLocaleString() : "no start time set"]
-                .filter(Boolean)
-                .join(" · ");
-            const actions = [];
-            if (t.status === "draft") {
-                actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
-                actions.push(`<button data-action="publish" data-id="${t.id}">${tr("action.publish")}</button>`);
-            }
-            if (t.status === "published") {
-                actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
-                actions.push(`<button data-action="close" data-id="${t.id}">${tr("action.close")}</button>`);
-            }
-            if (t.status !== "draft") {
-                actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">${tr("action.participants")}</button>`);
-                actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">${tr("action.republish")}</button>`);
-            }
-            if (t.matcherino_bounty_id) {
-                actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">${tr("action.sync")}</button>`);
-            }
-            actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">${tr("action.clone")}</button>`);
-            actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">${tr("action.delete")}</button>`);
+    const groups = {};
+    for (const t of state.tournaments) {
+        const key = dashboardStatusKey(t);
+        (groups[key] = groups[key] || []).push(t);
+    }
 
-            // Once a Matcherino link exists, the count only ever moves via the
-            // sync — Discord Join/Leave clicks never bump it, even before the
-            // first successful sync (shows 0 until then).
-            const hasMatcherinoReading = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
-            const slots = t.matcherino_bounty_id ? t.matcherino_entrants ?? 0 : t.activeCount;
-            const hasPrizePool = t.matcherino_prize_pool !== null && t.matcherino_prize_pool !== undefined;
-            const matcherinoLine = t.matcherino_bounty_id
-                ? `<div class="tournament-meta">🔗 Matcherino #${escapeHtml(t.matcherino_bounty_id)}${
-                      t.matcherino_status ? ` — ${escapeHtml(capitalize(t.matcherino_status))}` : ""
-                  }${
-                      hasPrizePool ? ` — ${formatPrizePool(t.matcherino_prize_pool)} prize pool` : ""
-                  }${
-                      hasMatcherinoReading
-                          ? ` — last checked ${t.matcherino_checked_at ? timeAgo(t.matcherino_checked_at) : "just now"}`
-                          : " — not checked yet"
-                  }</div>`
-                : "";
-
+    container.innerHTML = DASHBOARD_GROUP_ORDER.filter((key) => groups[key] && groups[key].length)
+        .map((key) => {
+            const tiles = groups[key].map((t) => tournamentTileHtml(t)).join("");
             return `
-                <div class="tournament-row">
-                    <div>
-                        <div class="tournament-name">${escapeHtml(t.name)}</div>
-                        <div class="tournament-meta">${escapeHtml(meta)}</div>
-                        ${matcherinoLine}
-                    </div>
-                    <div class="tournament-meta">${slots}/${t.max_participants} teams</div>
-                    <span class="badge badge-${dashboardStatusKey(t)}">${DASHBOARD_STATUS_LABELS[dashboardStatusKey(t)]}</span>
-                    <div class="row-actions">${actions.join("")}</div>
+                <div class="tile-group">
+                    <h3 class="tile-group-title">${DASHBOARD_STATUS_LABELS[key]}</h3>
+                    <div class="tile-grid">${tiles}</div>
                 </div>`;
         })
         .join("");
 }
+
+function tournamentTileHtml(t) {
+    const image = t.thumbnail || t.banner;
+    const icon = image
+        ? `<img src="${escapeHtml(image)}" alt="" />`
+        : `<span>${escapeHtml((t.name || "?").trim().charAt(0).toUpperCase() || "?")}</span>`;
+    const iconStyle = image ? "" : ` style="background:${escapeHtml(t.color || "#5865f2")}"`;
+    return `
+        <button type="button" class="tournament-tile" data-id="${t.id}" title="${escapeHtml(t.name)}">
+            <div class="tile-icon"${iconStyle}>${icon}</div>
+            <div class="tile-name">${escapeHtml(t.name)}</div>
+        </button>`;
+}
+
+// Builds the same action buttons every tournament used to show inline in its
+// row — now shown inside the detail modal instead (see openTournamentDetail).
+function buildTournamentActions(t) {
+    const actions = [];
+    if (t.status === "draft") {
+        actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
+        actions.push(`<button data-action="publish" data-id="${t.id}">${tr("action.publish")}</button>`);
+    }
+    if (t.status === "published") {
+        actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
+        actions.push(`<button data-action="close" data-id="${t.id}">${tr("action.close")}</button>`);
+    }
+    if (t.status !== "draft") {
+        actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">${tr("action.participants")}</button>`);
+        actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">${tr("action.republish")}</button>`);
+    }
+    if (t.matcherino_bounty_id) {
+        actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">${tr("action.sync")}</button>`);
+    }
+    actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">${tr("action.clone")}</button>`);
+    actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">${tr("action.delete")}</button>`);
+    return actions.join("");
+}
+
+// --- Tournament detail modal (everything a tile used to show inline) ---
+function openTournamentDetail(t) {
+    const meta = [t.game, FORMAT_LABELS[t.format] || t.format, t.starts_at ? new Date(t.starts_at).toLocaleString() : "no start time set"]
+        .filter(Boolean)
+        .join(" · ");
+
+    // Once a Matcherino link exists, the count only ever moves via the sync —
+    // Discord Join/Leave clicks never bump it, even before the first
+    // successful sync (shows 0 until then).
+    const hasMatcherinoReading = t.matcherino_bounty_id && t.matcherino_entrants !== null && t.matcherino_entrants !== undefined;
+    const slots = t.matcherino_bounty_id ? t.matcherino_entrants ?? 0 : t.activeCount;
+    const hasPrizePool = t.matcherino_prize_pool !== null && t.matcherino_prize_pool !== undefined;
+    const matcherinoLine = t.matcherino_bounty_id
+        ? `<div class="tournament-meta">🔗 Matcherino #${escapeHtml(t.matcherino_bounty_id)}${
+              t.matcherino_status ? ` — ${escapeHtml(capitalize(t.matcherino_status))}` : ""
+          }${
+              hasPrizePool ? ` — ${formatPrizePool(t.matcherino_prize_pool)} prize pool` : ""
+          }${
+              hasMatcherinoReading
+                  ? ` — last checked ${t.matcherino_checked_at ? timeAgo(t.matcherino_checked_at) : "just now"}`
+                  : " — not checked yet"
+          }</div>`
+        : "";
+
+    document.getElementById("tournament-detail-body").innerHTML = `
+        <div class="tournament-name">${escapeHtml(t.name)}</div>
+        <div class="tournament-meta">${escapeHtml(meta)}</div>
+        ${matcherinoLine}
+        <div class="tournament-meta">${slots}/${t.max_participants} teams</div>
+        <span class="badge badge-${dashboardStatusKey(t)}">${DASHBOARD_STATUS_LABELS[dashboardStatusKey(t)]}</span>
+        <div class="row-actions detail-actions">${buildTournamentActions(t)}</div>`;
+    openModal(document.getElementById("tournament-detail-modal"));
+}
+
+function closeTournamentDetail() {
+    closeModal(document.getElementById("tournament-detail-modal"));
+}
+
+document.getElementById("tournament-detail-close-btn").addEventListener("click", closeTournamentDetail);
+document.getElementById("tournament-detail-modal").addEventListener("click", (e) => {
+    if (e.target.id === "tournament-detail-modal") closeTournamentDetail();
+});
 
 function timeAgo(ms) {
     const seconds = Math.max(0, Math.floor((Date.now() - ms) / 1000));
@@ -1326,11 +1373,23 @@ function timeAgo(ms) {
     return `${hours}h ago`;
 }
 
-document.getElementById("tournament-list").addEventListener("click", async (e) => {
+document.getElementById("tournament-list").addEventListener("click", (e) => {
+    const tile = e.target.closest(".tournament-tile");
+    if (!tile) return;
+    const tournament = state.tournaments.find((t) => t.id === tile.dataset.id);
+    if (tournament) openTournamentDetail(tournament);
+});
+
+// Every action button lives inside the detail modal now (see
+// openTournamentDetail/buildTournamentActions) — one shared handler for all
+// of them, closing the modal first so a follow-up modal (Republish) or the
+// participants card underneath isn't hidden behind it.
+document.getElementById("tournament-detail-modal").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
     const { action, id } = btn.dataset;
     const tournament = state.tournaments.find((t) => t.id === id);
+    closeTournamentDetail();
 
     if (action === "edit") return editTournament(tournament);
     if (action === "publish") return publishTournament(id);
@@ -1690,7 +1749,15 @@ function editTournament(t) {
     setImageField("f-author-icon", "authorIconOverride", t.author_icon);
     setReactionEmoji(t.reaction_emoji_name ? { id: t.reaction_emoji_id, name: t.reaction_emoji_name } : null);
     updateMatcherinoStatus();
+    updateEditorPublishButton(t.status);
     renderPreview();
+}
+
+// The editor's own Publish button only makes sense for a saved draft — a
+// brand-new unsaved form has no id to publish, and an already-published or
+// closed tournament gets re-published/closed from the dashboard instead.
+function updateEditorPublishButton(status) {
+    document.getElementById("publish-btn").classList.toggle("hidden", status !== "draft");
 }
 
 function resetEditorForm() {
@@ -1715,6 +1782,7 @@ function resetEditorForm() {
     document.getElementById("ai-prize").value = "";
     document.getElementById("ai-result").textContent = "";
     updateMatcherinoStatus();
+    updateEditorPublishButton(null); // nothing saved yet — nothing to publish
     renderPreview();
 }
 
@@ -1804,6 +1872,23 @@ document.getElementById("save-btn").addEventListener("click", async () => {
         // mode though, so the next save PATCHes it instead of creating a duplicate.
         document.getElementById("tournament-id").value = saved.id;
         document.getElementById("editor-heading").textContent = `Edit: ${saved.name}`;
+        updateEditorPublishButton(saved.status);
+        renderPreview();
+    } catch (err) {
+        resultEl.textContent = "❌ " + err.message;
+    }
+});
+
+document.getElementById("publish-btn").addEventListener("click", async () => {
+    const id = document.getElementById("tournament-id").value;
+    if (!id) return;
+    const resultEl = document.getElementById("save-result");
+    resultEl.textContent = "Publishing…";
+    try {
+        const { tournament: published } = await apiFetch(`/api/tournaments/${id}/publish`, { method: "POST" });
+        resultEl.textContent = "✅ Published";
+        await loadTournaments();
+        updateEditorPublishButton(published.status);
         renderPreview();
     } catch (err) {
         resultEl.textContent = "❌ " + err.message;

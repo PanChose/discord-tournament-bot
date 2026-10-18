@@ -159,6 +159,9 @@ button {
 
 button:hover { background: var(--accent-hover); }
 
+#publish-btn { background: var(--ok); }
+#publish-btn:hover { background: #46b87a; }
+
 /* The browser's default mouse-click focus ring made a small icon button (e.g.
    the description toolbar's time-insert button) look like a different,
    solid-filled design next to the big date/time toggle, where the same ring
@@ -284,16 +287,30 @@ main {
     padding: 0 16px;
 }
 
-/* --- Tabs --- */
-.tabs {
+/* --- Left sidebar nav (replaces the old top tab row) --- */
+.app-main {
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
+    align-items: flex-start;
+    gap: 24px;
 }
 
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 200px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 24px;
+}
+
+.content-area { flex: 1; min-width: 0; }
+
 .tab-btn {
-    width: auto;
+    width: 100%;
     margin: 0;
+    padding: 10px 14px;
+    text-align: left;
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
@@ -306,6 +323,17 @@ main {
 }
 
 .tab-panel.hidden { display: none; }
+
+@media (max-width: 760px) {
+    .app-main { flex-direction: column; }
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        position: static;
+    }
+    .sidebar .tab-btn { width: auto; flex: 1 1 auto; text-align: center; }
+}
 
 /* --- Two-column editor layout --- */
 .layout {
@@ -349,8 +377,6 @@ main {
 .danger-btn:hover { background: rgba(242, 107, 107, 0.12); color: var(--error); }
 
 .full-width-btn { width: 100%; margin-bottom: 14px; }
-
-.nav-hidden { display: none !important; }
 
 .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
 
@@ -545,17 +571,75 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .dp-btn-success { background: #248046; }
 .dp-btn-danger { background: #da373c; }
 
-/* --- Dashboard tournament list --- */
-.tournament-row {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    gap: 12px;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
+/* --- Dashboard tournament list: icon+name tiles grouped by status, grouped
+   like the Discord dev portal's app grid. Clicking a tile opens the detail
+   modal below with everything a tile doesn't show (see openTournamentDetail
+   in panel.js) instead of cramming it all into the row. --- */
+.tile-group { margin-bottom: 22px; }
+.tile-group:last-child { margin-bottom: 0; }
+
+.tile-group-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin: 0 0 10px;
 }
 
-.tournament-row:last-child { border-bottom: none; }
+.tile-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tournament-tile {
+    width: 96px;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--text);
+    text-align: center;
+}
+
+.tile-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    overflow: hidden;
+    background: var(--border);
+    transition: transform 0.1s ease;
+}
+
+.tile-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+.tournament-tile:hover { background: none; }
+.tournament-tile:hover .tile-icon { transform: scale(1.05); }
+
+.tile-name {
+    font-size: 12px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.tournament-detail-card { max-width: 460px; }
+
+.detail-actions { flex-wrap: wrap; margin-top: 14px; }
 
 .tournament-name { font-weight: 600; }
 .tournament-meta { font-size: 12px; color: var(--muted); }
