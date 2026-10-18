@@ -40,6 +40,287 @@ function dashboardStatusKey(t) {
     return matcherinoStatusCategory(t.matcherino_status) || t.status;
 }
 
+// =========================================================================
+// Settings: theme + language (i18n covers the panel's own static chrome —
+// tabs, section titles, field labels, buttons, modals — not user-authored
+// tournament content, which always stays exactly as typed) + delete-all.
+// =========================================================================
+
+const TRANSLATIONS = {
+    en: {
+        "login.title": "🏆 Tournament Bot",
+        "login.hint": "Sign in with Discord to manage tournaments on servers where you're an organizer (Manage Server permission).",
+        "login.button": "Log in with Discord",
+        "header.addToServer": "Add to another server",
+        "header.settings": "Settings",
+        "header.logout": "Log out",
+        "tabs.dashboard": "Dashboard",
+        "tabs.newTournament": "＋ New tournament",
+        "dashboard.tournaments": "Tournaments",
+        "dashboard.exportCsv": "Export CSV",
+        "dashboard.user": "User",
+        "dashboard.registered": "Registered",
+        "dashboard.noRegistrations": "No registrations yet.",
+        "editor.livePreview": "Live preview",
+        "editor.clear": "Clear",
+        "editor.newTournament": "New tournament",
+        "editor.section.basics": "Basics",
+        "editor.section.description": "Description",
+        "editor.section.ai": "AI Description Generator",
+        "editor.section.branding": "Branding",
+        "editor.section.notifications": "Notifications & Engagement",
+        "editor.field.channel": "Channel to announce in",
+        "editor.field.name": "Tournament name/organization name",
+        "editor.field.game": "Game",
+        "editor.field.format": "Format",
+        "editor.field.startsAt": "Start date/time",
+        "editor.field.max": "Max participants",
+        "editor.field.externalUrl": "External tournament link (optional)",
+        "editor.field.banner": "Banner image (large image at the bottom)",
+        "editor.field.thumbnail": "Tournament icon (small thumbnail, top-right corner, optional)",
+        "editor.field.authorName": "Author name (small line above the title, optional)",
+        "editor.field.authorIcon": "Author mini icon",
+        "editor.field.color": "Embed color",
+        "editor.field.pingRole": "Ping role (optional)",
+        "editor.field.reminderAt": "Send a reminder DM at (optional)",
+        "editor.field.reaction": "Auto-react emoji (optional)",
+        "editor.save": "Save draft",
+        "settings.theme": "Theme",
+        "settings.dark": "Dark",
+        "settings.light": "Light",
+        "settings.language": "Language",
+        "settings.languageHint": "Translates the panel's menus and labels. Tournament content you write stays as you typed it.",
+        "settings.dangerZone": "Danger Zone",
+        "settings.deleteAllHint": "Permanently deletes every tournament on the currently selected server — drafts, published and closed alike. This cannot be undone.",
+        "settings.deleteAll": "Delete all tournaments",
+        "clearModal.title": "Clear this form?",
+        "clearModal.body": "Any unsaved changes will be lost. This doesn't delete a saved tournament, only the current editor form.",
+        "common.cancel": "Cancel",
+        "common.confirm": "Confirm",
+        "common.continue": "Continue",
+        "deleteAll.title1": "Delete all tournaments?",
+        "deleteAll.body1": "This permanently deletes every tournament on this server — drafts, published and closed. This cannot be undone.",
+        "deleteAll.title2": "Are you absolutely sure?",
+        "deleteAll.body2": "Last chance — this is final and cannot be recovered.",
+        "deleteAll.confirm": "Yes, delete everything",
+        "republish.title": "Republish in another channel",
+        "republish.newChannel": "New channel",
+        "action.edit": "Edit",
+        "action.publish": "Publish",
+        "action.close": "Close",
+        "action.participants": "Participants",
+        "action.republish": "Republish",
+        "action.sync": "Sync",
+        "action.clone": "Clone",
+        "action.delete": "Delete",
+    },
+    ru: {
+        "login.title": "🏆 Турнирный бот",
+        "login.hint": "Войдите через Discord, чтобы управлять турнирами на серверах, где вы организатор (право Manage Server).",
+        "login.button": "Войти через Discord",
+        "header.addToServer": "Добавить на другой сервер",
+        "header.settings": "Настройки",
+        "header.logout": "Выйти",
+        "tabs.dashboard": "Дашборд",
+        "tabs.newTournament": "＋ Новый турнир",
+        "dashboard.tournaments": "Турниры",
+        "dashboard.exportCsv": "Экспорт CSV",
+        "dashboard.user": "Пользователь",
+        "dashboard.registered": "Зарегистрирован",
+        "dashboard.noRegistrations": "Пока никто не зарегистрировался.",
+        "editor.livePreview": "Живой предпросмотр",
+        "editor.clear": "Очистить",
+        "editor.newTournament": "Новый турнир",
+        "editor.section.basics": "Основное",
+        "editor.section.description": "Описание",
+        "editor.section.ai": "ИИ-генератор описания",
+        "editor.section.branding": "Оформление",
+        "editor.section.notifications": "Уведомления и вовлечение",
+        "editor.field.channel": "Канал для анонса",
+        "editor.field.name": "Название турнира/организации",
+        "editor.field.game": "Игра",
+        "editor.field.format": "Формат",
+        "editor.field.startsAt": "Дата/время начала",
+        "editor.field.max": "Макс. участников",
+        "editor.field.externalUrl": "Внешняя ссылка на турнир (опционально)",
+        "editor.field.banner": "Баннер (большое изображение внизу)",
+        "editor.field.thumbnail": "Иконка турнира (маленькая, в углу, опционально)",
+        "editor.field.authorName": "Имя автора (строка над заголовком, опционально)",
+        "editor.field.authorIcon": "Мини-иконка автора",
+        "editor.field.color": "Цвет embed",
+        "editor.field.pingRole": "Роль для пинга (опционально)",
+        "editor.field.reminderAt": "Отправить напоминание в ЛС (опционально)",
+        "editor.field.reaction": "Авто-реакция эмодзи (опционально)",
+        "editor.save": "Сохранить черновик",
+        "settings.theme": "Тема",
+        "settings.dark": "Тёмная",
+        "settings.light": "Светлая",
+        "settings.language": "Язык",
+        "settings.languageHint": "Переводит меню и подписи панели. Текст турниров, который вы сами написали, остаётся как есть.",
+        "settings.dangerZone": "Опасная зона",
+        "settings.deleteAllHint": "Безвозвратно удаляет все турниры на текущем выбранном сервере — черновики, опубликованные и закрытые. Это нельзя отменить.",
+        "settings.deleteAll": "Удалить все турниры",
+        "clearModal.title": "Очистить форму?",
+        "clearModal.body": "Все несохранённые изменения будут потеряны. Сохранённый турнир при этом не удаляется — очищается только текущая форма.",
+        "common.cancel": "Отмена",
+        "common.confirm": "Подтвердить",
+        "common.continue": "Продолжить",
+        "deleteAll.title1": "Удалить все турниры?",
+        "deleteAll.body1": "Это безвозвратно удалит все турниры на этом сервере — черновики, опубликованные и закрытые. Это нельзя отменить.",
+        "deleteAll.title2": "Вы абсолютно уверены?",
+        "deleteAll.body2": "Последний шанс передумать — дальше отменить будет нельзя.",
+        "deleteAll.confirm": "Да, удалить всё",
+        "republish.title": "Переопубликовать в другом канале",
+        "republish.newChannel": "Новый канал",
+        "action.edit": "Изменить",
+        "action.publish": "Опубликовать",
+        "action.close": "Закрыть",
+        "action.participants": "Участники",
+        "action.republish": "Переопубликовать",
+        "action.sync": "Синхр.",
+        "action.clone": "Клонировать",
+        "action.delete": "Удалить",
+    },
+};
+
+function getLanguage() {
+    try {
+        return localStorage.getItem("panel-lang") || "en";
+    } catch (err) {
+        return "en";
+    }
+}
+
+// Translates a dynamic (JS-generated) string by key — used by the dashboard's
+// per-tournament action buttons, which data-i18n can't reach since they're
+// rebuilt from a template string on every render. Named `tr` (not the more
+// conventional `t`) because `t` is already used everywhere as the loop
+// variable for "the tournament being rendered".
+function tr(key) {
+    const lang = getLanguage();
+    return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.en[key] || key;
+}
+
+function applyTranslations() {
+    const lang = getLanguage();
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const text = tr(el.dataset.i18n);
+        if (text) el.textContent = text;
+    });
+    document.querySelectorAll("[data-lang-choice]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.langChoice === lang);
+    });
+    renderTournamentList(); // action buttons are template strings, not data-i18n
+}
+
+function setLanguage(lang) {
+    try {
+        localStorage.setItem("panel-lang", lang);
+    } catch (err) {
+        // localStorage can throw in a private window with blocked storage — the
+        // choice just won't persist across reloads, not worth failing over.
+    }
+    applyTranslations();
+}
+
+document.querySelectorAll("[data-lang-choice]").forEach((btn) => {
+    btn.addEventListener("click", () => setLanguage(btn.dataset.langChoice));
+});
+
+function getTheme() {
+    try {
+        return localStorage.getItem("panel-theme") || "dark";
+    } catch (err) {
+        return "dark";
+    }
+}
+
+function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.themeChoice === theme);
+    });
+}
+
+function setTheme(theme) {
+    try {
+        localStorage.setItem("panel-theme", theme);
+    } catch (err) {
+        // see setLanguage — persistence is best-effort only
+    }
+    applyTheme(theme);
+}
+
+document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
+    btn.addEventListener("click", () => setTheme(btn.dataset.themeChoice));
+});
+
+// --- Settings icon menu (replaces the old standalone Log out button) ---
+document.getElementById("settings-menu-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.getElementById("settings-menu").classList.toggle("hidden");
+});
+
+document.addEventListener("click", (e) => {
+    const menu = document.getElementById("settings-menu");
+    if (!menu.classList.contains("hidden") && !menu.contains(e.target) && e.target.id !== "settings-menu-btn") {
+        menu.classList.add("hidden");
+    }
+});
+
+document.getElementById("settings-menu-settings").addEventListener("click", () => {
+    document.getElementById("settings-menu").classList.add("hidden");
+    document.querySelector('.tab-btn[data-tab="settings"]').click();
+});
+
+document.getElementById("settings-menu-logout").addEventListener("click", async () => {
+    document.getElementById("settings-menu").classList.add("hidden");
+    await apiFetch("/api/logout", { method: "POST" }).catch(() => {});
+    showLogin();
+});
+
+// --- Clear-form confirmation (the editor's Clear button is destructive to
+// unsaved edits, so it asks before wiping the form instead of acting instantly) ---
+document.getElementById("editor-reset-btn").addEventListener("click", () => {
+    document.getElementById("clear-confirm-modal").classList.remove("hidden");
+});
+document.getElementById("clear-cancel-btn").addEventListener("click", () => {
+    document.getElementById("clear-confirm-modal").classList.add("hidden");
+});
+document.getElementById("clear-confirm-btn").addEventListener("click", () => {
+    document.getElementById("clear-confirm-modal").classList.add("hidden");
+    resetEditorForm();
+});
+
+// --- Delete all tournaments (two sequential confirmations, since it's both
+// irreversible and scoped to every tournament on the currently selected
+// server — not just one) ---
+document.getElementById("delete-all-btn").addEventListener("click", () => {
+    document.getElementById("delete-all-modal-1").classList.remove("hidden");
+});
+document.getElementById("delete-all-cancel-1").addEventListener("click", () => {
+    document.getElementById("delete-all-modal-1").classList.add("hidden");
+});
+document.getElementById("delete-all-next-btn").addEventListener("click", () => {
+    document.getElementById("delete-all-modal-1").classList.add("hidden");
+    document.getElementById("delete-all-result").textContent = "";
+    document.getElementById("delete-all-modal-2").classList.remove("hidden");
+});
+document.getElementById("delete-all-cancel-2").addEventListener("click", () => {
+    document.getElementById("delete-all-modal-2").classList.add("hidden");
+});
+document.getElementById("delete-all-confirm-btn").addEventListener("click", async () => {
+    const resultEl = document.getElementById("delete-all-result");
+    resultEl.textContent = "…";
+    try {
+        await apiFetch(`/api/tournaments?guildId=${state.guildId}`, { method: "DELETE" });
+        document.getElementById("delete-all-modal-2").classList.add("hidden");
+        await loadTournaments();
+    } catch (err) {
+        resultEl.textContent = "❌ " + err.message;
+    }
+});
+
 async function apiFetch(url, opts = {}) {
     const res = await fetch(url, {
         ...opts,
@@ -104,11 +385,6 @@ async function pollStatus() {
         // status endpoint doesn't require auth; ignore transient errors
     }
 }
-
-document.getElementById("logout-btn").addEventListener("click", async () => {
-    await apiFetch("/api/logout", { method: "POST" }).catch(() => {});
-    showLogin();
-});
 
 // =========================================================================
 // Guild switching
@@ -217,22 +493,22 @@ function renderTournamentList() {
                 .join(" · ");
             const actions = [];
             if (t.status === "draft") {
-                actions.push(`<button data-action="edit" data-id="${t.id}">Edit</button>`);
-                actions.push(`<button data-action="publish" data-id="${t.id}">Publish</button>`);
+                actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
+                actions.push(`<button data-action="publish" data-id="${t.id}">${tr("action.publish")}</button>`);
             }
             if (t.status === "published") {
-                actions.push(`<button data-action="edit" data-id="${t.id}">Edit</button>`);
-                actions.push(`<button data-action="close" data-id="${t.id}">Close</button>`);
+                actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
+                actions.push(`<button data-action="close" data-id="${t.id}">${tr("action.close")}</button>`);
             }
             if (t.status !== "draft") {
-                actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">Participants</button>`);
-                actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">Republish</button>`);
+                actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">${tr("action.participants")}</button>`);
+                actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">${tr("action.republish")}</button>`);
             }
             if (t.matcherino_bounty_id) {
-                actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">Sync</button>`);
+                actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">${tr("action.sync")}</button>`);
             }
-            actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">Clone</button>`);
-            actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">Delete</button>`);
+            actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">${tr("action.clone")}</button>`);
+            actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">${tr("action.delete")}</button>`);
 
             // Once a Matcherino link exists, the count only ever moves via the
             // sync — Discord Join/Leave clicks never bump it, even before the
@@ -706,8 +982,6 @@ function updateMatcherinoStatus() {
 document.getElementById("f-external-url").addEventListener("input", updateMatcherinoStatus);
 document.getElementById("f-external-url").addEventListener("input", updateSectionBadges);
 document.getElementById("channel-select").addEventListener("change", updateSectionBadges);
-
-document.getElementById("editor-reset-btn").addEventListener("click", resetEditorForm);
 
 function collectFormData() {
     return {
@@ -1332,4 +1606,6 @@ function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+applyTheme(getTheme());
+applyTranslations();
 init();

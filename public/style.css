@@ -8,6 +8,25 @@
     --error: #f26b6b;
     --ok: #57d38c;
     --warn: #e8b74b;
+    --border: #3d3f4d;
+    --dashed-border: #4a4c5c;
+    --hover-bg: #262835;
+}
+
+/* Light theme — only the site's own chrome (cards, inputs, buttons) switches;
+   the Discord message/embed preview intentionally stays fixed-dark everywhere,
+   since it's simulating Discord's own dark UI, not reflecting this site's theme. */
+:root[data-theme="light"] {
+    --bg: #f2f3f7;
+    --card: #ffffff;
+    --text: #1e1f27;
+    --muted: #6b6d7a;
+    --error: #d9363e;
+    --ok: #2a9d5c;
+    --warn: #b5810a;
+    --border: #d8dae3;
+    --dashed-border: #c3c6d4;
+    --hover-bg: #e8eaf2;
 }
 
 * { box-sizing: border-box; }
@@ -47,8 +66,8 @@ input, select, textarea, button {
     padding: 10px 12px;
     margin: 6px 0 14px;
     border-radius: 8px;
-    border: 1px solid #3d3f4d;
-    background: #1e1f27;
+    border: 1px solid var(--border);
+    background: var(--bg);
     color: var(--text);
     font-size: 14px;
     font-family: inherit;
@@ -131,6 +150,58 @@ header select, header button { width: auto; margin: 0; }
 .status { font-size: 13px; color: var(--ok); }
 .status.offline { color: var(--error); }
 
+/* --- Settings icon + its popup menu (replaces the old standalone Log out button) --- */
+.settings-menu-wrap { position: relative; }
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.icon-btn:hover { background: var(--hover-bg); color: var(--text); border-color: var(--accent); }
+
+.settings-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 30;
+    min-width: 160px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-menu.hidden { display: none; }
+
+.settings-menu-item {
+    width: 100%;
+    margin: 0;
+    padding: 9px 10px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.settings-menu-item:hover { background: var(--hover-bg); }
+
 main {
     max-width: 1180px;
     margin: 24px auto;
@@ -148,7 +219,7 @@ main {
     width: auto;
     margin: 0;
     background: transparent;
-    border: 1px solid #3d3f4d;
+    border: 1px solid var(--border);
     color: var(--muted);
 }
 
@@ -187,17 +258,29 @@ main {
 
 .secondary-btn {
     background: transparent;
-    border: 1px dashed #4a4c5c;
+    border: 1px dashed var(--dashed-border);
     color: var(--muted);
 }
 
-.secondary-btn:hover { background: #262835; color: var(--text); }
+.secondary-btn:hover { background: var(--hover-bg); color: var(--text); }
+
+.danger-btn {
+    background: transparent;
+    border: 1px dashed var(--error);
+    color: var(--error);
+}
+
+.danger-btn:hover { background: rgba(242, 107, 107, 0.12); color: var(--error); }
+
+.full-width-btn { width: 100%; margin-bottom: 14px; }
+
+.nav-hidden { display: none !important; }
 
 .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
 
 /* --- Drag & drop banner upload --- */
 .dropzone {
-    border: 2px dashed #4a4c5c;
+    border: 2px dashed var(--dashed-border);
     border-radius: 10px;
     padding: 18px 12px;
     text-align: center;
@@ -211,7 +294,7 @@ main {
 .dropzone.small { padding: 10px 8px; font-size: 12px; }
 
 .dropzone:hover, .dropzone.dragover {
-    background: #262835;
+    background: var(--hover-bg);
     border-color: var(--accent);
     color: var(--text);
 }
@@ -393,7 +476,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     gap: 12px;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid #3d3f4d;
+    border-bottom: 1px solid var(--border);
 }
 
 .tournament-row:last-child { border-bottom: none; }
@@ -411,7 +494,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     white-space: nowrap;
 }
 
-.badge-draft { background: #3d3f4d; color: var(--muted); }
+.badge-draft { background: var(--border); color: var(--muted); }
 .badge-published { background: rgba(87, 211, 140, 0.15); color: var(--ok); }
 .badge-closed { background: rgba(242, 107, 107, 0.15); color: var(--error); }
 .badge-in_progress { background: rgba(232, 183, 75, 0.15); color: var(--warn); border: 1px solid rgba(232, 183, 75, 0.4); }
@@ -430,7 +513,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .participants-table th, .participants-table td {
     text-align: left;
     padding: 8px 6px;
-    border-bottom: 1px solid #3d3f4d;
+    border-bottom: 1px solid var(--border);
     font-size: 13px;
 }
 .participants-table th { color: var(--muted); font-weight: 600; }
@@ -443,7 +526,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     gap: 16px;
     margin-top: 24px;
     padding-top: 16px;
-    border-top: 1px solid #3d3f4d;
+    border-top: 1px solid var(--border);
 }
 
 .site-footer a { color: var(--muted); font-size: 12px; text-decoration: none; }
@@ -477,7 +560,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     font-size: 18px;
     margin: 32px 0 10px;
     padding-top: 12px;
-    border-top: 1px solid #3d3f4d;
+    border-top: 1px solid var(--border);
 }
 
 .legal-page h2:first-of-type { border-top: none; padding-top: 0; }
@@ -517,18 +600,18 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     margin: 0;
     padding: 5px 9px;
     font-size: 12px;
-    background: #1e1f27;
-    border: 1px solid #3d3f4d;
+    background: var(--bg);
+    border: 1px solid var(--border);
     color: var(--text);
     font-weight: 600;
 }
 
-.format-toolbar button:hover { background: #262835; border-color: var(--accent); }
+.format-toolbar button:hover { background: var(--hover-bg); border-color: var(--accent); }
 
 .toolbar-sep {
     width: 1px;
     align-self: stretch;
-    background: #3d3f4d;
+    background: var(--border);
     margin: 2px 4px;
 }
 
@@ -536,7 +619,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .dropdown-menu {
     position: relative;
     background: var(--card);
-    border: 1px solid #3d3f4d;
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px;
     margin: -2px 0 10px;
@@ -554,13 +637,13 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     margin: 0;
     padding: 5px 10px;
     font-size: 12px;
-    background: #1e1f27;
-    border: 1px solid #3d3f4d;
+    background: var(--bg);
+    border: 1px solid var(--border);
     color: var(--text);
     white-space: nowrap;
 }
 
-.dropdown-menu .dd-item:hover { background: #262835; border-color: var(--accent); }
+.dropdown-menu .dd-item:hover { background: var(--hover-bg); border-color: var(--accent); }
 
 .dropdown-menu .dd-empty {
     font-size: 12px;
@@ -576,8 +659,8 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1e1f27;
-    border: 1px solid #3d3f4d;
+    background: var(--bg);
+    border: 1px solid var(--border);
     font-size: 18px;
 }
 
@@ -619,8 +702,8 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     width: auto;
     margin: 0;
     padding: 6px 12px;
-    background: #1e1f27;
-    border: 1px solid #3d3f4d;
+    background: var(--bg);
+    border: 1px solid var(--border);
     color: var(--muted);
     font-size: 13px;
     min-width: 90px;
@@ -649,14 +732,14 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     width: 100%;
     margin: 6px 0 14px;
     text-align: left;
-    background: #1e1f27;
-    border: 1px solid #3d3f4d;
+    background: var(--bg);
+    border: 1px solid var(--border);
     color: var(--muted);
     font-weight: 400;
 }
 
 .dt-toggle.has-value { color: var(--text); }
-.dt-toggle:hover { background: #262835; border-color: var(--accent); }
+.dt-toggle:hover { background: var(--hover-bg); border-color: var(--accent); }
 
 .dt-panel {
     position: absolute;
@@ -665,7 +748,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     left: 0;
     width: 280px;
     background: var(--card);
-    border: 1px solid #3d3f4d;
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -687,11 +770,11 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     margin: 0;
     padding: 0;
     background: transparent;
-    border: 1px solid #3d3f4d;
+    border: 1px solid var(--border);
     color: var(--text);
 }
 
-.dt-cal-header button:hover { background: #262835; border-color: var(--accent); }
+.dt-cal-header button:hover { background: var(--hover-bg); border-color: var(--accent); }
 
 .dt-cal-grid {
     display: grid;
@@ -719,7 +802,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     border-radius: 6px;
 }
 
-.dt-cal-day:hover { background: #262835; border-color: #4a4c5c; }
+.dt-cal-day:hover { background: var(--hover-bg); border-color: var(--dashed-border); }
 .dt-cal-day.today { border-color: var(--muted); }
 .dt-cal-day.selected { background: var(--accent); color: #fff; }
 .dt-cal-day.empty { visibility: hidden; cursor: default; }
@@ -749,8 +832,8 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     margin: 0;
     padding: 6px 10px;
     font-size: 12px;
-    background: #1e1f27;
-    border: 1px solid #3d3f4d;
+    background: var(--bg);
+    border: 1px solid var(--border);
     color: var(--muted);
 }
 
@@ -766,7 +849,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 /* --- Editor accordion sections --- */
 .form-section {
-    border: 1px solid #3d3f4d;
+    border: 1px solid var(--border);
     border-radius: 10px;
     margin-bottom: 12px;
     /* No overflow:hidden here — it used to clip the date/time picker popovers
@@ -781,7 +864,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     width: 100%;
     margin: 0;
     padding: 12px 14px;
-    background: #262835;
+    background: var(--hover-bg);
     border: none;
     border-radius: 9px 9px 0 0;
     color: var(--text);
@@ -855,6 +938,35 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 }
 
 .modal-actions button { width: auto; margin: 0; }
+
+/* --- Settings tab --- */
+.settings-card { max-width: 480px; }
+
+.settings-toggle-row {
+    display: flex;
+    gap: 8px;
+    margin: 6px 0 4px;
+}
+
+.settings-toggle-btn {
+    width: auto;
+    flex: 1;
+    margin: 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.settings-toggle-btn:hover { background: var(--hover-bg); color: var(--text); }
+
+.settings-toggle-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.danger-zone { border: 1px solid rgba(242, 107, 107, 0.35); }
+.danger-zone h2 { color: var(--error); }
 
 /* --- Discord-markup rendering in the live preview --- */
 .dp-emoji { width: 18px; height: 18px; vertical-align: -4px; margin: 0 1px; }

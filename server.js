@@ -166,6 +166,16 @@ app.get("/api/tournaments", requireAuth, async (req, res) => {
     res.json({ tournaments: tournamentsLib.listTournaments(guildId) });
 });
 
+// Settings page's "Delete all tournaments" — scoped to the one guildId given,
+// never every server this organizer manages.
+app.delete("/api/tournaments", requireAuth, async (req, res) => {
+    const { guildId } = req.query;
+    if (!guildId) return res.status(400).json({ error: "guildId is required" });
+    if (!(await requireOrganizerOf(req, res, guildId))) return;
+    tournamentsLib.deleteAllTournaments(guildId);
+    res.json({ ok: true });
+});
+
 app.post("/api/tournaments", requireAuth, async (req, res) => {
     const { guildId, ...data } = req.body;
     if (!guildId || !data.name || !data.channelId) {
