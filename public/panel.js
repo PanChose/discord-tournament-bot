@@ -897,6 +897,8 @@ const WHATS_NEW = {
         {
             label: "✨ New Features",
             items: [
+                "Everyone can now add the bot to their own server and manage it independently",
+                "Clone a tournament as a new draft",
                 "Republish an announcement to a different channel",
                 "New Settings tab: light/dark theme, 9 languages, delete all tournaments",
                 "Custom reminder DM text, plus a button to insert a date/time into the description",
@@ -909,14 +911,18 @@ const WHATS_NEW = {
                 "Editor reorganized into collapsible sections (Basics, Description, Branding, Notifications...)",
                 "Removed emoji clutter from buttons across the panel",
                 "Pop-ups now fade/scale in and out instead of snapping open",
+                "Cleaner login flow with a loading screen instead of a flash of the login button",
             ],
         },
         {
             label: "🐛 Bug Fixes",
             items: [
+                "Join no longer bumps the team counter for Matcherino-linked tournaments (only the sync does)",
+                "Join is now disabled once a linked Matcherino bracket is in progress or finished",
+                "Fixed @Role/#Chan/@User buttons doing nothing in the description editor",
                 "Fixed the date/time picker popup getting cut off in some sections",
                 "Saving a draft now keeps you in the editor instead of jumping to the dashboard",
-                "Fixed being able to spam the login button right after signing in (now shows a loading screen)",
+                "Fixed being able to spam the login button right after signing in",
             ],
         },
     ],
