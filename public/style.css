@@ -332,11 +332,13 @@ main {
 .tab-btn {
     width: 100%;
     margin: 0;
-    padding: 10px 14px;
+    padding: 14px 16px;
     text-align: left;
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .tab-btn.active {
@@ -365,6 +367,8 @@ main {
     grid-template-columns: 380px 1fr;
     gap: 20px;
     align-items: start;
+    max-width: 1500px;
+    margin: 0 auto;
 }
 
 .preview-col { position: sticky; top: calc(var(--header-h, 72px) + 20px); }
@@ -386,12 +390,13 @@ main {
 .section-nav-btn {
     width: 100%;
     margin: 0;
-    padding: 10px 12px;
+    padding: 13px 14px;
     text-align: left;
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .section-nav-btn:hover { background: var(--hover-bg); color: var(--text); }
@@ -997,6 +1002,15 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .matcherino-status { color: var(--ok); }
 .matcherino-status.stale { color: var(--warn); }
+
+/* Splits a long accordion section into labeled sub-topics (ping role,
+   start message, reminder, auto-react, ...) so related fields read as a
+   group instead of one undifferentiated wall of fields. */
+.section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+}
 
 /* --- Checkbox + label, e.g. the start-ping toggle --- */
 .checkbox-row {

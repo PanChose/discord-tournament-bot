@@ -296,12 +296,16 @@
                                 </select>
                                 <p class="hint" style="margin-top:-8px;">📢 Picking a role pings it right when published (a real notification, not just the embed).</p>
 
+                                <div class="section-divider"></div>
+
                                 <label class="checkbox-row" for="f-start-ping-enabled">
                                     <input type="checkbox" id="f-start-ping-enabled" />
-                                    <span data-i18n="editor.field.startPingEnabled">📣 Also ping that role when the tournament starts</span>
+                                    <span data-i18n="editor.field.startPingEnabled">📣 Post a message when the tournament starts</span>
                                 </label>
                                 <textarea id="f-start-ping-message" rows="2" maxlength="500" placeholder="Custom starting message (optional) — leave blank to use the default &quot;is starting now!&quot; text"></textarea>
-                                <p class="hint" style="margin-top:-8px;">Off by default — picking a role above only pings on publish unless this is checked too.</p>
+                                <p class="hint" style="margin-top:-8px;">Off by default. Posted in the announcement channel at the start time — pings the role above too, if one's picked.</p>
+
+                                <div class="section-divider"></div>
 
                                 <label data-i18n="editor.field.reminderAt">Send a reminder DM at (optional)</label>
                                 <div class="dt-field" data-dt="remind">
@@ -312,6 +316,8 @@
                                 </div>
                                 <p class="hint" style="margin-top:-8px;">Registered participants get a DM at this exact time — pick when you actually want it sent, not "N hours before".</p>
                                 <textarea id="f-reminder-message" rows="3" maxlength="1500" placeholder="Custom reminder message (optional) — leave blank to use the default ⏰ Reminder text"></textarea>
+
+                                <div class="section-divider"></div>
 
                                 <label data-i18n="editor.field.reaction">Auto-react emoji (optional)</label>
                                 <div class="reaction-row">
