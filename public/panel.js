@@ -879,8 +879,8 @@ function updateSectionBadges() {
     const descLen = document.getElementById("f-description").value.trim().length;
     setSectionBadge("description", descLen ? `${descLen} chars` : "Empty");
 
-    const hasExternalUrl = Boolean(document.getElementById("f-external-url").value.trim());
-    setSectionBadge("integrations", hasExternalUrl ? "Linked" : "Not set", hasExternalUrl ? "badge-active" : null);
+    const aiUsed = Boolean(document.getElementById("ai-result").textContent.trim());
+    setSectionBadge("integrations", aiUsed ? "Used" : "Optional", aiUsed ? "badge-active" : null);
 
     let brandingCount = 0;
     if (state.bannerOverride || document.getElementById("f-banner").value.trim()) brandingCount++;

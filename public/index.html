@@ -158,6 +158,11 @@
                                         <input id="f-max" type="number" min="2" max="1000" value="32" />
                                     </div>
                                 </div>
+
+                                <label>External tournament link (optional)</label>
+                                <input id="f-external-url" type="text" placeholder="https://challonge.com/... or matcherino.com/..." />
+                                <p class="hint" style="margin-top:-8px;">If set, clicking Join records the person as a participant here, then the bot sends them this link to finish signing up on the other platform. A Matcherino link also drives the team count and prize pool shown above.</p>
+                                <p id="matcherino-status" class="hint matcherino-status hidden"></p>
                             </div>
                         </div>
 
@@ -193,17 +198,11 @@
 
                         <div class="form-section collapsed" data-section="integrations">
                             <button type="button" class="section-header" data-section-toggle>
-                                <span class="section-title">🔗 Integrations &amp; AI</span>
+                                <span class="section-title">✨ AI Description Generator</span>
                                 <span class="section-badge" data-section-badge></span>
                                 <span class="section-chevron">▾</span>
                             </button>
                             <div class="section-body">
-                                <label>External tournament link (optional)</label>
-                                <input id="f-external-url" type="text" placeholder="https://challonge.com/... or matcherino.com/..." />
-                                <p class="hint" style="margin-top:-8px;">If set, clicking Join records the person as a participant here, then the bot sends them this link to finish signing up on the other platform.</p>
-                                <p id="matcherino-status" class="hint matcherino-status hidden"></p>
-
-                                <label style="margin-top:14px; display:block;">AI description generator (optional)</label>
                                 <div class="ai-row">
                                     <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" />
                                     <button type="button" id="ai-generate-btn" class="secondary-btn">✨ Generate with AI</button>
