@@ -282,8 +282,8 @@ header select, header button { width: auto; margin: 0; }
 .settings-menu-item:hover { background: var(--hover-bg); }
 
 main {
-    max-width: 1180px;
-    margin: 24px auto;
+    width: 100%;
+    margin: 24px 0;
     padding: 0 16px;
 }
 
@@ -304,7 +304,17 @@ main {
     top: 24px;
 }
 
-.content-area { flex: 1; min-width: 0; }
+.content-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.content-area > .tab-panel {
+    width: 100%;
+    max-width: 1100px;
+}
 
 .tab-btn {
     width: 100%;
@@ -338,7 +348,7 @@ main {
 /* --- Two-column editor layout --- */
 .layout {
     display: grid;
-    grid-template-columns: 560px 1fr;
+    grid-template-columns: 320px 1fr;
     gap: 20px;
     align-items: start;
 }
@@ -675,6 +685,8 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 }
 
 .detail-actions-danger {
+    display: flex;
+    gap: 8px;
     margin-top: 18px;
     padding-top: 14px;
     border-top: 1px solid var(--border);

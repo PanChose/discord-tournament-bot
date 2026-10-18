@@ -846,6 +846,33 @@ function closeModal(el) {
     setTimeout(() => el.classList.add("hidden"), 200);
 }
 
+// Generic yes/no confirmation, centered on screen like every other modal
+// here — replaces the browser's native confirm() popup (which renders
+// attached to the top of the page, not centered, and looks like a raw
+// JS alert rather than part of the app).
+function showConfirmModal(title, body) {
+    return new Promise((resolve) => {
+        document.getElementById("generic-confirm-title").textContent = title;
+        document.getElementById("generic-confirm-body").textContent = body;
+        const modal = document.getElementById("generic-confirm-modal");
+        const confirmBtn = document.getElementById("generic-confirm-btn");
+        const cancelBtn = document.getElementById("generic-confirm-cancel-btn");
+
+        function cleanup(result) {
+            closeModal(modal);
+            confirmBtn.removeEventListener("click", onConfirm);
+            cancelBtn.removeEventListener("click", onCancel);
+            resolve(result);
+        }
+        function onConfirm() { cleanup(true); }
+        function onCancel() { cleanup(false); }
+
+        confirmBtn.addEventListener("click", onConfirm);
+        cancelBtn.addEventListener("click", onCancel);
+        openModal(modal);
+    });
+}
+
 // --- Clear-form confirmation (the editor's Clear button is destructive to
 // unsaved edits, so it asks before wiping the form instead of acting instantly) ---
 document.getElementById("editor-reset-btn").addEventListener("click", () => {
@@ -1308,9 +1335,6 @@ function buildTournamentActions(t) {
     if (t.status === "draft") {
         primary.push(`<button data-action="publish" data-id="${t.id}" class="detail-publish-btn">${tr("action.publish")}</button>`);
     }
-    if (t.status === "published") {
-        primary.push(`<button data-action="close" data-id="${t.id}" class="danger-btn">${tr("action.close")}</button>`);
-    }
 
     const secondary = [];
     if (t.status !== "draft") {
@@ -1322,12 +1346,18 @@ function buildTournamentActions(t) {
     }
     secondary.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">${tr("action.clone")}</button>`);
 
+    // Close and Delete both end up here, not beside Edit — they're the two
+    // "this changes something you can't casually undo" actions.
+    const danger = [];
+    if (t.status === "published") {
+        danger.push(`<button data-action="close" data-id="${t.id}" class="danger-btn">${tr("action.close")}</button>`);
+    }
+    danger.push(`<button data-action="delete" data-id="${t.id}" class="danger-btn">${tr("action.delete")}</button>`);
+
     return `
         <div class="detail-actions-primary">${primary.join("")}</div>
         <div class="detail-actions-secondary">${secondary.join("")}</div>
-        <div class="detail-actions-danger">
-            <button data-action="delete" data-id="${t.id}" class="danger-btn">${tr("action.delete")}</button>
-        </div>`;
+        <div class="detail-actions-danger">${danger.join("")}</div>`;
 }
 
 // --- Tournament detail modal (everything a tile used to show inline) ---
@@ -1486,7 +1516,8 @@ async function publishTournament(id) {
 }
 
 async function closeTournament(id) {
-    if (!confirm("Close registration for this tournament?")) return;
+    const ok = await showConfirmModal("Close registration?", "Close registration for this tournament?");
+    if (!ok) return;
     try {
         await apiFetch(`/api/tournaments/${id}/close`, { method: "POST" });
         await loadTournaments();
@@ -1496,7 +1527,8 @@ async function closeTournament(id) {
 }
 
 async function deleteTournament(id) {
-    if (!confirm("Delete this tournament? This can't be undone.")) return;
+    const ok = await showConfirmModal("Delete this tournament?", "This can't be undone.");
+    if (!ok) return;
     try {
         await apiFetch(`/api/tournaments/${id}`, { method: "DELETE" });
         await loadTournaments();
