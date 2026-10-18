@@ -126,11 +126,17 @@
                         </div>
                         <p class="hint">Rendered locally from the form below — no Discord API calls while you type. The real embed is built server-side from the same data when you publish.</p>
                     </div>
+
+                    <div class="card editor-actions">
+                        <button id="save-btn" type="button" data-i18n="editor.save">Save draft</button>
+                        <button id="publish-btn" type="button" class="hidden" data-i18n="action.publish">Publish</button>
+                        <p id="save-result" class="result"></p>
+                        <button type="button" id="editor-reset-btn" class="secondary-btn danger-btn full-width-btn" data-i18n="editor.clear">Clear</button>
+                    </div>
                 </section>
 
                 <section class="form-col">
                     <section class="card">
-                        <button type="button" id="editor-reset-btn" class="secondary-btn danger-btn full-width-btn" data-i18n="editor.clear">Clear</button>
                         <h2 id="editor-heading" data-i18n="editor.newTournament">New tournament</h2>
 
                         <input type="hidden" id="tournament-id" />
@@ -290,6 +296,13 @@
                                 </select>
                                 <p class="hint" style="margin-top:-8px;">📢 Picking a role pings it right when published (a real notification, not just the embed).</p>
 
+                                <label class="checkbox-row" for="f-start-ping-enabled">
+                                    <input type="checkbox" id="f-start-ping-enabled" />
+                                    <span data-i18n="editor.field.startPingEnabled">📣 Also ping that role when the tournament starts</span>
+                                </label>
+                                <textarea id="f-start-ping-message" rows="2" maxlength="500" placeholder="Custom starting message (optional) — leave blank to use the default &quot;is starting now!&quot; text"></textarea>
+                                <p class="hint" style="margin-top:-8px;">Off by default — picking a role above only pings on publish unless this is checked too.</p>
+
                                 <label data-i18n="editor.field.reminderAt">Send a reminder DM at (optional)</label>
                                 <div class="dt-field" data-dt="remind">
                                     <button type="button" class="dt-toggle" data-dt-toggle>
@@ -312,10 +325,6 @@
                                 <p class="hint" style="margin-top:-8px;">The bot reacts with this once, right when you publish.</p>
                             </div>
                         </div>
-
-                        <button id="save-btn" type="button" data-i18n="editor.save">Save draft</button>
-                        <button id="publish-btn" type="button" class="hidden" data-i18n="action.publish">Publish</button>
-                        <p id="save-result" class="result"></p>
                     </section>
                 </section>
 

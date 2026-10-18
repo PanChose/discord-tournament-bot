@@ -92,6 +92,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Author mini icon",
         "editor.field.color": "Embed color",
         "editor.field.pingRole": "Ping role (optional)",
+        "editor.field.startPingEnabled": "Also ping that role when the tournament starts",
         "editor.field.reminderAt": "Send a reminder DM at (optional)",
         "editor.field.reaction": "Auto-react emoji (optional)",
         "editor.save": "Save draft",
@@ -169,6 +170,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Мини-иконка автора",
         "editor.field.color": "Цвет embed",
         "editor.field.pingRole": "Роль для пинга (опционально)",
+        "editor.field.startPingEnabled": "Также пинговать эту роль при старте турнира",
         "editor.field.reminderAt": "Отправить напоминание в ЛС (опционально)",
         "editor.field.reaction": "Авто-реакция эмодзи (опционально)",
         "editor.save": "Сохранить черновик",
@@ -246,6 +248,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Mini icono del autor",
         "editor.field.color": "Color del embed",
         "editor.field.pingRole": "Rol a mencionar (opcional)",
+        "editor.field.startPingEnabled": "También mencionar ese rol cuando empiece el torneo",
         "editor.field.reminderAt": "Enviar un recordatorio por MD a las (opcional)",
         "editor.field.reaction": "Emoji de reacción automática (opcional)",
         "editor.save": "Guardar borrador",
@@ -323,6 +326,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Mini pictogramă autor",
         "editor.field.color": "Culoarea embed-ului",
         "editor.field.pingRole": "Rol de menționat (opțional)",
+        "editor.field.startPingEnabled": "Menționează și acel rol când începe turneul",
         "editor.field.reminderAt": "Trimite un memento prin DM la (opțional)",
         "editor.field.reaction": "Emoji de reacție automată (opțional)",
         "editor.save": "Salvează ciorna",
@@ -400,6 +404,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Mini icona autore",
         "editor.field.color": "Colore dell'embed",
         "editor.field.pingRole": "Ruolo da menzionare (opzionale)",
+        "editor.field.startPingEnabled": "Menziona anche quel ruolo quando inizia il torneo",
         "editor.field.reminderAt": "Invia un promemoria in DM alle (opzionale)",
         "editor.field.reaction": "Emoji di reazione automatica (opzionale)",
         "editor.save": "Salva bozza",
@@ -477,6 +482,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Mini-icoon auteur",
         "editor.field.color": "Embedkleur",
         "editor.field.pingRole": "Rol om te pingen (optioneel)",
+        "editor.field.startPingEnabled": "Ping die rol ook wanneer het toernooi begint",
         "editor.field.reminderAt": "Stuur een herinnering per DM om (optioneel)",
         "editor.field.reaction": "Automatische reactie-emoji (optioneel)",
         "editor.save": "Concept opslaan",
@@ -554,6 +560,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Mini ícone do autor",
         "editor.field.color": "Cor do embed",
         "editor.field.pingRole": "Cargo a mencionar (opcional)",
+        "editor.field.startPingEnabled": "Também mencionar esse cargo quando o torneio começar",
         "editor.field.reminderAt": "Enviar um lembrete por DM às (opcional)",
         "editor.field.reaction": "Emoji de reação automática (opcional)",
         "editor.save": "Guardar rascunho",
@@ -631,6 +638,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Μίνι εικονίδιο συντάκτη",
         "editor.field.color": "Χρώμα embed",
         "editor.field.pingRole": "Ρόλος για ειδοποίηση (προαιρετικό)",
+        "editor.field.startPingEnabled": "Ειδοποίησε επίσης αυτόν τον ρόλο όταν ξεκινήσει το τουρνουά",
         "editor.field.reminderAt": "Αποστολή υπενθύμισης με DM στις (προαιρετικό)",
         "editor.field.reaction": "Emoji αυτόματης αντίδρασης (προαιρετικό)",
         "editor.save": "Αποθήκευση προσχεδίου",
@@ -708,6 +716,7 @@ const TRANSLATIONS = {
         "editor.field.authorIcon": "Mini icône de l'auteur",
         "editor.field.color": "Couleur de l'embed",
         "editor.field.pingRole": "Rôle à notifier (optionnel)",
+        "editor.field.startPingEnabled": "Notifier aussi ce rôle au démarrage du tournoi",
         "editor.field.reminderAt": "Envoyer un rappel en MP à (optionnel)",
         "editor.field.reaction": "Emoji de réaction automatique (optionnel)",
         "editor.save": "Enregistrer le brouillon",
@@ -1479,6 +1488,10 @@ document.getElementById("tournament-list").addEventListener("click", (e) => {
     const colorBtn = e.target.closest(".tile-color-btn");
     if (colorBtn) {
         const input = document.getElementById("tile-color-input");
+        // Move the (otherwise invisible) input under the cursor first, so the
+        // native picker opens right there instead of wherever it last was.
+        input.style.left = `${e.clientX}px`;
+        input.style.top = `${e.clientY}px`;
         input.dataset.id = colorBtn.dataset.id;
         input.value = colorBtn.dataset.color || "#5865f2";
         input.click();
@@ -1873,6 +1886,8 @@ function editTournament(t) {
     document.getElementById("f-external-url").value = t.external_url || "";
     document.getElementById("f-color").value = t.color || "#8b5cf6";
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
+    document.getElementById("f-start-ping-enabled").checked = Boolean(t.start_ping_enabled);
+    document.getElementById("f-start-ping-message").value = t.start_ping_message || "";
     document.getElementById("f-author-name").value = t.author_name || "";
     remindAtPicker.set(t.reminder_at || null);
     document.getElementById("f-reminder-message").value = t.reminder_message || "";
@@ -1905,6 +1920,8 @@ function resetEditorForm() {
     document.getElementById("f-external-url").value = "";
     document.getElementById("f-color").value = "#8b5cf6";
     document.getElementById("f-ping-role").value = "";
+    document.getElementById("f-start-ping-enabled").checked = false;
+    document.getElementById("f-start-ping-message").value = "";
     document.getElementById("f-author-name").value = "";
     remindAtPicker.set(null);
     document.getElementById("f-reminder-message").value = "";
@@ -1976,6 +1993,8 @@ function collectFormData() {
         color: document.getElementById("f-color").value,
         pingRoleId: document.getElementById("f-ping-role").value || null,
         pingOnPublish: Boolean(document.getElementById("f-ping-role").value),
+        startPingEnabled: document.getElementById("f-start-ping-enabled").checked,
+        startPingMessage: document.getElementById("f-start-ping-message").value.trim() || null,
         reminderAt: remindAtPicker.get(),
         reminderMessage: document.getElementById("f-reminder-message").value.trim() || null,
         reactionEmojiId: state.reactionEmoji ? state.reactionEmoji.id : null,
@@ -2005,7 +2024,7 @@ const SECTION_FIELDS = {
     basics: ["channelId", "name", "game", "format", "startsAt", "maxParticipants", "externalUrl"],
     description: ["description"],
     branding: ["banner", "thumbnail", "authorName", "authorIcon", "color"],
-    notifications: ["pingRoleId", "pingOnPublish", "reminderAt", "reminderMessage", "reactionEmojiId", "reactionEmojiName"],
+    notifications: ["pingRoleId", "pingOnPublish", "startPingEnabled", "startPingMessage", "reminderAt", "reminderMessage", "reactionEmojiId", "reactionEmojiName"],
 };
 
 function updateDirtyHighlights() {
@@ -2092,6 +2111,8 @@ function schedulePreview() {
     "f-author-icon",
     "f-color",
     "f-ping-role",
+    "f-start-ping-enabled",
+    "f-start-ping-message",
     "f-reminder-message",
     "tournament-id",
 ].forEach((id) => {
@@ -2228,9 +2249,10 @@ function updateSectionBadges() {
 
     let notifCount = 0;
     if (document.getElementById("f-ping-role").value) notifCount++;
+    if (document.getElementById("f-start-ping-enabled").checked) notifCount++;
     if (remindAtPicker.get()) notifCount++;
     if (state.reactionEmoji) notifCount++;
-    setSectionBadge("notifications", `${notifCount}/3 active`, notifCount ? "badge-active" : null);
+    setSectionBadge("notifications", `${notifCount}/4 active`, notifCount ? "badge-active" : null);
 
     updateDirtyHighlights();
 }

@@ -148,6 +148,7 @@ textarea { resize: vertical; }
 .description-textarea { min-height: 280px; }
 
 label { font-size: 13px; color: var(--muted); }
+label:not(:first-child) { margin-top: 14px; }
 
 button {
     background: var(--accent);
@@ -322,7 +323,11 @@ main {
     max-width: 1100px;
 }
 
-#editor-tab { max-width: 1500px; }
+/* The editor spans into the right spacer track too (not just the shared
+   centered column every other tab uses) so it can actually grow wider —
+   its own max-width/padding-right then reserve just enough room for the
+   fixed section-nav on the right, per #editor-tab's rule below. */
+#editor-tab { grid-column: 2 / -1; max-width: 1800px; padding-right: 220px; }
 
 .tab-btn {
     width: 100%;
@@ -354,19 +359,25 @@ main {
     .content-area { grid-template-columns: minmax(16px, 1fr) minmax(0, 1100px) minmax(16px, 1fr); }
 }
 
-/* --- Three-column editor layout: preview, form, jump-to-section nav --- */
+/* --- Two-column editor layout: preview + form --- */
 .layout {
     display: grid;
-    grid-template-columns: 380px 1fr 200px;
+    grid-template-columns: 380px 1fr;
     gap: 20px;
     align-items: start;
 }
 
 .preview-col { position: sticky; top: calc(var(--header-h, 72px) + 20px); }
 
+/* The jump-to-section nav is fixed flush against the right edge of the
+   screen — same trick as the left sidebar — so it doesn't eat into the
+   form's own width; #editor-tab's padding-right below keeps the form clear
+   of it instead. */
 .section-nav {
-    position: sticky;
+    position: fixed;
     top: calc(var(--header-h, 72px) + 20px);
+    right: 16px;
+    width: 200px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -384,15 +395,17 @@ main {
 }
 
 .section-nav-btn:hover { background: var(--hover-bg); color: var(--text); }
-.section-nav-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 @media (max-width: 1000px) {
     .layout { grid-template-columns: 1fr; }
     .preview-col { position: static; order: 2; }
     .form-col { order: 1; }
+    #editor-tab { padding-right: 0; }
     .section-nav {
         order: 0;
         position: static;
+        width: auto;
+        right: auto;
         flex-direction: row;
         flex-wrap: nowrap;
         overflow-x: auto;
@@ -429,7 +442,7 @@ main {
 
 .full-width-btn { width: 100%; margin-bottom: 14px; }
 
-.hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.hint { font-size: 12px; color: var(--muted); margin: 8px 0 18px; }
 
 /* --- Drag & drop banner upload --- */
 .dropzone {
@@ -685,8 +698,9 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .tile-color-btn:focus { opacity: 1; }
 
 /* Kept technically visible (not display:none) so the browser's native color
-   picker still opens on .click(), but pinned over the center of the screen
-   and shrunk to invisible so it never shows as its own little swatch. */
+   picker still opens on .click(), but shrunk to invisible so it never shows
+   as its own little swatch — JS moves it under the cursor on each click
+   (top/left), so the native picker opens right there. */
 #tile-color-input {
     position: fixed;
     top: 50%;
@@ -983,6 +997,19 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .matcherino-status { color: var(--ok); }
 .matcherino-status.stale { color: var(--warn); }
+
+/* --- Checkbox + label, e.g. the start-ping toggle --- */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 4px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.checkbox-row input[type="checkbox"] { width: auto; margin: 0; flex-shrink: 0; }
 
 /* --- Auto-react emoji picker --- */
 .reaction-row {
