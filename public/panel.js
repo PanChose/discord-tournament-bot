@@ -845,13 +845,30 @@ async function loadInviteLink() {
 // =========================================================================
 
 const WHATS_NEW = {
-    version: "2026.02.1",
-    items: [
-        "Editor redesigned into collapsible sections (Basics, Description, Branding, Notifications...)",
-        "Republish an announcement to a different channel",
-        "New Settings tab: light/dark theme, 9 languages, delete all tournaments",
-        "Custom reminder DM text, plus a button to insert a date/time into the description",
-        "Saving a draft now keeps you in the editor instead of jumping to the dashboard",
+    version: "2026.02.2",
+    categories: [
+        {
+            label: "✨ New Features",
+            items: [
+                "Republish an announcement to a different channel",
+                "New Settings tab: light/dark theme, 9 languages, delete all tournaments",
+                "Custom reminder DM text, plus a button to insert a date/time into the description",
+            ],
+        },
+        {
+            label: "🎨 Redesign",
+            items: [
+                "Editor reorganized into collapsible sections (Basics, Description, Branding, Notifications...)",
+                "Removed emoji clutter from buttons across the panel",
+            ],
+        },
+        {
+            label: "🐛 Bug Fixes",
+            items: [
+                "Fixed the date/time picker popup getting cut off in some sections",
+                "Saving a draft now keeps you in the editor instead of jumping to the dashboard",
+            ],
+        },
     ],
 };
 
@@ -864,7 +881,15 @@ function checkWhatsNew() {
     }
     if (seenVersion === WHATS_NEW.version) return;
 
-    document.getElementById("whats-new-list").innerHTML = WHATS_NEW.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    document.getElementById("whats-new-list").innerHTML = WHATS_NEW.categories
+        .map(
+            (cat) => `
+                <div class="whats-new-category">
+                    <h3>${escapeHtml(cat.label)}</h3>
+                    <ul>${cat.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+                </div>`
+        )
+        .join("");
     document.getElementById("whats-new-modal").classList.remove("hidden");
 }
 

@@ -957,13 +957,29 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .whats-new-list {
     margin: 10px 0 4px;
-    padding-left: 20px;
     font-size: 14px;
-    line-height: 1.6;
     color: var(--text);
 }
 
-.whats-new-list li { margin: 4px 0; }
+.whats-new-category { margin-bottom: 14px; }
+.whats-new-category:last-child { margin-bottom: 0; }
+
+.whats-new-category h3 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+}
+
+.whats-new-category ul {
+    margin: 0;
+    padding-left: 20px;
+    line-height: 1.6;
+}
+
+.whats-new-category li { margin: 4px 0; }
 
 .modal-actions {
     display: flex;
