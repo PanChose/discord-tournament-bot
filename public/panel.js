@@ -93,6 +93,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Embed color",
         "editor.field.pingRole": "Ping role (optional)",
         "editor.field.startPingEnabled": "Post a message when the tournament starts",
+        "editor.field.startPingRole": "Role to ping for this message (optional)",
         "editor.field.reminderAt": "Send a reminder DM at (optional)",
         "editor.field.reaction": "Auto-react emoji (optional)",
         "editor.save": "Save draft",
@@ -171,6 +172,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Цвет embed",
         "editor.field.pingRole": "Роль для пинга (опционально)",
         "editor.field.startPingEnabled": "Опубликовать сообщение при старте турнира",
+        "editor.field.startPingRole": "Роль для пинга в этом сообщении (опционально)",
         "editor.field.reminderAt": "Отправить напоминание в ЛС (опционально)",
         "editor.field.reaction": "Авто-реакция эмодзи (опционально)",
         "editor.save": "Сохранить черновик",
@@ -249,6 +251,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Color del embed",
         "editor.field.pingRole": "Rol a mencionar (opcional)",
         "editor.field.startPingEnabled": "Publicar un mensaje cuando empiece el torneo",
+        "editor.field.startPingRole": "Rol a mencionar en este mensaje (opcional)",
         "editor.field.reminderAt": "Enviar un recordatorio por MD a las (opcional)",
         "editor.field.reaction": "Emoji de reacción automática (opcional)",
         "editor.save": "Guardar borrador",
@@ -327,6 +330,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Culoarea embed-ului",
         "editor.field.pingRole": "Rol de menționat (opțional)",
         "editor.field.startPingEnabled": "Publică un mesaj când începe turneul",
+        "editor.field.startPingRole": "Rol de menționat în acest mesaj (opțional)",
         "editor.field.reminderAt": "Trimite un memento prin DM la (opțional)",
         "editor.field.reaction": "Emoji de reacție automată (opțional)",
         "editor.save": "Salvează ciorna",
@@ -405,6 +409,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Colore dell'embed",
         "editor.field.pingRole": "Ruolo da menzionare (opzionale)",
         "editor.field.startPingEnabled": "Pubblica un messaggio quando inizia il torneo",
+        "editor.field.startPingRole": "Ruolo da menzionare in questo messaggio (opzionale)",
         "editor.field.reminderAt": "Invia un promemoria in DM alle (opzionale)",
         "editor.field.reaction": "Emoji di reazione automatica (opzionale)",
         "editor.save": "Salva bozza",
@@ -483,6 +488,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Embedkleur",
         "editor.field.pingRole": "Rol om te pingen (optioneel)",
         "editor.field.startPingEnabled": "Plaats een bericht wanneer het toernooi begint",
+        "editor.field.startPingRole": "Rol om te pingen voor dit bericht (optioneel)",
         "editor.field.reminderAt": "Stuur een herinnering per DM om (optioneel)",
         "editor.field.reaction": "Automatische reactie-emoji (optioneel)",
         "editor.save": "Concept opslaan",
@@ -561,6 +567,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Cor do embed",
         "editor.field.pingRole": "Cargo a mencionar (opcional)",
         "editor.field.startPingEnabled": "Publicar uma mensagem quando o torneio começar",
+        "editor.field.startPingRole": "Cargo a mencionar nesta mensagem (opcional)",
         "editor.field.reminderAt": "Enviar um lembrete por DM às (opcional)",
         "editor.field.reaction": "Emoji de reação automática (opcional)",
         "editor.save": "Guardar rascunho",
@@ -639,6 +646,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Χρώμα embed",
         "editor.field.pingRole": "Ρόλος για ειδοποίηση (προαιρετικό)",
         "editor.field.startPingEnabled": "Δημοσίευση μηνύματος όταν ξεκινήσει το τουρνουά",
+        "editor.field.startPingRole": "Ρόλος για ειδοποίηση σε αυτό το μήνυμα (προαιρετικό)",
         "editor.field.reminderAt": "Αποστολή υπενθύμισης με DM στις (προαιρετικό)",
         "editor.field.reaction": "Emoji αυτόματης αντίδρασης (προαιρετικό)",
         "editor.save": "Αποθήκευση προσχεδίου",
@@ -717,6 +725,7 @@ const TRANSLATIONS = {
         "editor.field.color": "Couleur de l'embed",
         "editor.field.pingRole": "Rôle à notifier (optionnel)",
         "editor.field.startPingEnabled": "Publier un message au démarrage du tournoi",
+        "editor.field.startPingRole": "Rôle à notifier pour ce message (optionnel)",
         "editor.field.reminderAt": "Envoyer un rappel en MP à (optionnel)",
         "editor.field.reaction": "Emoji de réaction automatique (optionnel)",
         "editor.save": "Enregistrer le brouillon",
@@ -1142,11 +1151,12 @@ function populateChannelAndRoleSelects() {
     // mention tag built from that id (<@&guildId>) renders/pings as @everyone
     // — the backend's role list excludes it (it's not a normal assignable
     // role), so it's added here as its own option instead.
-    const roleSelect = document.getElementById("f-ping-role");
-    roleSelect.innerHTML =
-        `<option value="">— none —</option>` +
-        `<option value="${state.guildId}">@everyone</option>` +
-        state.roles.map((r) => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
+    const roleOptions =
+        `<option value="${state.guildId}">@everyone</option>` + state.roles.map((r) => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
+
+    document.getElementById("f-ping-role").innerHTML = `<option value="">— none —</option>` + roleOptions;
+    // Its own role, independent of the publish-time one above (see announceStart).
+    document.getElementById("f-start-ping-role").innerHTML = `<option value="">— no ping —</option>` + roleOptions;
 }
 
 // Resolves a role id to a display name for the live preview, including the
@@ -1887,6 +1897,7 @@ function editTournament(t) {
     document.getElementById("f-color").value = t.color || "#8b5cf6";
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
     document.getElementById("f-start-ping-enabled").checked = Boolean(t.start_ping_enabled);
+    document.getElementById("f-start-ping-role").value = t.start_ping_role_id || "";
     document.getElementById("f-start-ping-message").value = t.start_ping_message || "";
     document.getElementById("f-author-name").value = t.author_name || "";
     remindAtPicker.set(t.reminder_at || null);
@@ -1921,6 +1932,7 @@ function resetEditorForm() {
     document.getElementById("f-color").value = "#8b5cf6";
     document.getElementById("f-ping-role").value = "";
     document.getElementById("f-start-ping-enabled").checked = false;
+    document.getElementById("f-start-ping-role").value = "";
     document.getElementById("f-start-ping-message").value = "";
     document.getElementById("f-author-name").value = "";
     remindAtPicker.set(null);
@@ -1994,6 +2006,7 @@ function collectFormData() {
         pingRoleId: document.getElementById("f-ping-role").value || null,
         pingOnPublish: Boolean(document.getElementById("f-ping-role").value),
         startPingEnabled: document.getElementById("f-start-ping-enabled").checked,
+        startPingRoleId: document.getElementById("f-start-ping-role").value || null,
         startPingMessage: document.getElementById("f-start-ping-message").value.trim() || null,
         reminderAt: remindAtPicker.get(),
         reminderMessage: document.getElementById("f-reminder-message").value.trim() || null,
@@ -2024,7 +2037,17 @@ const SECTION_FIELDS = {
     basics: ["channelId", "name", "game", "format", "startsAt", "maxParticipants", "externalUrl"],
     description: ["description"],
     branding: ["banner", "thumbnail", "authorName", "authorIcon", "color"],
-    notifications: ["pingRoleId", "pingOnPublish", "startPingEnabled", "startPingMessage", "reminderAt", "reminderMessage", "reactionEmojiId", "reactionEmojiName"],
+    notifications: [
+        "pingRoleId",
+        "pingOnPublish",
+        "startPingEnabled",
+        "startPingRoleId",
+        "startPingMessage",
+        "reminderAt",
+        "reminderMessage",
+        "reactionEmojiId",
+        "reactionEmojiName",
+    ],
 };
 
 function updateDirtyHighlights() {
@@ -2112,6 +2135,7 @@ function schedulePreview() {
     "f-color",
     "f-ping-role",
     "f-start-ping-enabled",
+    "f-start-ping-role",
     "f-start-ping-message",
     "f-reminder-message",
     "tournament-id",

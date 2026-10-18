@@ -327,7 +327,14 @@ main {
    centered column every other tab uses) so it can actually grow wider —
    its own max-width/padding-right then reserve just enough room for the
    fixed section-nav on the right, per #editor-tab's rule below. */
-#editor-tab { grid-column: 2 / -1; max-width: 1800px; padding-right: 220px; }
+/* Spans the whole content-area width (not just the shared centered column)
+   and reserves its own fixed-size margins that mirror the sidebar's real
+   footprint (200px + 16px gap, both sides) — rather than leaning on
+   content-area's dynamic left/right floor, which only balances out for a
+   tab with nothing fixed on its right. That left the editor's content
+   hugging the sidebar on the left while sitting right up against the nav
+   on the right, worse the wider the screen. */
+#editor-tab { grid-column: 1 / -1; max-width: none; padding-left: 216px; padding-right: 216px; }
 
 .tab-btn {
     width: 100%;
@@ -359,6 +366,7 @@ main {
     }
     .sidebar .tab-btn { width: auto; flex: 1 1 auto; text-align: center; }
     .content-area { grid-template-columns: minmax(16px, 1fr) minmax(0, 1100px) minmax(16px, 1fr); }
+    #editor-tab { padding-left: 0; }
 }
 
 /* --- Two-column editor layout: preview + form --- */

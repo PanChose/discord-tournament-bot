@@ -256,12 +256,16 @@
                                 </div>
                                 <input id="f-banner" type="text" placeholder="...or paste a link https://.../banner.png" />
 
+                                <div class="section-divider"></div>
+
                                 <label data-i18n="editor.field.thumbnail">Tournament icon (small thumbnail, top-right corner, optional)</label>
                                 <div class="dropzone small" id="thumbnail-dropzone">
                                     <span>🖼️ Drag an image here or click</span>
                                     <input type="file" id="thumbnail-file" accept="image/*" hidden />
                                 </div>
                                 <input id="f-thumbnail" type="text" placeholder="...or paste a link https://.../icon.png" />
+
+                                <div class="section-divider"></div>
 
                                 <div class="row-2">
                                     <div>
@@ -277,6 +281,8 @@
                                     </div>
                                 </div>
                                 <input id="f-author-icon" type="text" placeholder="...or paste a link for the author icon" />
+
+                                <div class="section-divider"></div>
 
                                 <label data-i18n="editor.field.color">Embed color</label>
                                 <input id="f-color" type="color" value="#8b5cf6" />
@@ -302,8 +308,12 @@
                                     <input type="checkbox" id="f-start-ping-enabled" />
                                     <span data-i18n="editor.field.startPingEnabled">📣 Post a message when the tournament starts</span>
                                 </label>
+                                <label data-i18n="editor.field.startPingRole">Role to ping for this message (optional)</label>
+                                <select id="f-start-ping-role">
+                                    <option value="">— no ping —</option>
+                                </select>
                                 <textarea id="f-start-ping-message" rows="2" maxlength="500" placeholder="Custom starting message (optional) — leave blank to use the default &quot;is starting now!&quot; text"></textarea>
-                                <p class="hint" style="margin-top:-8px;">Off by default. Posted in the announcement channel at the start time — pings the role above too, if one's picked.</p>
+                                <p class="hint" style="margin-top:-8px;">Off by default. Posted in the announcement channel at the start time — separate from the ping role above, which is only for publishing.</p>
 
                                 <div class="section-divider"></div>
 
