@@ -369,12 +369,12 @@ main {
 .secondary-btn:hover { background: var(--hover-bg); color: var(--text); }
 
 .danger-btn {
-    background: transparent;
-    border: 1px dashed var(--error);
-    color: var(--error);
+    background: var(--error);
+    border: none;
+    color: #fff;
 }
 
-.danger-btn:hover { background: rgba(242, 107, 107, 0.12); color: var(--error); }
+.danger-btn:hover { background: #d9504f; }
 
 .full-width-btn { width: 100%; margin-bottom: 14px; }
 
@@ -637,9 +637,50 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     -webkit-box-orient: vertical;
 }
 
-.tournament-detail-card { max-width: 460px; }
+.tournament-detail-card { max-width: 620px; padding: 32px; }
 
-.detail-actions { flex-wrap: wrap; margin-top: 14px; }
+.tournament-detail-card .tournament-name { font-size: 20px; margin-bottom: 4px; }
+.tournament-detail-card .badge { margin-top: 10px; }
+
+.detail-actions-primary {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.detail-actions-primary button { width: auto; margin: 0; }
+
+.detail-edit-btn {
+    flex: 1;
+    padding: 14px 20px;
+    font-size: 15px;
+}
+
+.detail-publish-btn { background: var(--ok); }
+.detail-publish-btn:hover { background: #46b87a; }
+
+.detail-actions-primary .danger-btn { width: auto; }
+
+.detail-actions-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.detail-actions-secondary button {
+    width: auto;
+    margin: 0;
+    padding: 10px 14px;
+}
+
+.detail-actions-danger {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.detail-actions-danger button { width: auto; margin: 0; padding: 8px 16px; font-size: 12px; }
 
 .tournament-name { font-weight: 600; }
 .tournament-meta { font-size: 12px; color: var(--muted); }

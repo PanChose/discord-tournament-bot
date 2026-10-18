@@ -1299,26 +1299,35 @@ function tournamentTileHtml(t) {
 
 // Builds the same action buttons every tournament used to show inline in its
 // row — now shown inside the detail modal instead (see openTournamentDetail).
+// Three visually distinct groups instead of one flat row: the primary action
+// (big Edit, plus Close/Publish right beside it), a tidy grid of routine
+// secondary actions, and Delete set apart at the bottom since it's the one
+// irreversible button here.
 function buildTournamentActions(t) {
-    const actions = [];
+    const primary = [`<button data-action="edit" data-id="${t.id}" class="detail-edit-btn">${tr("action.edit")}</button>`];
     if (t.status === "draft") {
-        actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
-        actions.push(`<button data-action="publish" data-id="${t.id}">${tr("action.publish")}</button>`);
+        primary.push(`<button data-action="publish" data-id="${t.id}" class="detail-publish-btn">${tr("action.publish")}</button>`);
     }
     if (t.status === "published") {
-        actions.push(`<button data-action="edit" data-id="${t.id}">${tr("action.edit")}</button>`);
-        actions.push(`<button data-action="close" data-id="${t.id}">${tr("action.close")}</button>`);
+        primary.push(`<button data-action="close" data-id="${t.id}" class="danger-btn">${tr("action.close")}</button>`);
     }
+
+    const secondary = [];
     if (t.status !== "draft") {
-        actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">${tr("action.participants")}</button>`);
-        actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">${tr("action.republish")}</button>`);
+        secondary.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">${tr("action.participants")}</button>`);
+        secondary.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">${tr("action.republish")}</button>`);
     }
     if (t.matcherino_bounty_id) {
-        actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">${tr("action.sync")}</button>`);
+        secondary.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">${tr("action.sync")}</button>`);
     }
-    actions.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">${tr("action.clone")}</button>`);
-    actions.push(`<button data-action="delete" data-id="${t.id}" class="secondary-btn">${tr("action.delete")}</button>`);
-    return actions.join("");
+    secondary.push(`<button data-action="clone" data-id="${t.id}" class="secondary-btn" title="Duplicate as a new draft">${tr("action.clone")}</button>`);
+
+    return `
+        <div class="detail-actions-primary">${primary.join("")}</div>
+        <div class="detail-actions-secondary">${secondary.join("")}</div>
+        <div class="detail-actions-danger">
+            <button data-action="delete" data-id="${t.id}" class="danger-btn">${tr("action.delete")}</button>
+        </div>`;
 }
 
 // --- Tournament detail modal (everything a tile used to show inline) ---
@@ -1351,7 +1360,7 @@ function openTournamentDetail(t) {
         ${matcherinoLine}
         <div class="tournament-meta">${slots}/${t.max_participants} teams</div>
         <span class="badge badge-${dashboardStatusKey(t)}">${DASHBOARD_STATUS_LABELS[dashboardStatusKey(t)]}</span>
-        <div class="row-actions detail-actions">${buildTournamentActions(t)}</div>`;
+        ${buildTournamentActions(t)}`;
     openModal(document.getElementById("tournament-detail-modal"));
 }
 
