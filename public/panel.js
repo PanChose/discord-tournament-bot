@@ -1738,8 +1738,9 @@ function renderPreview() {
 
     const registerBtn = document.getElementById("pv-register-btn");
     const isFull = activeCount >= data.maxParticipants;
-    registerBtn.textContent = isFull ? "Full" : "Join";
-    registerBtn.style.opacity = status === "published" && !isFull ? "1" : "0.5";
+    const hasStarted = existing && (dashboardStatusKey(existing) === "in_progress" || dashboardStatusKey(existing) === "finalized");
+    registerBtn.textContent = hasStarted ? "Already Started" : isFull ? "Full" : "Join";
+    registerBtn.style.opacity = status === "published" && !isFull && !hasStarted ? "1" : "0.5";
 
     updateSectionBadges();
 }
