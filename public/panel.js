@@ -48,6 +48,7 @@ function dashboardStatusKey(t) {
 
 const TRANSLATIONS = {
     en: {
+        "whatsNew.title": "✨ What's New",
         "login.title": "🏆 Tournament Bot",
         "login.hint": "Sign in with Discord to manage tournaments on servers where you're an organizer (Manage Server permission).",
         "login.button": "Log in with Discord",
@@ -115,6 +116,7 @@ const TRANSLATIONS = {
         "action.delete": "Delete",
     },
     ru: {
+        "whatsNew.title": "✨ Что нового",
         "login.title": "🏆 Турнирный бот",
         "login.hint": "Войдите через Discord, чтобы управлять турнирами на серверах, где вы организатор (право Manage Server).",
         "login.button": "Войти через Discord",
@@ -182,6 +184,7 @@ const TRANSLATIONS = {
         "action.delete": "Удалить",
     },
     es: {
+        "whatsNew.title": "✨ Novedades",
         "login.title": "🏆 Bot de Torneos",
         "login.hint": "Inicia sesión con Discord para gestionar torneos en los servidores donde eres organizador (permiso de Gestionar servidor).",
         "login.button": "Iniciar sesión con Discord",
@@ -249,6 +252,7 @@ const TRANSLATIONS = {
         "action.delete": "Eliminar",
     },
     ro: {
+        "whatsNew.title": "✨ Noutăți",
         "login.title": "🏆 Bot de Turnee",
         "login.hint": "Conectează-te cu Discord pentru a gestiona turnee pe serverele unde ești organizator (permisiunea Manage Server).",
         "login.button": "Conectare cu Discord",
@@ -316,6 +320,7 @@ const TRANSLATIONS = {
         "action.delete": "Șterge",
     },
     it: {
+        "whatsNew.title": "✨ Novità",
         "login.title": "🏆 Bot Tornei",
         "login.hint": "Accedi con Discord per gestire i tornei sui server in cui sei organizzatore (permesso Gestisci server).",
         "login.button": "Accedi con Discord",
@@ -383,6 +388,7 @@ const TRANSLATIONS = {
         "action.delete": "Elimina",
     },
     nl: {
+        "whatsNew.title": "✨ Wat is er nieuw",
         "login.title": "🏆 Toernooibot",
         "login.hint": "Log in met Discord om toernooien te beheren op servers waar je organisator bent (Server beheren-rechten).",
         "login.button": "Inloggen met Discord",
@@ -450,6 +456,7 @@ const TRANSLATIONS = {
         "action.delete": "Verwijderen",
     },
     pt: {
+        "whatsNew.title": "✨ Novidades",
         "login.title": "🏆 Bot de Torneios",
         "login.hint": "Entra com o Discord para geres torneios nos servidores onde és organizador (permissão Gerir Servidor).",
         "login.button": "Entrar com o Discord",
@@ -517,6 +524,7 @@ const TRANSLATIONS = {
         "action.delete": "Eliminar",
     },
     el: {
+        "whatsNew.title": "✨ Τι νέο υπάρχει",
         "login.title": "🏆 Bot Τουρνουά",
         "login.hint": "Συνδέσου με το Discord για να διαχειρίζεσαι τουρνουά στους διακομιστές όπου είσαι διοργανωτής (δικαίωμα Manage Server).",
         "login.button": "Σύνδεση με Discord",
@@ -584,6 +592,7 @@ const TRANSLATIONS = {
         "action.delete": "Διαγραφή",
     },
     fr: {
+        "whatsNew.title": "✨ Nouveautés",
         "login.title": "🏆 Bot de Tournois",
         "login.hint": "Connectez-vous avec Discord pour gérer des tournois sur les serveurs où vous êtes organisateur (permission Gérer le serveur).",
         "login.button": "Se connecter avec Discord",
@@ -827,6 +836,52 @@ async function loadInviteLink() {
     }
 }
 
+// =========================================================================
+// "What's New" popup — shown once per browser after a deploy that bumps
+// WHATS_NEW.version, never again until the next bump. Bump the version and
+// add a short line here whenever a change is worth telling organizers about.
+// English-only by design — keeping a running changelog translated into all
+// 9 panel languages isn't realistic to maintain, so this one part stays English.
+// =========================================================================
+
+const WHATS_NEW = {
+    version: "2026.02.1",
+    items: [
+        "Editor redesigned into collapsible sections (Basics, Description, Branding, Notifications...)",
+        "Republish an announcement to a different channel",
+        "New Settings tab: light/dark theme, 9 languages, delete all tournaments",
+        "Custom reminder DM text, plus a button to insert a date/time into the description",
+        "Saving a draft now keeps you in the editor instead of jumping to the dashboard",
+    ],
+};
+
+function checkWhatsNew() {
+    let seenVersion = null;
+    try {
+        seenVersion = localStorage.getItem("whats-new-seen");
+    } catch (err) {
+        return; // no localStorage access (e.g. blocked in a private window) — just skip it
+    }
+    if (seenVersion === WHATS_NEW.version) return;
+
+    document.getElementById("whats-new-list").innerHTML = WHATS_NEW.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    document.getElementById("whats-new-modal").classList.remove("hidden");
+}
+
+function dismissWhatsNew() {
+    try {
+        localStorage.setItem("whats-new-seen", WHATS_NEW.version);
+    } catch (err) {
+        // best-effort — if it can't persist, the popup just shows again next visit
+    }
+    document.getElementById("whats-new-modal").classList.add("hidden");
+}
+
+document.getElementById("whats-new-close-btn").addEventListener("click", dismissWhatsNew);
+document.getElementById("whats-new-modal").addEventListener("click", (e) => {
+    if (e.target.id === "whats-new-modal") dismissWhatsNew();
+});
+
 async function init() {
     loadInviteLink();
     try {
@@ -835,6 +890,7 @@ async function init() {
         state.guilds = me.guilds;
         document.getElementById("user-tag").textContent = me.user.username;
         showApp();
+        checkWhatsNew();
         populateGuildSelect();
         if (state.guilds.length) await switchGuild(state.guilds[0].id);
         pollStatus();
