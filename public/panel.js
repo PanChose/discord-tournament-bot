@@ -757,16 +757,29 @@ document.getElementById("settings-menu-logout").addEventListener("click", async 
     showLogin();
 });
 
+// --- Shared fade+scale open/close for every modal-overlay (toggling just
+// "hidden" snaps instantly since it's display:none; "is-open" is added/removed
+// a frame later so the opacity/transform transition actually has something to
+// animate between). ---
+function openModal(el) {
+    el.classList.remove("hidden");
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("is-open")));
+}
+function closeModal(el) {
+    el.classList.remove("is-open");
+    setTimeout(() => el.classList.add("hidden"), 200);
+}
+
 // --- Clear-form confirmation (the editor's Clear button is destructive to
 // unsaved edits, so it asks before wiping the form instead of acting instantly) ---
 document.getElementById("editor-reset-btn").addEventListener("click", () => {
-    document.getElementById("clear-confirm-modal").classList.remove("hidden");
+    openModal(document.getElementById("clear-confirm-modal"));
 });
 document.getElementById("clear-cancel-btn").addEventListener("click", () => {
-    document.getElementById("clear-confirm-modal").classList.add("hidden");
+    closeModal(document.getElementById("clear-confirm-modal"));
 });
 document.getElementById("clear-confirm-btn").addEventListener("click", () => {
-    document.getElementById("clear-confirm-modal").classList.add("hidden");
+    closeModal(document.getElementById("clear-confirm-modal"));
     resetEditorForm();
 });
 
@@ -774,25 +787,25 @@ document.getElementById("clear-confirm-btn").addEventListener("click", () => {
 // irreversible and scoped to every tournament on the currently selected
 // server — not just one) ---
 document.getElementById("delete-all-btn").addEventListener("click", () => {
-    document.getElementById("delete-all-modal-1").classList.remove("hidden");
+    openModal(document.getElementById("delete-all-modal-1"));
 });
 document.getElementById("delete-all-cancel-1").addEventListener("click", () => {
-    document.getElementById("delete-all-modal-1").classList.add("hidden");
+    closeModal(document.getElementById("delete-all-modal-1"));
 });
 document.getElementById("delete-all-next-btn").addEventListener("click", () => {
-    document.getElementById("delete-all-modal-1").classList.add("hidden");
+    closeModal(document.getElementById("delete-all-modal-1"));
     document.getElementById("delete-all-result").textContent = "";
-    document.getElementById("delete-all-modal-2").classList.remove("hidden");
+    openModal(document.getElementById("delete-all-modal-2"));
 });
 document.getElementById("delete-all-cancel-2").addEventListener("click", () => {
-    document.getElementById("delete-all-modal-2").classList.add("hidden");
+    closeModal(document.getElementById("delete-all-modal-2"));
 });
 document.getElementById("delete-all-confirm-btn").addEventListener("click", async () => {
     const resultEl = document.getElementById("delete-all-result");
     resultEl.textContent = "…";
     try {
         await apiFetch(`/api/tournaments?guildId=${state.guildId}`, { method: "DELETE" });
-        document.getElementById("delete-all-modal-2").classList.add("hidden");
+        closeModal(document.getElementById("delete-all-modal-2"));
         await loadTournaments();
     } catch (err) {
         resultEl.textContent = "❌ " + err.message;
@@ -814,11 +827,13 @@ async function apiFetch(url, opts = {}) {
 }
 
 function showLogin() {
+    document.getElementById("loading-screen").classList.add("hidden");
     document.getElementById("login-screen").classList.remove("hidden");
     document.getElementById("app-screen").classList.add("hidden");
 }
 
 function showApp() {
+    document.getElementById("loading-screen").classList.add("hidden");
     document.getElementById("login-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.remove("hidden");
 }
@@ -890,7 +905,7 @@ function checkWhatsNew() {
                 </div>`
         )
         .join("");
-    document.getElementById("whats-new-modal").classList.remove("hidden");
+    openModal(document.getElementById("whats-new-modal"));
 }
 
 function dismissWhatsNew() {
@@ -899,7 +914,7 @@ function dismissWhatsNew() {
     } catch (err) {
         // best-effort — if it can't persist, the popup just shows again next visit
     }
-    document.getElementById("whats-new-modal").classList.add("hidden");
+    closeModal(document.getElementById("whats-new-modal"));
 }
 
 document.getElementById("whats-new-close-btn").addEventListener("click", dismissWhatsNew);
@@ -915,11 +930,11 @@ async function init() {
         state.guilds = me.guilds;
         document.getElementById("user-tag").textContent = me.user.username;
         showApp();
-        checkWhatsNew();
         populateGuildSelect();
         if (state.guilds.length) await switchGuild(state.guilds[0].id);
         pollStatus();
         setInterval(pollStatus, 10_000);
+        checkWhatsNew(); // only after the dashboard itself has actually loaded
     } catch (err) {
         showLogin();
     }
@@ -1128,11 +1143,11 @@ function openRepublishModal(tournament) {
     } as moved.`;
     document.getElementById("republish-result").textContent = "";
     document.getElementById("republish-modal").dataset.tournamentId = tournament.id;
-    document.getElementById("republish-modal").classList.remove("hidden");
+    openModal(document.getElementById("republish-modal"));
 }
 
 function closeRepublishModal() {
-    document.getElementById("republish-modal").classList.add("hidden");
+    closeModal(document.getElementById("republish-modal"));
 }
 
 document.getElementById("republish-cancel-btn").addEventListener("click", closeRepublishModal);

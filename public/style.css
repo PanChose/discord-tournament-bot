@@ -41,11 +41,27 @@ body {
 
 .hidden { display: none !important; }
 
-#login-screen {
+#login-screen, #loading-screen {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Shown by default while init() checks whether there's a logged-in session —
+   keeps the "Log in with Discord" button off-screen during that window, so
+   there's no gap where clicking it again could be spammed into a login loop. */
+.spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 .card {
@@ -913,7 +929,10 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .form-section.collapsed .section-body { display: none; }
 
-/* --- Generic modal (currently just the "republish" channel picker) --- */
+/* --- Generic modal (republish picker, clear/delete-all confirmations,
+   What's New) — fades/scales in on open, out on close. JS toggles "hidden"
+   for actual display:none and "is-open" a frame later/before for the
+   transition to animate between (see openModal/closeModal in panel.js). --- */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -923,7 +942,11 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     justify-content: center;
     z-index: 50;
     padding: 16px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
 }
+
+.modal-overlay.is-open { opacity: 1; }
 
 .modal-overlay.hidden { display: none; }
 
@@ -935,7 +958,11 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     width: 100%;
     max-width: 380px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    transform: scale(0.96);
+    transition: transform 0.18s ease;
 }
+
+.modal-overlay.is-open .modal-card { transform: scale(1); }
 
 .modal-close-btn {
     position: absolute;
