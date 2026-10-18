@@ -753,6 +753,62 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .dt-actions button { width: auto; margin: 0; padding: 6px 10px; font-size: 12px; }
 
+/* --- Editor accordion sections --- */
+.form-section {
+    border: 1px solid #3d3f4d;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    background: #262835;
+    border: none;
+    border-radius: 0;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 14px;
+    text-align: left;
+}
+
+.section-header:hover { background: #2d2f3d; }
+
+.section-title { flex: 1; }
+
+.section-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.section-badge.badge-ready { color: var(--ok); background: rgba(87, 211, 140, 0.12); }
+.section-badge.badge-warn { color: var(--warn); background: rgba(232, 183, 75, 0.12); }
+.section-badge.badge-active { color: var(--accent); background: rgba(88, 101, 242, 0.12); }
+
+.section-chevron {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform 0.15s;
+}
+
+.form-section.collapsed .section-chevron { transform: rotate(-90deg); }
+
+.section-body {
+    padding: 16px 14px 4px;
+}
+
+.form-section.collapsed .section-body { display: none; }
+
 /* --- Discord-markup rendering in the live preview --- */
 .dp-emoji { width: 18px; height: 18px; vertical-align: -4px; margin: 0 1px; }
 

@@ -555,6 +555,7 @@ function createDateTimePicker(root, defaultLabel) {
 const startsAtPicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="starts"]'), "Pick a date & time");
 const remindAtPicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="remind"]'), "No reminder");
 startsAtPicker.onChange = schedulePreview;
+remindAtPicker.onChange = () => updateSectionBadges();
 
 // =========================================================================
 // Editor: constructor form + live preview
@@ -655,6 +656,8 @@ function updateMatcherinoStatus() {
 }
 
 document.getElementById("f-external-url").addEventListener("input", updateMatcherinoStatus);
+document.getElementById("f-external-url").addEventListener("input", updateSectionBadges);
+document.getElementById("channel-select").addEventListener("change", updateSectionBadges);
 
 document.getElementById("editor-reset-btn").addEventListener("click", resetEditorForm);
 
@@ -812,6 +815,47 @@ function renderPreview() {
     const isFull = activeCount >= data.maxParticipants;
     registerBtn.textContent = isFull ? "Full" : "✅ Join";
     registerBtn.style.opacity = status === "published" && !isFull ? "1" : "0.5";
+
+    updateSectionBadges();
+}
+
+// --- Editor accordion: collapsible sections + at-a-glance fill status ---
+document.querySelectorAll("[data-section-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => btn.closest(".form-section").classList.toggle("collapsed"));
+});
+
+function setSectionBadge(section, text, variant) {
+    const el = document.querySelector(`.form-section[data-section="${section}"] [data-section-badge]`);
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove("badge-ready", "badge-warn", "badge-active");
+    if (variant) el.classList.add(variant);
+}
+
+function updateSectionBadges() {
+    const name = document.getElementById("f-name").value.trim();
+    const channel = document.getElementById("channel-select").value;
+    setSectionBadge("basics", name && channel ? "✓ Ready" : "⚠ Incomplete", name && channel ? "badge-ready" : "badge-warn");
+
+    const descLen = document.getElementById("f-description").value.trim().length;
+    setSectionBadge("description", descLen ? `${descLen} chars` : "Empty");
+
+    const hasExternalUrl = Boolean(document.getElementById("f-external-url").value.trim());
+    setSectionBadge("integrations", hasExternalUrl ? "Linked" : "Not set", hasExternalUrl ? "badge-active" : null);
+
+    let brandingCount = 0;
+    if (state.bannerOverride || document.getElementById("f-banner").value.trim()) brandingCount++;
+    if (state.thumbnailOverride || document.getElementById("f-thumbnail").value.trim()) brandingCount++;
+    if (document.getElementById("f-author-name").value.trim()) brandingCount++;
+    if (state.authorIconOverride || document.getElementById("f-author-icon").value.trim()) brandingCount++;
+    setSectionBadge("branding", `${brandingCount}/4 set`, brandingCount ? "badge-active" : null);
+
+    let notifCount = 0;
+    if (document.getElementById("f-ping-role").value) notifCount++;
+    if (document.getElementById("f-ping-on-publish").checked) notifCount++;
+    if (remindAtPicker.get()) notifCount++;
+    if (state.reactionEmoji) notifCount++;
+    setSectionBadge("notifications", `${notifCount}/4 active`, notifCount ? "badge-active" : null);
 }
 
 // --- Image uploads (drag & drop or click) — banner, thumbnail, author icon ---
@@ -1156,6 +1200,7 @@ function setReactionEmoji(value, { syncUnicodeInput = true } = {}) {
     if (syncUnicodeInput) {
         document.getElementById("f-reaction-unicode").value = value && !value.id ? value.name : "";
     }
+    updateSectionBadges();
 }
 
 document.getElementById("reaction-chip").addEventListener("click", () => setReactionEmoji(null));

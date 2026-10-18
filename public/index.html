@@ -114,112 +114,152 @@
 
                         <input type="hidden" id="tournament-id" />
 
-                        <label>Channel to announce in</label>
-                        <select id="channel-select"></select>
+                        <div class="form-section" data-section="basics">
+                            <button type="button" class="section-header" data-section-toggle>
+                                <span class="section-title">📋 Basics</span>
+                                <span class="section-badge" data-section-badge></span>
+                                <span class="section-chevron">▾</span>
+                            </button>
+                            <div class="section-body">
+                                <label>Channel to announce in</label>
+                                <select id="channel-select"></select>
 
-                        <label>Tournament name</label>
-                        <input id="f-name" type="text" maxlength="256" placeholder="Spring Showdown" />
+                                <label>Tournament name</label>
+                                <input id="f-name" type="text" maxlength="256" placeholder="Spring Showdown" />
 
-                        <div class="row-2">
-                            <div>
-                                <label>Game</label>
-                                <input id="f-game" type="text" maxlength="100" placeholder="Valorant" />
-                            </div>
-                            <div>
-                                <label>Format</label>
-                                <select id="f-format">
-                                    <option value="single_elim">Single Elimination</option>
-                                    <option value="double_elim">Double Elimination</option>
-                                    <option value="round_robin">Round Robin</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row-2">
-                            <div>
-                                <label>Start date/time</label>
-                                <div class="dt-field" data-dt="starts">
-                                    <button type="button" class="dt-toggle" data-dt-toggle>
-                                        <span>📅</span>
-                                        <span data-dt-label>Pick a date &amp; time</span>
-                                    </button>
-                                    <div class="dt-panel hidden" data-dt-panel></div>
+                                <div class="row-2">
+                                    <div>
+                                        <label>Game</label>
+                                        <input id="f-game" type="text" maxlength="100" placeholder="Valorant" />
+                                    </div>
+                                    <div>
+                                        <label>Format</label>
+                                        <select id="f-format">
+                                            <option value="single_elim">Single Elimination</option>
+                                            <option value="double_elim">Double Elimination</option>
+                                            <option value="round_robin">Round Robin</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <label>Max participants</label>
-                                <input id="f-max" type="number" min="2" max="1000" value="32" />
-                            </div>
-                        </div>
 
-                        <label>Description / rules</label>
-                        <div class="format-toolbar" id="desc-toolbar">
-                            <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
-                            <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
-                            <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
-                            <button type="button" data-fmt="strike" title="Strikethrough"><s>S</s></button>
-                            <button type="button" data-fmt="spoiler" title="Spoiler (hidden until clicked)">||S||</button>
-                            <button type="button" data-fmt="code" title="Inline code">`code`</button>
-                            <button type="button" data-fmt="codeblock" title="Code block">{ }</button>
-                            <button type="button" data-fmt="quote" title="Quote">❝</button>
-                            <button type="button" data-fmt="bullet" title="Bullet list">•</button>
-                            <button type="button" data-fmt="header" title="Header">H</button>
-                            <button type="button" data-fmt="link" title="Link">🔗</button>
-                            <span class="toolbar-sep"></span>
-                            <button type="button" id="mention-role-btn" title="Mention a role">@Role</button>
-                            <button type="button" id="mention-channel-btn" title="Mention a channel">#Chan</button>
-                            <button type="button" id="mention-user-btn" title="Mention a user by ID">@User</button>
-                            <button type="button" id="emoji-picker-btn" title="Insert a custom server emoji">😀</button>
-                        </div>
-                        <div id="format-dropdown" class="dropdown-menu hidden"></div>
-                        <textarea id="f-description" class="description-textarea" rows="14" maxlength="4096" placeholder="Bo1 group stage, Bo3 playoffs. Check-in 30 min before start."></textarea>
-
-                        <label>External tournament link (optional)</label>
-                        <input id="f-external-url" type="text" placeholder="https://challonge.com/... or matcherino.com/..." />
-                        <p class="hint" style="margin-top:-8px;">If set, clicking Join records the person as a participant here, then the bot sends them this link to finish signing up on the other platform.</p>
-                        <p id="matcherino-status" class="hint matcherino-status hidden"></p>
-
-                        <div class="ai-row">
-                            <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" />
-                            <button type="button" id="ai-generate-btn" class="secondary-btn">✨ Generate with AI</button>
-                        </div>
-                        <p id="ai-result" class="result"></p>
-
-                        <label>Banner image (large image at the bottom)</label>
-                        <div class="dropzone small" id="banner-dropzone">
-                            <span>🖼️ Drag an image here or click</span>
-                            <input type="file" id="banner-file" accept="image/*" hidden />
-                        </div>
-                        <input id="f-banner" type="text" placeholder="...or paste a link https://.../banner.png" />
-
-                        <label>Tournament icon (small thumbnail, top-right corner, optional)</label>
-                        <div class="dropzone small" id="thumbnail-dropzone">
-                            <span>🖼️ Drag an image here or click</span>
-                            <input type="file" id="thumbnail-file" accept="image/*" hidden />
-                        </div>
-                        <input id="f-thumbnail" type="text" placeholder="...or paste a link https://.../icon.png" />
-
-                        <div class="row-2">
-                            <div>
-                                <label>Author name (small line above the title, optional)</label>
-                                <input id="f-author-name" type="text" maxlength="256" placeholder="e.g. SS Tournaments" />
-                            </div>
-                            <div>
-                                <label>Author mini icon</label>
-                                <div class="dropzone small" id="author-icon-dropzone">
-                                    <span>🖼️ Drag or click</span>
-                                    <input type="file" id="author-icon-file" accept="image/*" hidden />
+                                <div class="row-2">
+                                    <div>
+                                        <label>Start date/time</label>
+                                        <div class="dt-field" data-dt="starts">
+                                            <button type="button" class="dt-toggle" data-dt-toggle>
+                                                <span>📅</span>
+                                                <span data-dt-label>Pick a date &amp; time</span>
+                                            </button>
+                                            <div class="dt-panel hidden" data-dt-panel></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label>Max participants</label>
+                                        <input id="f-max" type="number" min="2" max="1000" value="32" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <input id="f-author-icon" type="text" placeholder="...or paste a link for the author icon" />
 
-                        <div class="row-2">
-                            <div>
+                        <div class="form-section" data-section="description">
+                            <button type="button" class="section-header" data-section-toggle>
+                                <span class="section-title">📝 Description</span>
+                                <span class="section-badge" data-section-badge></span>
+                                <span class="section-chevron">▾</span>
+                            </button>
+                            <div class="section-body">
+                                <div class="format-toolbar" id="desc-toolbar">
+                                    <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
+                                    <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
+                                    <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
+                                    <button type="button" data-fmt="strike" title="Strikethrough"><s>S</s></button>
+                                    <button type="button" data-fmt="spoiler" title="Spoiler (hidden until clicked)">||S||</button>
+                                    <button type="button" data-fmt="code" title="Inline code">`code`</button>
+                                    <button type="button" data-fmt="codeblock" title="Code block">{ }</button>
+                                    <button type="button" data-fmt="quote" title="Quote">❝</button>
+                                    <button type="button" data-fmt="bullet" title="Bullet list">•</button>
+                                    <button type="button" data-fmt="header" title="Header">H</button>
+                                    <button type="button" data-fmt="link" title="Link">🔗</button>
+                                    <span class="toolbar-sep"></span>
+                                    <button type="button" id="mention-role-btn" title="Mention a role">@Role</button>
+                                    <button type="button" id="mention-channel-btn" title="Mention a channel">#Chan</button>
+                                    <button type="button" id="mention-user-btn" title="Mention a user by ID">@User</button>
+                                    <button type="button" id="emoji-picker-btn" title="Insert a custom server emoji">😀</button>
+                                </div>
+                                <div id="format-dropdown" class="dropdown-menu hidden"></div>
+                                <textarea id="f-description" class="description-textarea" rows="14" maxlength="4096" placeholder="Bo1 group stage, Bo3 playoffs. Check-in 30 min before start."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-section collapsed" data-section="integrations">
+                            <button type="button" class="section-header" data-section-toggle>
+                                <span class="section-title">🔗 Integrations &amp; AI</span>
+                                <span class="section-badge" data-section-badge></span>
+                                <span class="section-chevron">▾</span>
+                            </button>
+                            <div class="section-body">
+                                <label>External tournament link (optional)</label>
+                                <input id="f-external-url" type="text" placeholder="https://challonge.com/... or matcherino.com/..." />
+                                <p class="hint" style="margin-top:-8px;">If set, clicking Join records the person as a participant here, then the bot sends them this link to finish signing up on the other platform.</p>
+                                <p id="matcherino-status" class="hint matcherino-status hidden"></p>
+
+                                <label style="margin-top:14px; display:block;">AI description generator (optional)</label>
+                                <div class="ai-row">
+                                    <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" />
+                                    <button type="button" id="ai-generate-btn" class="secondary-btn">✨ Generate with AI</button>
+                                </div>
+                                <p id="ai-result" class="result"></p>
+                            </div>
+                        </div>
+
+                        <div class="form-section collapsed" data-section="branding">
+                            <button type="button" class="section-header" data-section-toggle>
+                                <span class="section-title">🎨 Branding</span>
+                                <span class="section-badge" data-section-badge></span>
+                                <span class="section-chevron">▾</span>
+                            </button>
+                            <div class="section-body">
+                                <label>Banner image (large image at the bottom)</label>
+                                <div class="dropzone small" id="banner-dropzone">
+                                    <span>🖼️ Drag an image here or click</span>
+                                    <input type="file" id="banner-file" accept="image/*" hidden />
+                                </div>
+                                <input id="f-banner" type="text" placeholder="...or paste a link https://.../banner.png" />
+
+                                <label>Tournament icon (small thumbnail, top-right corner, optional)</label>
+                                <div class="dropzone small" id="thumbnail-dropzone">
+                                    <span>🖼️ Drag an image here or click</span>
+                                    <input type="file" id="thumbnail-file" accept="image/*" hidden />
+                                </div>
+                                <input id="f-thumbnail" type="text" placeholder="...or paste a link https://.../icon.png" />
+
+                                <div class="row-2">
+                                    <div>
+                                        <label>Author name (small line above the title, optional)</label>
+                                        <input id="f-author-name" type="text" maxlength="256" placeholder="e.g. SS Tournaments" />
+                                    </div>
+                                    <div>
+                                        <label>Author mini icon</label>
+                                        <div class="dropzone small" id="author-icon-dropzone">
+                                            <span>🖼️ Drag or click</span>
+                                            <input type="file" id="author-icon-file" accept="image/*" hidden />
+                                        </div>
+                                    </div>
+                                </div>
+                                <input id="f-author-icon" type="text" placeholder="...or paste a link for the author icon" />
+
                                 <label>Embed color</label>
                                 <input id="f-color" type="color" value="#8b5cf6" />
                             </div>
-                            <div>
+                        </div>
+
+                        <div class="form-section collapsed" data-section="notifications">
+                            <button type="button" class="section-header" data-section-toggle>
+                                <span class="section-title">🔔 Notifications &amp; Engagement</span>
+                                <span class="section-badge" data-section-badge></span>
+                                <span class="section-chevron">▾</span>
+                            </button>
+                            <div class="section-body">
                                 <label>Ping role (optional)</label>
                                 <select id="f-ping-role">
                                     <option value="">— none —</option>
@@ -228,29 +268,29 @@
                                     <input type="checkbox" id="f-ping-on-publish" />
                                     <span>📢 Also ping this role right when published (a real notification, not just the embed)</span>
                                 </label>
+
+                                <label>Send a reminder DM at (optional)</label>
+                                <div class="dt-field" data-dt="remind">
+                                    <button type="button" class="dt-toggle" data-dt-toggle>
+                                        <span>⏰</span>
+                                        <span data-dt-label>No reminder</span>
+                                    </button>
+                                    <div class="dt-panel hidden" data-dt-panel></div>
+                                </div>
+                                <p class="hint" style="margin-top:-8px;">Registered participants get a DM at this exact time — pick when you actually want it sent, not "N hours before".</p>
+
+                                <label>Auto-react emoji (optional)</label>
+                                <div class="reaction-row">
+                                    <button type="button" class="reaction-chip" id="reaction-chip">
+                                        <span id="reaction-chip-content">— none —</span>
+                                    </button>
+                                    <button type="button" class="secondary-btn" id="reaction-emoji-btn" title="Pick a custom server emoji">😀 Custom</button>
+                                    <input type="text" id="f-reaction-unicode" placeholder="or paste any emoji 🎉" maxlength="8" />
+                                </div>
+                                <div id="reaction-dropdown" class="dropdown-menu hidden"></div>
+                                <p class="hint" style="margin-top:-8px;">The bot reacts with this once, right when you publish.</p>
                             </div>
                         </div>
-
-                        <label>Send a reminder DM at (optional)</label>
-                        <div class="dt-field" data-dt="remind">
-                            <button type="button" class="dt-toggle" data-dt-toggle>
-                                <span>⏰</span>
-                                <span data-dt-label>No reminder</span>
-                            </button>
-                            <div class="dt-panel hidden" data-dt-panel></div>
-                        </div>
-                        <p class="hint" style="margin-top:-8px;">Registered participants get a DM at this exact time — pick when you actually want it sent, not "N hours before".</p>
-
-                        <label>Auto-react emoji (optional)</label>
-                        <div class="reaction-row">
-                            <button type="button" class="reaction-chip" id="reaction-chip">
-                                <span id="reaction-chip-content">— none —</span>
-                            </button>
-                            <button type="button" class="secondary-btn" id="reaction-emoji-btn" title="Pick a custom server emoji">😀 Custom</button>
-                            <input type="text" id="f-reaction-unicode" placeholder="or paste any emoji 🎉" maxlength="8" />
-                        </div>
-                        <div id="reaction-dropdown" class="dropdown-menu hidden"></div>
-                        <p class="hint" style="margin-top:-8px;">The bot reacts with this once, right when you publish.</p>
 
                         <button id="save-btn" type="button">💾 Save draft</button>
                         <p id="save-result" class="result"></p>
