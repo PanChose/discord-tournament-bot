@@ -595,6 +595,16 @@ const remindAtPicker = createDateTimePicker(document.querySelector('.dt-field[da
 startsAtPicker.onChange = schedulePreview;
 remindAtPicker.onChange = () => updateSectionBadges();
 
+// Reuses the same calendar UI as a one-shot "insert a Discord timestamp into
+// the description" tool — it never keeps a value, it just writes <t:...:F>
+// at the cursor and resets itself back to the 🕒 icon.
+const descTimePicker = createDateTimePicker(document.querySelector('.dt-field[data-dt="desc-time"]'), "🕒");
+descTimePicker.onChange = (ms) => {
+    if (!ms) return;
+    insertAtCursor(document.getElementById("f-description"), `<t:${Math.floor(ms / 1000)}:F>`);
+    descTimePicker.set(null);
+};
+
 // =========================================================================
 // Editor: constructor form + live preview
 // =========================================================================
@@ -622,9 +632,9 @@ function editTournament(t) {
     document.getElementById("f-external-url").value = t.external_url || "";
     document.getElementById("f-color").value = t.color || "#8b5cf6";
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
-    document.getElementById("f-ping-on-publish").checked = Boolean(t.ping_on_publish);
     document.getElementById("f-author-name").value = t.author_name || "";
     remindAtPicker.set(t.reminder_at || null);
+    document.getElementById("f-reminder-message").value = t.reminder_message || "";
     setImageField("f-banner", "bannerOverride", t.banner);
     setImageField("f-thumbnail", "thumbnailOverride", t.thumbnail);
     setImageField("f-author-icon", "authorIconOverride", t.author_icon);
@@ -645,9 +655,9 @@ function resetEditorForm() {
     document.getElementById("f-external-url").value = "";
     document.getElementById("f-color").value = "#8b5cf6";
     document.getElementById("f-ping-role").value = "";
-    document.getElementById("f-ping-on-publish").checked = false;
     document.getElementById("f-author-name").value = "";
     remindAtPicker.set(null);
+    document.getElementById("f-reminder-message").value = "";
     setImageField("f-banner", "bannerOverride", null);
     setImageField("f-thumbnail", "thumbnailOverride", null);
     setImageField("f-author-icon", "authorIconOverride", null);
@@ -715,8 +725,9 @@ function collectFormData() {
         authorIcon: state.authorIconOverride || document.getElementById("f-author-icon").value.trim() || null,
         color: document.getElementById("f-color").value,
         pingRoleId: document.getElementById("f-ping-role").value || null,
-        pingOnPublish: document.getElementById("f-ping-on-publish").checked,
+        pingOnPublish: Boolean(document.getElementById("f-ping-role").value),
         reminderAt: remindAtPicker.get(),
+        reminderMessage: document.getElementById("f-reminder-message").value.trim() || null,
         reactionEmojiId: state.reactionEmoji ? state.reactionEmoji.id : null,
         reactionEmojiName: state.reactionEmoji ? state.reactionEmoji.name : null,
     };
@@ -763,7 +774,7 @@ function schedulePreview() {
     "f-author-icon",
     "f-color",
     "f-ping-role",
-    "f-ping-on-publish",
+    "f-reminder-message",
     "tournament-id",
 ].forEach((id) => {
     document.getElementById(id).addEventListener("input", schedulePreview);
@@ -782,7 +793,7 @@ function renderPreview() {
     // Message content sits above the embed — only real notification the bot
     // sends, since embeds never ping even with a mention inside them.
     const contentEl = document.getElementById("pv-content");
-    if (data.pingOnPublish && data.pingRoleId) {
+    if (data.pingRoleId) {
         const role = state.roles.find((r) => r.id === data.pingRoleId);
         contentEl.textContent = `@${role ? role.name : "role"}`;
         contentEl.classList.remove("hidden");
@@ -878,8 +889,7 @@ function updateSectionBadges() {
     const descLen = document.getElementById("f-description").value.trim().length;
     setSectionBadge("description", descLen ? `${descLen} chars` : "Empty");
 
-    const aiUsed = Boolean(document.getElementById("ai-result").textContent.trim());
-    setSectionBadge("integrations", aiUsed ? "Used" : "Optional", aiUsed ? "badge-active" : null);
+    setSectionBadge("integrations", "Unavailable", "badge-warn");
 
     let brandingCount = 0;
     if (state.bannerOverride || document.getElementById("f-banner").value.trim()) brandingCount++;
@@ -890,10 +900,9 @@ function updateSectionBadges() {
 
     let notifCount = 0;
     if (document.getElementById("f-ping-role").value) notifCount++;
-    if (document.getElementById("f-ping-on-publish").checked) notifCount++;
     if (remindAtPicker.get()) notifCount++;
     if (state.reactionEmoji) notifCount++;
-    setSectionBadge("notifications", `${notifCount}/4 active`, notifCount ? "badge-active" : null);
+    setSectionBadge("notifications", `${notifCount}/3 active`, notifCount ? "badge-active" : null);
 }
 
 // --- Image uploads (drag & drop or click) — banner, thumbnail, author icon ---
@@ -988,6 +997,12 @@ function renderDiscordMarkup(raw) {
     html = html.replace(/&lt;@(\d+)&gt;/g, () => `<span class="dp-mention">@user</span>`);
     html = html.replace(/(^|\s)@(everyone|here)\b/g, (_, pre, kw) => `${pre}<span class="dp-mention">@${kw}</span>`);
 
+    // Discord timestamp tags <t:unix:style> — the 🕒 toolbar button inserts
+    // these as <t:...:F>, but render whatever style shows up.
+    html = html.replace(/&lt;t:(\d+):([tTdDfFR])&gt;/g, (_, unix, style) => {
+        return `<span class="dp-mention">${escapeHtml(formatDiscordTimestamp(parseInt(unix, 10) * 1000, style))}</span>`;
+    });
+
     html = html.replace(/\*\*\*([^*]+)\*\*\*/g, "<b><i>$1</i></b>");
     html = html.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
     html = html.replace(/__([^_]+)__/g, "<u>$1</u>");
@@ -1010,6 +1025,46 @@ function renderDiscordMarkup(raw) {
         .join("\n");
 
     return html;
+}
+
+// Mirrors how Discord itself renders <t:unix:style> tags — see
+// https://discord.com/developers/docs/reference#message-formatting-timestamp-styles
+function formatDiscordTimestamp(ms, style) {
+    const d = new Date(ms);
+    switch (style) {
+        case "t":
+            return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        case "T":
+            return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" });
+        case "d":
+            return d.toLocaleDateString([], { month: "numeric", day: "numeric", year: "numeric" });
+        case "D":
+            return d.toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" });
+        case "F":
+            return d.toLocaleString([], { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+        case "R":
+            return formatRelativeTime(ms);
+        case "f":
+        default:
+            return d.toLocaleString([], { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+}
+
+function formatRelativeTime(ms) {
+    const diffSeconds = Math.round((ms - Date.now()) / 1000);
+    const units = [
+        ["year", 31536000],
+        ["month", 2592000],
+        ["day", 86400],
+        ["hour", 3600],
+        ["minute", 60],
+        ["second", 1],
+    ];
+    for (const [unit, secondsInUnit] of units) {
+        if (Math.abs(diffSeconds) >= secondsInUnit || unit === "second") {
+            return new Intl.RelativeTimeFormat([], { numeric: "auto" }).format(Math.round(diffSeconds / secondsInUnit), unit);
+        }
+    }
 }
 
 function wrapSelection(textarea, prefix, suffix, placeholder) {

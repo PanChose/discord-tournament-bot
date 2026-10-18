@@ -245,6 +245,10 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .ai-row input { margin: 6px 0; }
 .ai-row button { width: auto; margin: 6px 0; white-space: nowrap; }
 
+.ai-unavailable { color: var(--error); font-weight: 600; font-size: 13px; margin: 0 0 4px; }
+
+.ai-row input:disabled, .ai-row button:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* --- Discord-style message/embed preview --- */
 .discord-preview {
     display: flex;
@@ -758,7 +762,9 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     border: 1px solid #3d3f4d;
     border-radius: 10px;
     margin-bottom: 12px;
-    overflow: hidden;
+    /* No overflow:hidden here — it used to clip the date/time picker popovers
+       (and anything else that pops out of a short section) at the section's
+       own bottom edge. Rounded corners are faked below instead. */
 }
 
 .section-header {
@@ -770,12 +776,14 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     padding: 12px 14px;
     background: #262835;
     border: none;
-    border-radius: 0;
+    border-radius: 9px 9px 0 0;
     color: var(--text);
     font-weight: 600;
     font-size: 14px;
     text-align: left;
 }
+
+.form-section.collapsed .section-header { border-radius: 9px; }
 
 .section-header:hover { background: #2d2f3d; }
 

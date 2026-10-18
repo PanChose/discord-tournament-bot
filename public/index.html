@@ -188,6 +188,10 @@
                                     <button type="button" id="mention-channel-btn" title="Mention a channel">#Chan</button>
                                     <button type="button" id="mention-user-btn" title="Mention a user by ID">@User</button>
                                     <button type="button" id="emoji-picker-btn" title="Insert a custom server emoji">😀</button>
+                                    <div class="dt-field" data-dt="desc-time">
+                                        <button type="button" data-dt-toggle title="Insert a date/time"><span data-dt-label>🕒</span></button>
+                                        <div class="dt-panel hidden" data-dt-panel></div>
+                                    </div>
                                 </div>
                                 <div id="format-dropdown" class="dropdown-menu hidden"></div>
                                 <textarea id="f-description" class="description-textarea" rows="14" maxlength="4096" placeholder="Bo1 group stage, Bo3 playoffs. Check-in 30 min before start."></textarea>
@@ -201,9 +205,10 @@
                                 <span class="section-chevron">▾</span>
                             </button>
                             <div class="section-body">
+                                <p class="ai-unavailable">⚠ Currently unavailable</p>
                                 <div class="ai-row">
-                                    <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" />
-                                    <button type="button" id="ai-generate-btn" class="secondary-btn">✨ Generate with AI</button>
+                                    <input id="ai-prize" type="text" placeholder="Prize (optional, e.g. $50 gift card)" disabled />
+                                    <button type="button" id="ai-generate-btn" class="secondary-btn" disabled>✨ Generate with AI</button>
                                 </div>
                                 <p id="ai-result" class="result"></p>
                             </div>
@@ -261,10 +266,7 @@
                                 <select id="f-ping-role">
                                     <option value="">— none —</option>
                                 </select>
-                                <label class="checkbox-row">
-                                    <input type="checkbox" id="f-ping-on-publish" />
-                                    <span>📢 Also ping this role right when published (a real notification, not just the embed)</span>
-                                </label>
+                                <p class="hint" style="margin-top:-8px;">📢 Picking a role pings it right when published (a real notification, not just the embed).</p>
 
                                 <label>Send a reminder DM at (optional)</label>
                                 <div class="dt-field" data-dt="remind">
@@ -275,6 +277,7 @@
                                     <div class="dt-panel hidden" data-dt-panel></div>
                                 </div>
                                 <p class="hint" style="margin-top:-8px;">Registered participants get a DM at this exact time — pick when you actually want it sent, not "N hours before".</p>
+                                <textarea id="f-reminder-message" rows="3" maxlength="1500" placeholder="Custom reminder message (optional) — leave blank to use the default ⏰ Reminder text"></textarea>
 
                                 <label>Auto-react emoji (optional)</label>
                                 <div class="reaction-row">
