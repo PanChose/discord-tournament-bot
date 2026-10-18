@@ -1016,14 +1016,21 @@ document.getElementById("save-btn").addEventListener("click", async () => {
     const resultEl = document.getElementById("save-result");
     resultEl.textContent = "Saving…";
     try {
+        let saved;
         if (id) {
-            await apiFetch(`/api/tournaments/${id}`, { method: "PATCH", body: JSON.stringify(data) });
+            ({ tournament: saved } = await apiFetch(`/api/tournaments/${id}`, { method: "PATCH", body: JSON.stringify(data) }));
         } else {
-            await apiFetch("/api/tournaments", { method: "POST", body: JSON.stringify({ guildId: state.guildId, ...data }) });
+            ({ tournament: saved } = await apiFetch("/api/tournaments", { method: "POST", body: JSON.stringify({ guildId: state.guildId, ...data }) }));
         }
         resultEl.textContent = "✅ Saved";
         await loadTournaments();
-        document.querySelector('.tab-btn[data-tab="dashboard"]').click();
+        // Stay on the editor instead of jumping to the dashboard — saving a
+        // draft is something you do mid-edit, not a sign you're done with it.
+        // A brand-new tournament's id/heading do need to switch over to "Edit"
+        // mode though, so the next save PATCHes it instead of creating a duplicate.
+        document.getElementById("tournament-id").value = saved.id;
+        document.getElementById("editor-heading").textContent = `Edit: ${saved.name}`;
+        renderPreview();
     } catch (err) {
         resultEl.textContent = "❌ " + err.message;
     }
