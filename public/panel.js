@@ -71,7 +71,6 @@ function showApp() {
 async function loadInviteLink() {
     try {
         const { url } = await apiFetch("/api/bot-invite-url");
-        document.getElementById("invite-bot-link").href = url;
         document.getElementById("invite-bot-link-app").href = url;
     } catch (err) {
         // non-critical — the buttons just stay pointed at "#"
