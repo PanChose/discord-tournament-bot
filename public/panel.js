@@ -227,6 +227,7 @@ function renderTournamentList() {
             }
             if (t.status !== "draft") {
                 actions.push(`<button data-action="participants" data-id="${t.id}" class="secondary-btn">Participants</button>`);
+                actions.push(`<button data-action="republish" data-id="${t.id}" class="secondary-btn" title="Move the announcement to another channel">🔁 Republish</button>`);
             }
             if (t.matcherino_bounty_id) {
                 actions.push(`<button data-action="matcherino-sync" data-id="${t.id}" class="secondary-btn" title="Re-check Matcherino now">🔄 Sync</button>`);
@@ -289,6 +290,44 @@ document.getElementById("tournament-list").addEventListener("click", async (e) =
     if (action === "participants") return showParticipants(tournament);
     if (action === "matcherino-sync") return syncMatcherino(id, btn);
     if (action === "clone") return cloneTournament(id, btn);
+    if (action === "republish") return openRepublishModal(tournament);
+});
+
+// --- "Republish in another channel" modal ---
+function openRepublishModal(tournament) {
+    const select = document.getElementById("republish-channel-select");
+    select.innerHTML = state.channels.map((c) => `<option value="${c.id}">#${escapeHtml(c.name)}</option>`).join("");
+    select.value = tournament.channel_id || "";
+    document.getElementById("republish-modal-hint").textContent = `Posts a fresh announcement in the channel you pick and marks the one in #${
+        state.channels.find((c) => c.id === tournament.channel_id)?.name || "the current channel"
+    } as moved.`;
+    document.getElementById("republish-result").textContent = "";
+    document.getElementById("republish-modal").dataset.tournamentId = tournament.id;
+    document.getElementById("republish-modal").classList.remove("hidden");
+}
+
+function closeRepublishModal() {
+    document.getElementById("republish-modal").classList.add("hidden");
+}
+
+document.getElementById("republish-cancel-btn").addEventListener("click", closeRepublishModal);
+document.getElementById("republish-modal").addEventListener("click", (e) => {
+    if (e.target.id === "republish-modal") closeRepublishModal();
+});
+
+document.getElementById("republish-confirm-btn").addEventListener("click", async () => {
+    const id = document.getElementById("republish-modal").dataset.tournamentId;
+    const channelId = document.getElementById("republish-channel-select").value;
+    if (!channelId) return;
+    const resultEl = document.getElementById("republish-result");
+    resultEl.textContent = "Posting…";
+    try {
+        await apiFetch(`/api/tournaments/${id}/republish`, { method: "POST", body: JSON.stringify({ channelId }) });
+        await loadTournaments();
+        closeRepublishModal();
+    } catch (err) {
+        resultEl.textContent = "❌ " + err.message;
+    }
 });
 
 async function cloneTournament(id, btn) {

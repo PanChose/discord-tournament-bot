@@ -809,6 +809,38 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .form-section.collapsed .section-body { display: none; }
 
+/* --- Generic modal (currently just the "republish" channel picker) --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+}
+
+.modal-overlay.hidden { display: none; }
+
+.modal-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.modal-actions button { width: auto; margin: 0; }
+
 /* --- Discord-markup rendering in the live preview --- */
 .dp-emoji { width: 18px; height: 18px; vertical-align: -4px; margin: 0 1px; }
 

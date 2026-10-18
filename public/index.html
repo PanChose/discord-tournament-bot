@@ -124,7 +124,7 @@
                                 <label>Channel to announce in</label>
                                 <select id="channel-select"></select>
 
-                                <label>Tournament name</label>
+                                <label>Tournament name/organization name</label>
                                 <input id="f-name" type="text" maxlength="256" placeholder="Spring Showdown" />
 
                                 <div class="row-2">
@@ -304,6 +304,20 @@
         <a href="/terms.html">Terms of Service</a>
         <a href="/privacy.html">Privacy Policy</a>
     </footer>
+</div>
+
+<div id="republish-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <h2>Republish in another channel</h2>
+        <p class="hint" id="republish-modal-hint"></p>
+        <label>New channel</label>
+        <select id="republish-channel-select"></select>
+        <div class="modal-actions">
+            <button type="button" class="secondary-btn" id="republish-cancel-btn">Cancel</button>
+            <button type="button" id="republish-confirm-btn">✅ Confirm</button>
+        </div>
+        <p id="republish-result" class="result"></p>
+    </div>
 </div>
 
 <script src="panel.js"></script>

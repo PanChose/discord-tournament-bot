@@ -13,6 +13,7 @@ const {
     listGuildEmojis,
     getBotInviteUrl,
     publishTournament,
+    republishTournament,
     closeTournamentAnnouncement,
     refreshAnnouncementMessage,
     applyReaction,
@@ -231,6 +232,23 @@ app.post("/api/tournaments/:id/publish", requireAuth, async (req, res) => {
     try {
         const published = await publishTournament(tournament);
         res.json({ tournament: published });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Moves an already-published (or already-closed) tournament's announcement
+// to a different channel — posts fresh there, marks the old message as moved.
+app.post("/api/tournaments/:id/republish", requireAuth, async (req, res) => {
+    const tournament = await loadOwnedTournament(req, res);
+    if (!tournament) return;
+    if (tournament.status === "draft") return res.status(400).json({ error: "Publish it first" });
+    const { channelId } = req.body;
+    if (!channelId) return res.status(400).json({ error: "channelId is required" });
+    if (!client.isReady()) return res.status(503).json({ error: "The bot hasn't connected to Discord yet" });
+    try {
+        const republished = await republishTournament(tournament, channelId);
+        res.json({ tournament: republished });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
