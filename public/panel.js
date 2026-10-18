@@ -879,15 +879,20 @@ async function loadInviteLink() {
 }
 
 // =========================================================================
-// "What's New" popup — shown once per browser after a deploy that bumps
-// WHATS_NEW.version, never again until the next bump. Bump the version and
-// add a short line here whenever a change is worth telling organizers about.
-// English-only by design — keeping a running changelog translated into all
-// 9 panel languages isn't realistic to maintain, so this one part stays English.
+// "What's New" popup — tied to the same build version as the update banner
+// (GET /api/version, which changes on every deploy — see server.js), not a
+// separately hand-maintained version string. That means it shows itself
+// automatically on the very next page load after a deploy (including right
+// after clicking the update banner's "Refresh to update"), with no extra
+// bump-this-constant step to forget. Keep WHATS_NEW.categories current with
+// what changed since the last production deploy — replace its contents
+// (don't just append) right before pushing to main each time, so it always
+// reads as "what's new in the version you're looking at now". English-only
+// by design — keeping a changelog translated into all 9 panel languages
+// isn't realistic to maintain, so this one part stays English.
 // =========================================================================
 
 const WHATS_NEW = {
-    version: "2026.02.3",
     categories: [
         {
             label: "✨ New Features",
@@ -917,15 +922,24 @@ const WHATS_NEW = {
     ],
 };
 
-function checkWhatsNew() {
+let whatsNewPendingVersion = null; // the build version this open popup is for, saved on dismiss
+
+async function checkWhatsNew() {
+    let latestVersion;
+    try {
+        ({ version: latestVersion } = await apiFetch("/api/version"));
+    } catch (err) {
+        return; // can't tell right now — try again on the next page load
+    }
     let seenVersion = null;
     try {
-        seenVersion = localStorage.getItem("whats-new-seen");
+        seenVersion = localStorage.getItem("whats-new-seen-version");
     } catch (err) {
         return; // no localStorage access (e.g. blocked in a private window) — just skip it
     }
-    if (seenVersion === WHATS_NEW.version) return;
+    if (seenVersion === latestVersion) return;
 
+    whatsNewPendingVersion = latestVersion;
     document.getElementById("whats-new-list").innerHTML = WHATS_NEW.categories
         .map(
             (cat) => `
@@ -940,7 +954,7 @@ function checkWhatsNew() {
 
 function dismissWhatsNew() {
     try {
-        localStorage.setItem("whats-new-seen", WHATS_NEW.version);
+        if (whatsNewPendingVersion) localStorage.setItem("whats-new-seen-version", whatsNewPendingVersion);
     } catch (err) {
         // best-effort — if it can't persist, the popup just shows again next visit
     }
