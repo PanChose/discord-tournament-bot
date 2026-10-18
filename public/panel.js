@@ -48,6 +48,9 @@ function dashboardStatusKey(t) {
 
 const TRANSLATIONS = {
     en: {
+        "loading.text": "Loading…",
+        "updateBanner.text": "A new version is available.",
+        "updateBanner.refresh": "Refresh to update",
         "whatsNew.title": "✨ What's New",
         "login.title": "🏆 Tournament Bot",
         "login.hint": "Sign in with Discord to manage tournaments on servers where you're an organizer (Manage Server permission).",
@@ -116,6 +119,9 @@ const TRANSLATIONS = {
         "action.delete": "Delete",
     },
     ru: {
+        "loading.text": "Загрузка…",
+        "updateBanner.text": "Доступна новая версия.",
+        "updateBanner.refresh": "Обновить страницу",
         "whatsNew.title": "✨ Что нового",
         "login.title": "🏆 Турнирный бот",
         "login.hint": "Войдите через Discord, чтобы управлять турнирами на серверах, где вы организатор (право Manage Server).",
@@ -184,6 +190,9 @@ const TRANSLATIONS = {
         "action.delete": "Удалить",
     },
     es: {
+        "loading.text": "Cargando…",
+        "updateBanner.text": "Hay una nueva versión disponible.",
+        "updateBanner.refresh": "Actualizar para aplicar",
         "whatsNew.title": "✨ Novedades",
         "login.title": "🏆 Bot de Torneos",
         "login.hint": "Inicia sesión con Discord para gestionar torneos en los servidores donde eres organizador (permiso de Gestionar servidor).",
@@ -252,6 +261,9 @@ const TRANSLATIONS = {
         "action.delete": "Eliminar",
     },
     ro: {
+        "loading.text": "Se încarcă…",
+        "updateBanner.text": "Este disponibilă o versiune nouă.",
+        "updateBanner.refresh": "Reîmprospătează pentru actualizare",
         "whatsNew.title": "✨ Noutăți",
         "login.title": "🏆 Bot de Turnee",
         "login.hint": "Conectează-te cu Discord pentru a gestiona turnee pe serverele unde ești organizator (permisiunea Manage Server).",
@@ -320,6 +332,9 @@ const TRANSLATIONS = {
         "action.delete": "Șterge",
     },
     it: {
+        "loading.text": "Caricamento…",
+        "updateBanner.text": "È disponibile una nuova versione.",
+        "updateBanner.refresh": "Aggiorna per applicare",
         "whatsNew.title": "✨ Novità",
         "login.title": "🏆 Bot Tornei",
         "login.hint": "Accedi con Discord per gestire i tornei sui server in cui sei organizzatore (permesso Gestisci server).",
@@ -388,6 +403,9 @@ const TRANSLATIONS = {
         "action.delete": "Elimina",
     },
     nl: {
+        "loading.text": "Laden…",
+        "updateBanner.text": "Er is een nieuwe versie beschikbaar.",
+        "updateBanner.refresh": "Vernieuwen om bij te werken",
         "whatsNew.title": "✨ Wat is er nieuw",
         "login.title": "🏆 Toernooibot",
         "login.hint": "Log in met Discord om toernooien te beheren op servers waar je organisator bent (Server beheren-rechten).",
@@ -456,6 +474,9 @@ const TRANSLATIONS = {
         "action.delete": "Verwijderen",
     },
     pt: {
+        "loading.text": "A carregar…",
+        "updateBanner.text": "Está disponível uma nova versão.",
+        "updateBanner.refresh": "Atualizar para aplicar",
         "whatsNew.title": "✨ Novidades",
         "login.title": "🏆 Bot de Torneios",
         "login.hint": "Entra com o Discord para geres torneios nos servidores onde és organizador (permissão Gerir Servidor).",
@@ -524,6 +545,9 @@ const TRANSLATIONS = {
         "action.delete": "Eliminar",
     },
     el: {
+        "loading.text": "Φόρτωση…",
+        "updateBanner.text": "Υπάρχει διαθέσιμη νέα έκδοση.",
+        "updateBanner.refresh": "Ανανέωση για ενημέρωση",
         "whatsNew.title": "✨ Τι νέο υπάρχει",
         "login.title": "🏆 Bot Τουρνουά",
         "login.hint": "Συνδέσου με το Discord για να διαχειρίζεσαι τουρνουά στους διακομιστές όπου είσαι διοργανωτής (δικαίωμα Manage Server).",
@@ -592,6 +616,9 @@ const TRANSLATIONS = {
         "action.delete": "Διαγραφή",
     },
     fr: {
+        "loading.text": "Chargement…",
+        "updateBanner.text": "Une nouvelle version est disponible.",
+        "updateBanner.refresh": "Actualiser pour mettre à jour",
         "whatsNew.title": "✨ Nouveautés",
         "login.title": "🏆 Bot de Tournois",
         "login.hint": "Connectez-vous avec Discord pour gérer des tournois sur les serveurs où vous êtes organisateur (permission Gérer le serveur).",
@@ -2177,6 +2204,45 @@ document.getElementById("ai-generate-btn").addEventListener("click", async () =>
 function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
+
+// =========================================================================
+// "A new version is available" banner — polls a tiny public endpoint that
+// changes every time the server process restarts (i.e. every deploy) and
+// compares it against whatever version this tab loaded with. Deliberately
+// never reloads on its own: the organizer decides when, so nothing they're
+// mid-typing in the editor gets lost to a surprise refresh.
+// =========================================================================
+
+let loadedVersion = null;
+let versionCheckTimer = null;
+
+async function checkForUpdate() {
+    let latest;
+    try {
+        ({ version: latest } = await apiFetch("/api/version"));
+    } catch (err) {
+        return; // transient network hiccup — try again next tick
+    }
+    if (loadedVersion === null) {
+        loadedVersion = latest; // first check just records the baseline, nothing to compare yet
+        return;
+    }
+    if (latest !== loadedVersion) {
+        document.getElementById("update-banner").classList.remove("hidden");
+        clearInterval(versionCheckTimer); // found it — no need to keep polling
+    }
+}
+
+versionCheckTimer = setInterval(checkForUpdate, 60_000);
+checkForUpdate();
+
+document.getElementById("update-banner-close").addEventListener("click", () => {
+    document.getElementById("update-banner").classList.add("hidden");
+});
+document.getElementById("update-banner-refresh").addEventListener("click", (e) => {
+    e.preventDefault();
+    location.reload();
+});
 
 applyTheme(getTheme());
 applyTranslations();

@@ -28,6 +28,12 @@ app.use(express.json({ limit: "10mb" })); // banner images can be sent as base64
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// A deploy always restarts the process, so this constant changes on every
+// deploy (Railway's own commit SHA when available, else just "when did this
+// process start") — the panel polls /api/version and compares against what
+// it loaded with to know a newer version is live.
+const BUILD_VERSION = process.env.RAILWAY_GIT_COMMIT_SHA || process.env.RAILWAY_DEPLOYMENT_ID || String(Date.now());
+
 const SESSION_COOKIE = "session_id";
 const STATE_COOKIE = "oauth_state";
 
@@ -129,6 +135,12 @@ app.get("/api/me", requireAuth, async (req, res) => {
 
 app.get("/api/status", (req, res) => {
     res.json({ ready: client.isReady(), tag: client.user ? client.user.tag : null });
+});
+
+// Public on purpose — the panel polls this (logged in or not) to notice a
+// deploy that happened while the tab was open.
+app.get("/api/version", (req, res) => {
+    res.json({ version: BUILD_VERSION });
 });
 
 // Public on purpose — a server admin needs this link before they've logged in at all.

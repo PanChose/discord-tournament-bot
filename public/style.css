@@ -51,6 +51,15 @@ body {
 /* Shown by default while init() checks whether there's a logged-in session —
    keeps the "Log in with Discord" button off-screen during that window, so
    there's no gap where clicking it again could be spammed into a login loop. */
+.loading-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.loading-box p { color: var(--muted); font-size: 13px; margin: 0; }
+
 .spinner {
     width: 36px;
     height: 36px;
@@ -63,6 +72,51 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* --- "A new version is available" banner — polled for separately from the
+   loading screen above; can show at any time while the tab stays open.
+   Sits in normal document flow (not fixed) so it pushes the page down
+   instead of overlaying — translucent-over-the-header looked like a glitch. */
+.update-banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 40px 10px 16px;
+    background: rgba(87, 211, 140, 0.15);
+    border-bottom: 1px solid rgba(87, 211, 140, 0.4);
+    color: var(--ok);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.update-banner.hidden { display: none; }
+
+.update-banner a {
+    color: var(--ok);
+    text-decoration: underline;
+}
+
+.update-banner-close {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--ok);
+    font-size: 12px;
+    line-height: 1;
+}
+
+.update-banner-close:hover { background: rgba(87, 211, 140, 0.2); }
 
 .card {
     background: var(--card);

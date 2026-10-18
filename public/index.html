@@ -9,7 +9,16 @@
 <body>
 
 <div id="loading-screen" class="screen">
-    <div class="spinner"></div>
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <p data-i18n="loading.text">Loading…</p>
+    </div>
+</div>
+
+<div id="update-banner" class="update-banner hidden">
+    <span data-i18n="updateBanner.text">A new version is available.</span>
+    <a href="#" id="update-banner-refresh" data-i18n="updateBanner.refresh">Refresh to update</a>
+    <button type="button" id="update-banner-close" class="update-banner-close" title="Close" aria-label="Close">✕</button>
 </div>
 
 <div id="login-screen" class="screen hidden">
