@@ -11,6 +11,7 @@ const state = {
     reactionEmoji: null, // null, or { id: string|null, name: string }
     pollTimer: null,
     emojis: null, // cached custom emojis for the current guild, fetched lazily on first use
+    stats: null,
 };
 
 const FORMAT_LABELS = {
@@ -48,6 +49,11 @@ function dashboardStatusKey(t) {
 
 const TRANSLATIONS = {
     en: {
+        "tabs.statistics": "Statistics",
+        "stats.overview": "Overview",
+        "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
+        "stats.teamsChartTitle": "Teams registered per tournament",
+        "stats.prizeChartTitle": "Prize pool per tournament",
         "loading.text": "Loading…",
         "updateBanner.text": "A new version is available.",
         "updateBanner.refresh": "Refresh to update",
@@ -119,6 +125,11 @@ const TRANSLATIONS = {
         "action.delete": "Delete",
     },
     ru: {
+        "tabs.statistics": "Статистика",
+        "stats.overview": "Обзор",
+        "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
+        "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
+        "stats.prizeChartTitle": "Призовой фонд по турнирам",
         "loading.text": "Загрузка…",
         "updateBanner.text": "Доступна новая версия.",
         "updateBanner.refresh": "Обновить страницу",
@@ -190,6 +201,11 @@ const TRANSLATIONS = {
         "action.delete": "Удалить",
     },
     es: {
+        "tabs.statistics": "Estadísticas",
+        "stats.overview": "Resumen",
+        "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
+        "stats.teamsChartTitle": "Equipos registrados por torneo",
+        "stats.prizeChartTitle": "Bolsa de premios por torneo",
         "loading.text": "Cargando…",
         "updateBanner.text": "Hay una nueva versión disponible.",
         "updateBanner.refresh": "Actualizar para aplicar",
@@ -261,6 +277,11 @@ const TRANSLATIONS = {
         "action.delete": "Eliminar",
     },
     ro: {
+        "tabs.statistics": "Statistici",
+        "stats.overview": "Prezentare generală",
+        "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
+        "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
+        "stats.prizeChartTitle": "Premiu total pe turneu",
         "loading.text": "Se încarcă…",
         "updateBanner.text": "Este disponibilă o versiune nouă.",
         "updateBanner.refresh": "Reîmprospătează pentru actualizare",
@@ -332,6 +353,11 @@ const TRANSLATIONS = {
         "action.delete": "Șterge",
     },
     it: {
+        "tabs.statistics": "Statistiche",
+        "stats.overview": "Panoramica",
+        "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
+        "stats.teamsChartTitle": "Squadre registrate per torneo",
+        "stats.prizeChartTitle": "Montepremi per torneo",
         "loading.text": "Caricamento…",
         "updateBanner.text": "È disponibile una nuova versione.",
         "updateBanner.refresh": "Aggiorna per applicare",
@@ -403,6 +429,11 @@ const TRANSLATIONS = {
         "action.delete": "Elimina",
     },
     nl: {
+        "tabs.statistics": "Statistieken",
+        "stats.overview": "Overzicht",
+        "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
+        "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
+        "stats.prizeChartTitle": "Prijzenpot per toernooi",
         "loading.text": "Laden…",
         "updateBanner.text": "Er is een nieuwe versie beschikbaar.",
         "updateBanner.refresh": "Vernieuwen om bij te werken",
@@ -474,6 +505,11 @@ const TRANSLATIONS = {
         "action.delete": "Verwijderen",
     },
     pt: {
+        "tabs.statistics": "Estatísticas",
+        "stats.overview": "Visão geral",
+        "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
+        "stats.teamsChartTitle": "Equipas registadas por torneio",
+        "stats.prizeChartTitle": "Bolsa de prémios por torneio",
         "loading.text": "A carregar…",
         "updateBanner.text": "Está disponível uma nova versão.",
         "updateBanner.refresh": "Atualizar para aplicar",
@@ -545,6 +581,11 @@ const TRANSLATIONS = {
         "action.delete": "Eliminar",
     },
     el: {
+        "tabs.statistics": "Στατιστικά",
+        "stats.overview": "Επισκόπηση",
+        "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
+        "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
+        "stats.prizeChartTitle": "Χρηματικό έπαθλο ανά τουρνουά",
         "loading.text": "Φόρτωση…",
         "updateBanner.text": "Υπάρχει διαθέσιμη νέα έκδοση.",
         "updateBanner.refresh": "Ανανέωση για ενημέρωση",
@@ -616,6 +657,11 @@ const TRANSLATIONS = {
         "action.delete": "Διαγραφή",
     },
     fr: {
+        "tabs.statistics": "Statistiques",
+        "stats.overview": "Vue d'ensemble",
+        "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
+        "stats.teamsChartTitle": "Équipes inscrites par tournoi",
+        "stats.prizeChartTitle": "Cagnotte par tournoi",
         "loading.text": "Chargement…",
         "updateBanner.text": "Une nouvelle version est disponible.",
         "updateBanner.refresh": "Actualiser pour mettre à jour",
@@ -754,6 +800,9 @@ function setTheme(theme) {
         // see setLanguage — persistence is best-effort only
     }
     applyTheme(theme);
+    // Chart.js bakes colors into the chart at render time — re-render so grid
+    // lines/labels don't stay stuck in the old theme's colors.
+    if (state.stats) renderStats(state.stats);
 }
 
 document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
@@ -1068,6 +1117,7 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
         if (btn.dataset.tab === "editor" && !document.getElementById("tournament-id").value) {
             resetEditorForm();
         }
+        if (btn.dataset.tab === "stats") loadStats();
     });
 });
 
@@ -1091,6 +1141,115 @@ async function loadTournaments() {
         renderTournamentList();
     } catch (err) {
         // transient — keep showing the last known list
+    }
+}
+
+// =========================================================================
+// Statistics tab — charts render with Chart.js (loaded via CDN in index.html)
+// =========================================================================
+
+let teamsChart = null;
+let prizeChart = null;
+
+function chartColors() {
+    const cs = getComputedStyle(document.documentElement);
+    return {
+        text: cs.getPropertyValue("--text").trim(),
+        muted: cs.getPropertyValue("--muted").trim(),
+        accent: cs.getPropertyValue("--accent").trim(),
+        ok: cs.getPropertyValue("--ok").trim(),
+        border: cs.getPropertyValue("--border").trim(),
+    };
+}
+
+async function loadStats() {
+    if (!state.guildId) return;
+    const container = document.getElementById("stats-tab");
+    try {
+        const { stats } = await apiFetch(`/api/stats?guildId=${state.guildId}`);
+        state.stats = stats;
+        renderStats(stats);
+    } catch (err) {
+        container.querySelector("#stats-cards").innerHTML = `<p class="hint">❌ ${escapeHtml(err.message)}</p>`;
+    }
+}
+
+function statCard(value, label) {
+    return `<div class="stat-card"><div class="stat-value">${escapeHtml(String(value))}</div><div class="stat-label">${escapeHtml(label)}</div></div>`;
+}
+
+function renderStats(stats) {
+    const emptyEl = document.getElementById("stats-empty");
+    const cardsEl = document.getElementById("stats-cards");
+    const prizeCard = document.getElementById("stats-prize-card");
+
+    if (!stats.perTournament.length) {
+        emptyEl.classList.remove("hidden");
+        cardsEl.innerHTML = "";
+        document.getElementById("stats-teams-chart").closest(".card").classList.add("hidden");
+        prizeCard.classList.add("hidden");
+        if (teamsChart) { teamsChart.destroy(); teamsChart = null; }
+        if (prizeChart) { prizeChart.destroy(); prizeChart = null; }
+        return;
+    }
+    emptyEl.classList.add("hidden");
+    document.getElementById("stats-teams-chart").closest(".card").classList.remove("hidden");
+
+    cardsEl.innerHTML = [
+        statCard(stats.totalTournaments, "Total tournaments"),
+        statCard(stats.publishedCount, "Open for registration"),
+        statCard(stats.closedCount, "Closed"),
+        statCard(stats.averageTeams, "Avg. teams per tournament"),
+        statCard(stats.averageMatcherinoTeams, "Avg. teams (Matcherino-linked)"),
+        statCard(formatPrizePool(stats.totalPrizePool), "Total prize pool"),
+        statCard(stats.topGame || "—", "Most played game"),
+    ].join("");
+
+    const colors = chartColors();
+    const labels = stats.perTournament.map((t) => t.name);
+    const teamData = stats.perTournament.map((t) => t.teams);
+
+    if (teamsChart) teamsChart.destroy();
+    teamsChart = new Chart(document.getElementById("stats-teams-chart"), {
+        type: "bar",
+        data: {
+            labels,
+            datasets: [{ label: "Teams registered", data: teamData, backgroundColor: colors.accent, borderRadius: 4 }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: colors.muted }, grid: { color: colors.border } },
+                y: { beginAtZero: true, ticks: { color: colors.muted, precision: 0 }, grid: { color: colors.border } },
+            },
+        },
+    });
+
+    const withPrize = stats.perTournament.filter((t) => t.prizePool !== null && t.prizePool !== undefined);
+    if (withPrize.length) {
+        prizeCard.classList.remove("hidden");
+        if (prizeChart) prizeChart.destroy();
+        prizeChart = new Chart(document.getElementById("stats-prize-chart"), {
+            type: "bar",
+            data: {
+                labels: withPrize.map((t) => t.name),
+                datasets: [{ label: "Prize pool ($)", data: withPrize.map((t) => t.prizePool), backgroundColor: colors.ok, borderRadius: 4 }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: colors.muted }, grid: { color: colors.border } },
+                    y: { beginAtZero: true, ticks: { color: colors.muted }, grid: { color: colors.border } },
+                },
+            },
+        });
+    } else {
+        prizeCard.classList.add("hidden");
+        if (prizeChart) { prizeChart.destroy(); prizeChart = null; }
     }
 }
 

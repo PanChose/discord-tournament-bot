@@ -188,6 +188,13 @@ app.delete("/api/tournaments", requireAuth, async (req, res) => {
     res.json({ ok: true });
 });
 
+app.get("/api/stats", requireAuth, async (req, res) => {
+    const { guildId } = req.query;
+    if (!guildId) return res.status(400).json({ error: "guildId is required" });
+    if (!(await requireOrganizerOf(req, res, guildId))) return;
+    res.json({ stats: tournamentsLib.getGuildStats(guildId) });
+});
+
 app.post("/api/tournaments", requireAuth, async (req, res) => {
     const { guildId, ...data } = req.body;
     if (!guildId || !data.name || !data.channelId) {

@@ -1101,6 +1101,30 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .danger-zone { border: 1px solid rgba(242, 107, 107, 0.35); }
 .danger-zone h2 { color: var(--error); }
 
+/* --- Statistics tab --- */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.stat-card .stat-value { font-size: 24px; font-weight: 700; color: var(--text); }
+.stat-card .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.stats-chart-wrap {
+    position: relative;
+    height: 320px;
+    margin-top: 10px;
+}
+
 /* --- Discord-markup rendering in the live preview --- */
 .dp-emoji { width: 18px; height: 18px; vertical-align: -4px; margin: 0 1px; }
 

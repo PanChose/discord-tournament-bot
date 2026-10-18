@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tournament Bot Control Panel</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
 </head>
 <body>
 
@@ -62,6 +63,7 @@
         <nav class="tabs">
             <button type="button" class="tab-btn active" data-tab="dashboard" data-i18n="tabs.dashboard">Dashboard</button>
             <button type="button" class="tab-btn" data-tab="editor" data-i18n="tabs.newTournament">＋ New tournament</button>
+            <button type="button" class="tab-btn" data-tab="stats" data-i18n="tabs.statistics">Statistics</button>
             <button type="button" class="tab-btn nav-hidden" data-tab="settings">Settings</button>
         </nav>
 
@@ -316,6 +318,29 @@
                 </section>
 
             </div>
+        </section>
+
+        <!-- ============== STATISTICS ============== -->
+        <section id="stats-tab" class="tab-panel hidden">
+            <section class="card">
+                <h2 data-i18n="stats.overview">Overview</h2>
+                <div id="stats-empty" class="hint hidden" data-i18n="stats.empty">No published tournaments yet on this server — stats show up once at least one has been announced.</div>
+                <div id="stats-cards" class="stats-cards"></div>
+            </section>
+
+            <section class="card">
+                <h2 data-i18n="stats.teamsChartTitle">Teams registered per tournament</h2>
+                <div class="stats-chart-wrap">
+                    <canvas id="stats-teams-chart"></canvas>
+                </div>
+            </section>
+
+            <section id="stats-prize-card" class="card hidden">
+                <h2 data-i18n="stats.prizeChartTitle">Prize pool per tournament</h2>
+                <div class="stats-chart-wrap">
+                    <canvas id="stats-prize-chart"></canvas>
+                </div>
+            </section>
         </section>
 
         <!-- ============== SETTINGS ============== -->
