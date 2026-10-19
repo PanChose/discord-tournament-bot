@@ -1720,10 +1720,12 @@ document.getElementById("f-color-swatch").addEventListener("click", (e) => {
 
 // Every action button lives inside the detail modal now (see
 // openTournamentDetail/buildTournamentActions) — one shared handler for all
-// of them. Edit/Clone/Participants/Republish leave the dashboard view (a
-// different tab or another modal), so they close this one first. Publish/
-// Close/Delete/Sync act on the same tournament in place, so the modal stays
-// open and refreshes itself with the result instead of disappearing.
+// of them. Edit/Clone/Participants leave the dashboard view entirely (a
+// different tab, or editing a different tournament), so they close this one
+// first. Everything else — Publish/Close/Delete/Sync/Republish — acts on the
+// same tournament in place: the modal stays open underneath (Republish opens
+// on top of it, same as the confirm dialogs do) and refreshes with the
+// result instead of disappearing.
 document.getElementById("tournament-detail-modal").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
@@ -1738,10 +1740,7 @@ document.getElementById("tournament-detail-modal").addEventListener("click", (e)
         closeTournamentDetail();
         return cloneTournament(id, btn);
     }
-    if (action === "republish") {
-        closeTournamentDetail();
-        return openRepublishModal(tournament);
-    }
+    if (action === "republish") return openRepublishModal(tournament);
     if (action === "participants") {
         closeTournamentDetail();
         document.querySelector('.tab-btn[data-tab="participants"]').click();
@@ -1794,9 +1793,10 @@ document.getElementById("republish-confirm-btn").addEventListener("click", async
     const resultEl = document.getElementById("republish-result");
     resultEl.textContent = "Posting…";
     try {
-        await apiFetch(`/api/tournaments/${id}/republish`, { method: "POST", body: JSON.stringify({ channelId }) });
+        const { tournament } = await apiFetch(`/api/tournaments/${id}/republish`, { method: "POST", body: JSON.stringify({ channelId }) });
         await loadTournaments();
         closeRepublishModal();
+        refreshOpenDetailModal(tournament);
     } catch (err) {
         resultEl.textContent = "❌ " + err.message;
     }

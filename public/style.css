@@ -1355,7 +1355,7 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 /* Close/Delete/etc. now leave the tournament detail modal open underneath
    them so it can refresh in place — this needs to render on top of that
    (and any other) modal regardless of DOM order. */
-#generic-confirm-modal { z-index: 60; }
+#generic-confirm-modal, #republish-modal { z-index: 60; }
 
 .modal-overlay.is-open { opacity: 1; }
 
