@@ -50,6 +50,9 @@ function dashboardStatusKey(t) {
 const TRANSLATIONS = {
     en: {
         "tabs.statistics": "Statistics",
+        "tabs.participants": "Participants",
+        "participants.selectTournament": "Tournament",
+        "participants.selectPlaceholder": "— select a tournament —",
         "stats.overview": "Overview",
         "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
         "stats.teamsChartTitle": "Teams registered per tournament",
@@ -129,6 +132,9 @@ const TRANSLATIONS = {
     },
     ru: {
         "tabs.statistics": "Статистика",
+        "tabs.participants": "Участники",
+        "participants.selectTournament": "Турнир",
+        "participants.selectPlaceholder": "— выберите турнир —",
         "stats.overview": "Обзор",
         "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
         "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
@@ -208,6 +214,9 @@ const TRANSLATIONS = {
     },
     es: {
         "tabs.statistics": "Estadísticas",
+        "tabs.participants": "Participantes",
+        "participants.selectTournament": "Torneo",
+        "participants.selectPlaceholder": "— selecciona un torneo —",
         "stats.overview": "Resumen",
         "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
         "stats.teamsChartTitle": "Equipos registrados por torneo",
@@ -287,6 +296,9 @@ const TRANSLATIONS = {
     },
     ro: {
         "tabs.statistics": "Statistici",
+        "tabs.participants": "Participanți",
+        "participants.selectTournament": "Turneu",
+        "participants.selectPlaceholder": "— selectează un turneu —",
         "stats.overview": "Prezentare generală",
         "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
         "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
@@ -366,6 +378,9 @@ const TRANSLATIONS = {
     },
     it: {
         "tabs.statistics": "Statistiche",
+        "tabs.participants": "Partecipanti",
+        "participants.selectTournament": "Torneo",
+        "participants.selectPlaceholder": "— seleziona un torneo —",
         "stats.overview": "Panoramica",
         "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
         "stats.teamsChartTitle": "Squadre registrate per torneo",
@@ -445,6 +460,9 @@ const TRANSLATIONS = {
     },
     nl: {
         "tabs.statistics": "Statistieken",
+        "tabs.participants": "Deelnemers",
+        "participants.selectTournament": "Toernooi",
+        "participants.selectPlaceholder": "— selecteer een toernooi —",
         "stats.overview": "Overzicht",
         "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
         "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
@@ -524,6 +542,9 @@ const TRANSLATIONS = {
     },
     pt: {
         "tabs.statistics": "Estatísticas",
+        "tabs.participants": "Participantes",
+        "participants.selectTournament": "Torneio",
+        "participants.selectPlaceholder": "— selecione um torneio —",
         "stats.overview": "Visão geral",
         "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
         "stats.teamsChartTitle": "Equipas registadas por torneio",
@@ -603,6 +624,9 @@ const TRANSLATIONS = {
     },
     el: {
         "tabs.statistics": "Στατιστικά",
+        "tabs.participants": "Συμμετέχοντες",
+        "participants.selectTournament": "Τουρνουά",
+        "participants.selectPlaceholder": "— επιλέξτε τουρνουά —",
         "stats.overview": "Επισκόπηση",
         "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
         "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
@@ -682,6 +706,9 @@ const TRANSLATIONS = {
     },
     fr: {
         "tabs.statistics": "Statistiques",
+        "tabs.participants": "Participants",
+        "participants.selectTournament": "Tournoi",
+        "participants.selectPlaceholder": "— sélectionnez un tournoi —",
         "stats.overview": "Vue d'ensemble",
         "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
         "stats.teamsChartTitle": "Équipes inscrites par tournoi",
@@ -998,40 +1025,7 @@ async function loadInviteLink() {
 // =========================================================================
 
 const WHATS_NEW = {
-    categories: [
-        {
-            label: "✨ New Features",
-            items: [
-                "New Statistics tab — average teams per tournament, prize pools and more, charted",
-                "Change a tournament's icon color right from the Dashboard, no need to open the editor",
-                "Publish button right in the editor (with a confirmation before it goes live)",
-                "Jump-to-section nav in the editor so long forms are easy to navigate",
-                "The editor now warns you before you lose unsaved changes, and highlights what's unsaved",
-                "@everyone is now a selectable ping role, alongside your server's own roles",
-                "Optional message when a tournament starts, with its own custom text and its own ping role — separate from the publish-time ping",
-            ],
-        },
-        {
-            label: "🎨 Redesign",
-            items: [
-                "Dashboard rebuilt as a Discord-style grid — click a tournament's tile to see its full details",
-                "Left sidebar navigation replaces the old top tab row",
-                "All confirmations (close, delete, publish) now open as a centered pop-up instead of the browser's default prompt",
-                "Dashboard, editor and every other tab are now genuinely centered on screen, and the editor is noticeably wider",
-                "Notifications and Branding split into clearly labeled sub-sections instead of one long wall of fields",
-                "A proper pass on phone-sized screens across the whole panel",
-            ],
-        },
-        {
-            label: "🐛 Bug Fixes",
-            items: [
-                "\"+ New tournament\" no longer reopens whatever you were last editing",
-                "Close and Delete moved into their own clearly separated danger zone in the tournament pop-up",
-                "What's New is shorter and scrolls instead of covering the whole screen",
-                "The tournament icon color picker now opens right at your cursor and updates live as you drag",
-            ],
-        },
-    ],
+    categories: [],
 };
 
 let whatsNewPendingVersion = null; // the build version this open popup is for, saved on dismiss
@@ -1050,6 +1044,14 @@ async function checkWhatsNew() {
         return; // no localStorage access (e.g. blocked in a private window) — just skip it
     }
     if (seenVersion === latestVersion) return;
+    // Nothing queued up yet for the next write-up — treat it as already seen
+    // instead of popping up an empty modal.
+    if (!WHATS_NEW.categories.length) {
+        try {
+            localStorage.setItem("whats-new-seen-version", latestVersion);
+        } catch (err) {}
+        return;
+    }
 
     whatsNewPendingVersion = latestVersion;
     document.getElementById("whats-new-list").innerHTML = WHATS_NEW.categories
@@ -1224,6 +1226,7 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
             resetEditorForm();
         }
         if (btn.dataset.tab === "stats") loadStats();
+        if (btn.dataset.tab === "participants") populateParticipantsSelect();
     });
 });
 
@@ -1245,6 +1248,7 @@ async function loadTournaments() {
         const { tournaments } = await apiFetch(`/api/tournaments?guildId=${state.guildId}`);
         state.tournaments = tournaments;
         renderTournamentList();
+        populateParticipantsSelect();
     } catch (err) {
         // transient — keep showing the last known list
     }
@@ -1497,17 +1501,193 @@ function timeAgo(ms) {
     return `${hours}h ago`;
 }
 
+// --- Custom color picker (saturation/value square + hue strip + hex field) —
+// replaces the browser's native <input type="color"> everywhere, since that
+// looks and behaves differently across browsers/OSes and clashes with the
+// rest of the panel's dark theme.
+const colorPicker = (() => {
+    const popover = document.getElementById("color-picker-popover");
+    const svEl = document.getElementById("cp-sv");
+    const svThumb = document.getElementById("cp-sv-thumb");
+    const hueEl = document.getElementById("cp-hue");
+    const hueThumb = document.getElementById("cp-hue-thumb");
+    const hexInput = document.getElementById("cp-hex");
+    const swatch = document.getElementById("cp-swatch");
+
+    let hsv = { h: 0, s: 0, v: 0 };
+    let onChange = null;
+    let onCommit = null;
+
+    function hsvToRgb(h, s, v) {
+        s /= 100;
+        v /= 100;
+        const c = v * s;
+        const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+        const m = v - c;
+        let r, g, b;
+        if (h < 60) [r, g, b] = [c, x, 0];
+        else if (h < 120) [r, g, b] = [x, c, 0];
+        else if (h < 180) [r, g, b] = [0, c, x];
+        else if (h < 240) [r, g, b] = [0, x, c];
+        else if (h < 300) [r, g, b] = [x, 0, c];
+        else [r, g, b] = [c, 0, x];
+        return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b + m) * 255) };
+    }
+
+    function rgbToHsv(r, g, b) {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const d = max - min;
+        let h = 0;
+        if (d !== 0) {
+            if (max === r) h = (((g - b) / d) % 6) * 60;
+            else if (max === g) h = ((b - r) / d + 2) * 60;
+            else h = ((r - g) / d + 4) * 60;
+            if (h < 0) h += 360;
+        }
+        return { h, s: max === 0 ? 0 : (d / max) * 100, v: max * 100 };
+    }
+
+    function hexToRgb(hex) {
+        const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+        if (!m) return null;
+        const n = parseInt(m[1], 16);
+        return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function rgbToHex({ r, g, b }) {
+        return (
+            "#" +
+            [r, g, b]
+                .map((c) => c.toString(16).padStart(2, "0"))
+                .join("")
+        );
+    }
+
+    function currentHex() {
+        return rgbToHex(hsvToRgb(hsv.h, hsv.s, hsv.v));
+    }
+
+    function render() {
+        svEl.style.backgroundColor = rgbToHex(hsvToRgb(hsv.h, 100, 100));
+        svThumb.style.left = `${hsv.s}%`;
+        svThumb.style.top = `${100 - hsv.v}%`;
+        hueThumb.style.left = `${(hsv.h / 360) * 100}%`;
+        const hex = currentHex();
+        swatch.style.background = hex;
+        hexInput.value = hex;
+    }
+
+    function emit() {
+        render();
+        if (onChange) onChange(currentHex());
+    }
+
+    function setFromHex(hex) {
+        const rgb = hexToRgb(hex);
+        if (!rgb) return;
+        hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    }
+
+    function dragSV(e) {
+        const rect = svEl.getBoundingClientRect();
+        const x = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
+        const y = Math.min(Math.max(e.clientY - rect.top, 0), rect.height);
+        hsv.s = (x / rect.width) * 100;
+        hsv.v = 100 - (y / rect.height) * 100;
+        emit();
+    }
+
+    function dragHue(e) {
+        const rect = hueEl.getBoundingClientRect();
+        const x = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
+        hsv.h = (x / rect.width) * 360;
+        emit();
+    }
+
+    function startDrag(moveHandler) {
+        return (e) => {
+            e.preventDefault();
+            moveHandler(e);
+            const onMove = (ev) => moveHandler(ev);
+            const onUp = () => {
+                window.removeEventListener("pointermove", onMove);
+                window.removeEventListener("pointerup", onUp);
+            };
+            window.addEventListener("pointermove", onMove);
+            window.addEventListener("pointerup", onUp);
+        };
+    }
+
+    svEl.addEventListener("pointerdown", startDrag(dragSV));
+    hueEl.addEventListener("pointerdown", startDrag(dragHue));
+
+    hexInput.addEventListener("change", () => {
+        setFromHex(hexInput.value);
+        emit();
+    });
+
+    // Every trigger opens the popover from a "click" handler, which always
+    // fires after that same interaction's "pointerdown" already bubbled
+    // through here — at that point popover is still closed, so this never
+    // sees (let alone closes) the click that's about to open it.
+    document.addEventListener("pointerdown", (e) => {
+        if (!popover.classList.contains("is-open")) return;
+        if (popover.contains(e.target)) return;
+        close();
+    });
+
+    function open({ x, y, initialColor, change, commit }) {
+        if (popover.classList.contains("is-open")) close();
+        setFromHex(initialColor || "#5865f2");
+        render();
+        onChange = change || null;
+        onCommit = commit || null;
+        popover.classList.remove("hidden");
+        const rect = popover.getBoundingClientRect();
+        const left = Math.min(x, window.innerWidth - rect.width - 12);
+        const top = Math.min(y, window.innerHeight - 260);
+        popover.style.left = `${Math.max(12, left)}px`;
+        popover.style.top = `${Math.max(12, top)}px`;
+        requestAnimationFrame(() => popover.classList.add("is-open"));
+    }
+
+    function close() {
+        popover.classList.remove("is-open");
+        setTimeout(() => popover.classList.add("hidden"), 150);
+        const commit = onCommit;
+        onChange = null;
+        onCommit = null;
+        if (commit) commit(currentHex());
+    }
+
+    return { open };
+})();
+
 document.getElementById("tournament-list").addEventListener("click", (e) => {
     const colorBtn = e.target.closest(".tile-color-btn");
     if (colorBtn) {
-        const input = document.getElementById("tile-color-input");
-        // Move the (otherwise invisible) input under the cursor first, so the
-        // native picker opens right there instead of wherever it last was.
-        input.style.left = `${e.clientX}px`;
-        input.style.top = `${e.clientY}px`;
-        input.dataset.id = colorBtn.dataset.id;
-        input.value = colorBtn.dataset.color || "#5865f2";
-        input.click();
+        const id = colorBtn.dataset.id;
+        colorPicker.open({
+            x: e.clientX,
+            y: e.clientY,
+            initialColor: colorBtn.dataset.color || "#5865f2",
+            change: (hex) => {
+                const icon = document.querySelector(`.tournament-tile[data-id="${id}"] .tile-icon`);
+                if (icon) icon.style.background = hex;
+            },
+            commit: async (hex) => {
+                try {
+                    await apiFetch(`/api/tournaments/${id}`, { method: "PATCH", body: JSON.stringify({ color: hex }) });
+                    await loadTournaments();
+                } catch (err) {
+                    alert(err.message);
+                }
+            },
+        });
         return;
     }
     const tile = e.target.closest(".tournament-tile");
@@ -1516,46 +1696,72 @@ document.getElementById("tournament-list").addEventListener("click", (e) => {
     if (tournament) openTournamentDetail(tournament);
 });
 
-// Fires continuously while dragging inside the picker — update the tile
-// right away instead of waiting for it to close (that's the "change" event,
-// below, which is also when the color actually gets saved).
-document.getElementById("tile-color-input").addEventListener("input", (e) => {
-    const id = e.target.dataset.id;
-    const icon = document.querySelector(`.tournament-tile[data-id="${id}"] .tile-icon`);
-    if (icon) icon.style.background = e.target.value;
-});
+// Sets the editor's embed-color field (a hidden input — see index.html) and
+// its visible swatch button together, dispatching "input" so the live
+// preview and dirty-tracking pick it up the same as any other field.
+function setColorField(hex) {
+    const input = document.getElementById("f-color");
+    input.value = hex;
+    document.querySelector("#f-color-swatch .color-swatch-preview").style.background = hex;
+    document.querySelector("#f-color-swatch .color-swatch-hex").textContent = hex.toUpperCase();
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+}
 
-document.getElementById("tile-color-input").addEventListener("change", async (e) => {
-    const id = e.target.dataset.id;
-    if (!id) return;
-    try {
-        await apiFetch(`/api/tournaments/${id}`, { method: "PATCH", body: JSON.stringify({ color: e.target.value }) });
-        await loadTournaments();
-    } catch (err) {
-        alert(err.message);
-    }
+document.getElementById("f-color-swatch").addEventListener("click", (e) => {
+    colorPicker.open({
+        x: e.clientX,
+        y: e.clientY,
+        initialColor: document.getElementById("f-color").value || "#8b5cf6",
+        change: setColorField,
+    });
 });
 
 // Every action button lives inside the detail modal now (see
 // openTournamentDetail/buildTournamentActions) — one shared handler for all
-// of them, closing the modal first so a follow-up modal (Republish) or the
-// participants card underneath isn't hidden behind it.
+// of them. Edit/Clone/Participants/Republish leave the dashboard view (a
+// different tab or another modal), so they close this one first. Publish/
+// Close/Delete/Sync act on the same tournament in place, so the modal stays
+// open and refreshes itself with the result instead of disappearing.
 document.getElementById("tournament-detail-modal").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
     const { action, id } = btn.dataset;
     const tournament = state.tournaments.find((t) => t.id === id);
-    closeTournamentDetail();
 
-    if (action === "edit") return editTournament(tournament);
+    if (action === "edit") {
+        closeTournamentDetail();
+        return editTournament(tournament);
+    }
+    if (action === "clone") {
+        closeTournamentDetail();
+        return cloneTournament(id, btn);
+    }
+    if (action === "republish") {
+        closeTournamentDetail();
+        return openRepublishModal(tournament);
+    }
+    if (action === "participants") {
+        closeTournamentDetail();
+        document.querySelector('.tab-btn[data-tab="participants"]').click();
+        document.getElementById("participants-tournament-select").value = id;
+        return showParticipants(tournament);
+    }
+
     if (action === "publish") return publishTournament(id);
     if (action === "close") return closeTournament(id);
     if (action === "delete") return deleteTournament(id);
-    if (action === "participants") return showParticipants(tournament);
     if (action === "matcherino-sync") return syncMatcherino(id, btn);
-    if (action === "clone") return cloneTournament(id, btn);
-    if (action === "republish") return openRepublishModal(tournament);
 });
+
+// Re-renders the detail modal with fresh data after an in-place action, but
+// only if it's still open — the user may have dismissed it while, say, a
+// confirmation or a sync request was in flight.
+function refreshOpenDetailModal(tournament) {
+    if (!tournament) return;
+    if (document.getElementById("tournament-detail-modal").classList.contains("is-open")) {
+        openTournamentDetail(tournament);
+    }
+}
 
 // --- "Republish in another channel" modal ---
 function openRepublishModal(tournament) {
@@ -1616,6 +1822,7 @@ async function syncMatcherino(id, btn) {
     try {
         await apiFetch(`/api/tournaments/${id}/matcherino-sync`, { method: "POST" });
         await loadTournaments();
+        refreshOpenDetailModal(state.tournaments.find((t) => t.id === id));
     } catch (err) {
         alert(err.message);
         btn.textContent = originalText;
@@ -1625,8 +1832,9 @@ async function syncMatcherino(id, btn) {
 
 async function publishTournament(id) {
     try {
-        await apiFetch(`/api/tournaments/${id}/publish`, { method: "POST" });
+        const { tournament } = await apiFetch(`/api/tournaments/${id}/publish`, { method: "POST" });
         await loadTournaments();
+        refreshOpenDetailModal(tournament);
     } catch (err) {
         alert(err.message);
     }
@@ -1636,8 +1844,9 @@ async function closeTournament(id) {
     const ok = await showConfirmModal("Close registration?", "Close registration for this tournament?");
     if (!ok) return;
     try {
-        await apiFetch(`/api/tournaments/${id}/close`, { method: "POST" });
+        const { tournament } = await apiFetch(`/api/tournaments/${id}/close`, { method: "POST" });
         await loadTournaments();
+        refreshOpenDetailModal(tournament);
     } catch (err) {
         alert(err.message);
     }
@@ -1649,6 +1858,7 @@ async function deleteTournament(id) {
     try {
         await apiFetch(`/api/tournaments/${id}`, { method: "DELETE" });
         await loadTournaments();
+        closeTournamentDetail();
     } catch (err) {
         alert(err.message);
     }
@@ -1672,8 +1882,27 @@ async function showParticipants(tournament) {
             .map((p) => `<tr><td>${escapeHtml(p.username || p.user_id)}</td><td>${new Date(p.registered_at).toLocaleString()}</td></tr>`)
             .join("");
     }
-    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+
+// Keeps the tournament picker in sync with the current guild's list —
+// called whenever that list (re)loads, and once when the tab itself opens.
+function populateParticipantsSelect() {
+    const select = document.getElementById("participants-tournament-select");
+    const previous = select.value;
+    select.innerHTML =
+        `<option value="">${tr("participants.selectPlaceholder")}</option>` +
+        state.tournaments.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join("");
+    if (state.tournaments.some((t) => t.id === previous)) select.value = previous;
+}
+
+document.getElementById("participants-tournament-select").addEventListener("change", (e) => {
+    const tournament = state.tournaments.find((t) => t.id === e.target.value);
+    if (tournament) {
+        showParticipants(tournament);
+    } else {
+        document.getElementById("participants-card").classList.add("hidden");
+    }
+});
 
 // =========================================================================
 // Custom date/time picker — a small calendar + 12-hour time picker that
@@ -1897,7 +2126,7 @@ function editTournament(t) {
     document.getElementById("f-max").value = t.max_participants || 32;
     document.getElementById("f-description").value = t.description || "";
     document.getElementById("f-external-url").value = t.external_url || "";
-    document.getElementById("f-color").value = t.color || "#8b5cf6";
+    setColorField(t.color || "#8b5cf6");
     document.getElementById("f-ping-role").value = t.ping_role_id || "";
     document.getElementById("f-start-ping-enabled").checked = Boolean(t.start_ping_enabled);
     document.getElementById("f-start-ping-role").value = t.start_ping_role_id || "";
@@ -1932,7 +2161,7 @@ function resetEditorForm() {
     document.getElementById("f-max").value = 32;
     document.getElementById("f-description").value = "";
     document.getElementById("f-external-url").value = "";
-    document.getElementById("f-color").value = "#8b5cf6";
+    setColorField("#8b5cf6");
     document.getElementById("f-ping-role").value = "";
     document.getElementById("f-start-ping-enabled").checked = false;
     document.getElementById("f-start-ping-role").value = "";

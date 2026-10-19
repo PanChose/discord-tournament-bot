@@ -64,6 +64,7 @@
             <button type="button" class="tab-btn active" data-tab="dashboard" data-i18n="tabs.dashboard">Dashboard</button>
             <button type="button" class="tab-btn" data-tab="editor" data-i18n="tabs.newTournament">＋ New tournament</button>
             <button type="button" class="tab-btn" data-tab="stats" data-i18n="tabs.statistics">Statistics</button>
+            <button type="button" class="tab-btn" data-tab="participants" data-i18n="tabs.participants">Participants</button>
             <button type="button" class="tab-btn" data-tab="settings" data-i18n="header.settings">Settings</button>
         </nav>
 
@@ -73,6 +74,17 @@
             <section class="card">
                 <h2 data-i18n="dashboard.tournaments">Tournaments</h2>
                 <div id="tournament-list"></div>
+            </section>
+        </section>
+
+        <!-- ============== PARTICIPANTS ============== -->
+        <section id="participants-tab" class="tab-panel hidden">
+            <section class="card">
+                <h2 data-i18n="tabs.participants">Participants</h2>
+                <label data-i18n="participants.selectTournament">Tournament</label>
+                <select id="participants-tournament-select">
+                    <option value="" data-i18n="participants.selectPlaceholder">— select a tournament —</option>
+                </select>
             </section>
 
             <section id="participants-card" class="card hidden">
@@ -285,7 +297,11 @@
                                 <div class="section-divider"></div>
 
                                 <label data-i18n="editor.field.color">Embed color</label>
-                                <input id="f-color" type="color" value="#8b5cf6" />
+                                <button type="button" id="f-color-swatch" class="color-swatch-btn">
+                                    <span class="color-swatch-preview" style="background:#8b5cf6"></span>
+                                    <span class="color-swatch-hex">#8B5CF6</span>
+                                </button>
+                                <input type="hidden" id="f-color" value="#8b5cf6" />
                             </div>
                         </div>
 
@@ -418,7 +434,20 @@
     </footer>
 </div>
 
-<input type="color" id="tile-color-input" />
+<div id="color-picker-popover" class="color-picker-popover hidden">
+    <div class="cp-sv" id="cp-sv">
+        <div class="cp-sv-white"></div>
+        <div class="cp-sv-black"></div>
+        <div class="cp-sv-thumb" id="cp-sv-thumb"></div>
+    </div>
+    <div class="cp-hue" id="cp-hue">
+        <div class="cp-hue-thumb" id="cp-hue-thumb"></div>
+    </div>
+    <div class="cp-bottom-row">
+        <div class="cp-swatch" id="cp-swatch"></div>
+        <input type="text" id="cp-hex" maxlength="7" spellcheck="false" />
+    </div>
+</div>
 
 <div id="whats-new-modal" class="modal-overlay hidden">
     <div class="modal-card">

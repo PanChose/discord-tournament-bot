@@ -710,22 +710,92 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .tournament-tile:hover .tile-color-btn,
 .tile-color-btn:focus { opacity: 1; }
 
-/* Kept technically visible (not display:none) so the browser's native color
-   picker still opens on .click(), but shrunk to invisible so it never shows
-   as its own little swatch — JS moves it under the cursor on each click
-   (top/left), so the native picker opens right there. */
-#tile-color-input {
+/* --- Custom color picker popover (dashboard tile swatch + editor embed color) --- */
+.color-picker-popover {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: 0;
-    border: none;
+    z-index: 70;
+    width: 220px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.color-picker-popover.hidden { display: none; }
+.color-picker-popover.is-open { opacity: 1; transform: scale(1); }
+
+.cp-sv {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: 6px;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.cp-sv-white, .cp-sv-black { position: absolute; inset: 0; border-radius: 6px; }
+.cp-sv-white { background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0)); }
+.cp-sv-black { background: linear-gradient(to top, #000, rgba(0, 0, 0, 0)); }
+
+.cp-sv-thumb {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    transform: translate(-50%, -50%);
     pointer-events: none;
 }
+
+.cp-hue {
+    position: relative;
+    width: 100%;
+    height: 14px;
+    margin-top: 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    touch-action: none;
+    background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+}
+
+.cp-hue-thumb {
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.cp-bottom-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+
+.cp-swatch { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+
+#cp-hex { width: auto; flex: 1; margin: 0; padding: 6px 8px; font-size: 13px; font-family: monospace; text-transform: uppercase; }
+
+/* --- Editor's "Embed color" trigger button (opens the popover above) --- */
+.color-swatch-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+.color-swatch-btn:hover { background: var(--hover-bg); }
+
+.color-swatch-preview { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+
+.color-swatch-hex { font-family: monospace; font-size: 13px; color: var(--text); text-transform: uppercase; }
 
 .tile-icon {
     width: 72px;
@@ -1281,6 +1351,11 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     opacity: 0;
     transition: opacity 0.18s ease;
 }
+
+/* Close/Delete/etc. now leave the tournament detail modal open underneath
+   them so it can refresh in place — this needs to render on top of that
+   (and any other) modal regardless of DOM order. */
+#generic-confirm-modal { z-index: 60; }
 
 .modal-overlay.is-open { opacity: 1; }
 
