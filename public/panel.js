@@ -1311,6 +1311,8 @@ function renderStats(stats) {
         statCard(stats.closedCount, "Closed"),
         statCard(stats.averageTeams, "Avg. teams per tournament"),
         statCard(stats.averageMatcherinoTeams, "Avg. teams (Matcherino-linked)"),
+        statCard(stats.totalDiscordJoins, "Total Discord joins"),
+        statCard(stats.averageDiscordJoins, "Avg. Discord joins per tournament"),
         statCard(formatPrizePool(stats.totalPrizePool), "Total prize pool"),
         statCard(stats.topGame || "—", "Most played game"),
     ].join("");
