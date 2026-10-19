@@ -1833,6 +1833,8 @@ async function syncMatcherino(id, btn) {
 }
 
 async function publishTournament(id) {
+    const ok = await showConfirmModal("Publish this tournament?", "This posts the announcement to Discord and opens registration. Continue?");
+    if (!ok) return;
     try {
         const { tournament } = await apiFetch(`/api/tournaments/${id}/publish`, { method: "POST" });
         await loadTournaments();
