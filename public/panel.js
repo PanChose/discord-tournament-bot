@@ -1025,7 +1025,26 @@ async function loadInviteLink() {
 // =========================================================================
 
 const WHATS_NEW = {
-    categories: [],
+    categories: [
+        {
+            label: "✨ New Features",
+            items: [
+                "New Participants tab — pick any tournament to see who registered via Discord",
+                "Statistics: total and average Discord joins per tournament",
+            ],
+        },
+        {
+            label: "🎨 Design",
+            items: ["Custom color picker that matches the app's dark theme, instead of the browser's own"],
+        },
+        {
+            label: "🐛 Bug Fixes",
+            items: [
+                "Close/Delete/Publish/Sync/Republish no longer make the tournament popup disappear — it stays open and updates in place",
+                "Publish (from a tournament's popup) now asks for confirmation too",
+            ],
+        },
+    ],
 };
 
 let whatsNewPendingVersion = null; // the build version this open popup is for, saved on dismiss
