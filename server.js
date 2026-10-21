@@ -20,6 +20,7 @@ const {
 } = require("./lib/discordClient");
 const tournamentsLib = require("./lib/tournaments");
 const matcherinoSync = require("./lib/matcherinoSync");
+const matcherino = require("./lib/matcherino");
 const oauth = require("./lib/oauth");
 const { generateDescription } = require("./lib/ai");
 
@@ -325,6 +326,48 @@ app.get("/api/tournaments/:id/participants.csv", requireAuth, async (req, res) =
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename="${tournament.name.replace(/[^a-z0-9]/gi, "_")}_participants.csv"`);
     res.send(csv);
+});
+
+// Live "last match" scoreboard (Winners tab + dashboard card): resolves the
+// bracket's grand-final match id once per tournament and caches it for an
+// hour (the bracket structure doesn't change once generated), then caches
+// the match-stats response itself for ~25s so the panel's ~30s poll — from
+// however many organizers have the tab open — never hits Matcherino more
+// than once every ~25s per tournament.
+const lastMatchCache = new Map();
+const FINAL_MATCH_ID_TTL_MS = 60 * 60 * 1000;
+const MATCH_STATS_TTL_MS = 25 * 1000;
+
+app.get("/api/tournaments/:id/last-match", requireAuth, async (req, res) => {
+    const tournament = await loadOwnedTournament(req, res);
+    if (!tournament) return;
+    if (!tournament.matcherino_bounty_id) {
+        return res.status(400).json({ error: "This tournament isn't linked to a Matcherino bracket" });
+    }
+    try {
+        const now = Date.now();
+        const cached = lastMatchCache.get(tournament.id) || {};
+
+        if (!cached.finalMatchId || now - (cached.resolvedAt || 0) > FINAL_MATCH_ID_TTL_MS) {
+            const matches = await matcherino.fetchBracketMatches(tournament.matcherino_bounty_id);
+            const final = matcherino.findFinalMatch(matches);
+            if (!final) return res.status(404).json({ error: "No matches found yet for this bracket" });
+            cached.finalMatchId = final.id;
+            cached.resolvedAt = now;
+            cached.stats = null; // a newly-(re)resolved match id needs fresh stats
+        }
+
+        if (!cached.stats || now - (cached.statsAt || 0) > MATCH_STATS_TTL_MS) {
+            cached.stats = await matcherino.fetchMatchStats(tournament.matcherino_bounty_id, cached.finalMatchId);
+            cached.statsAt = now;
+        }
+
+        lastMatchCache.set(tournament.id, cached);
+        res.json({ match: cached.stats });
+    } catch (err) {
+        console.error(`[matcherino] Failed to fetch last-match for tournament ${tournament.id}:`, err.message);
+        res.status(502).json({ error: "Failed to fetch match data from Matcherino" });
+    }
 });
 
 // =========================================================================

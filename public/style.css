@@ -1491,6 +1491,84 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     margin-top: 10px;
 }
 
+/* --- Winners tab: live match scoreboard --- */
+.winners-status-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+.winners-status-badge.is-live { color: var(--ok); border-color: var(--ok); }
+
+.match-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.match-team-score { flex: 1; min-width: 140px; }
+.match-team-score.is-winner .match-team-players { color: var(--ok); font-weight: 600; }
+
+.match-team-players {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    color: var(--text);
+    text-align: center;
+}
+
+.match-score-big {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    padding: 0 8px;
+}
+
+.match-games-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.match-game-chip {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+.match-game-chip.side-a { background: rgba(87, 211, 140, 0.15); border-color: var(--ok); color: var(--ok); }
+.match-game-chip.side-b { background: rgba(88, 101, 242, 0.15); border-color: var(--accent); color: var(--accent); }
+
+/* --- Tournament detail modal: compact "last match" snapshot --- */
+.match-mini {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+.match-mini-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+.match-mini-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
+.match-mini-team { flex: 1; color: var(--text); }
+.match-mini-team.is-winner { color: var(--ok); font-weight: 600; }
+.match-mini-team:last-child { text-align: right; }
+.match-mini-score { font-weight: 700; white-space: nowrap; }
+
 /* --- Discord-markup rendering in the live preview --- */
 .dp-emoji { width: 18px; height: 18px; vertical-align: -4px; margin: 0 1px; }
 

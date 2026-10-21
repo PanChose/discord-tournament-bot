@@ -65,6 +65,7 @@
             <button type="button" class="tab-btn" data-tab="editor" data-i18n="tabs.newTournament">＋ New tournament</button>
             <button type="button" class="tab-btn" data-tab="stats" data-i18n="tabs.statistics">Statistics</button>
             <button type="button" class="tab-btn" data-tab="participants" data-i18n="tabs.participants">Participants</button>
+            <button type="button" class="tab-btn" data-tab="winners" data-i18n="tabs.winners">Winners</button>
             <button type="button" class="tab-btn" data-tab="settings" data-i18n="header.settings">Settings</button>
         </nav>
 
@@ -97,6 +98,28 @@
                     <tbody id="participants-body"></tbody>
                 </table>
                 <p id="participants-empty" class="hint hidden" data-i18n="dashboard.noRegistrations">No registrations yet.</p>
+            </section>
+        </section>
+
+        <!-- ============== WINNERS ============== -->
+        <section id="winners-tab" class="tab-panel hidden">
+            <section class="card">
+                <h2 data-i18n="tabs.winners">Winners</h2>
+                <label data-i18n="winners.selectTournament">Tournament</label>
+                <select id="winners-tournament-select">
+                    <option value="" data-i18n="winners.selectPlaceholder">— select a tournament —</option>
+                </select>
+                <p class="hint" data-i18n="winners.hint">Shows the bracket's final match, pulled live from Matcherino (refreshes every 30s).</p>
+            </section>
+
+            <section id="winners-card" class="card hidden">
+                <div class="card-head-row">
+                    <h2 id="winners-title">Final match</h2>
+                    <span id="winners-status" class="winners-status-badge"></span>
+                </div>
+                <div id="winners-scoreboard"></div>
+                <p id="winners-empty" class="hint hidden" data-i18n="winners.noFinalYet">The bracket's final match hasn't started yet.</p>
+                <p id="winners-error" class="hint hidden" data-i18n="winners.loadError">Couldn't load match data from Matcherino.</p>
             </section>
         </section>
 

@@ -53,6 +53,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Participants",
         "participants.selectTournament": "Tournament",
         "participants.selectPlaceholder": "— select a tournament —",
+        "tabs.winners": "Winners",
+        "winners.selectTournament": "Tournament",
+        "winners.selectPlaceholder": "— select a tournament —",
+        "winners.hint": "Shows the bracket's final match, pulled live from Matcherino (refreshes every 30s).",
+        "winners.finalMatch": "Final match",
+        "winners.noFinalYet": "The bracket's final match hasn't started yet.",
+        "winners.loadError": "Couldn't load match data from Matcherino.",
+        "winners.statusDone": "Finished",
+        "winners.statusLive": "Live",
         "stats.overview": "Overview",
         "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
         "stats.teamsChartTitle": "Teams registered per tournament",
@@ -135,6 +144,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Участники",
         "participants.selectTournament": "Турнир",
         "participants.selectPlaceholder": "— выберите турнир —",
+        "tabs.winners": "Победители",
+        "winners.selectTournament": "Турнир",
+        "winners.selectPlaceholder": "— выберите турнир —",
+        "winners.hint": "Показывает финальный матч сетки, данные берутся с Matcherino в реальном времени (обновление каждые 30 сек).",
+        "winners.finalMatch": "Финальный матч",
+        "winners.noFinalYet": "Финальный матч сетки еще не начался.",
+        "winners.loadError": "Не удалось загрузить данные матча с Matcherino.",
+        "winners.statusDone": "Завершён",
+        "winners.statusLive": "Идёт сейчас",
         "stats.overview": "Обзор",
         "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
         "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
@@ -217,6 +235,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Participantes",
         "participants.selectTournament": "Torneo",
         "participants.selectPlaceholder": "— selecciona un torneo —",
+        "tabs.winners": "Ganadores",
+        "winners.selectTournament": "Torneo",
+        "winners.selectPlaceholder": "— selecciona un torneo —",
+        "winners.hint": "Muestra la final del cuadro, obtenida en vivo desde Matcherino (se actualiza cada 30s).",
+        "winners.finalMatch": "Partido final",
+        "winners.noFinalYet": "La final del cuadro aún no ha comenzado.",
+        "winners.loadError": "No se pudieron cargar los datos del partido desde Matcherino.",
+        "winners.statusDone": "Finalizado",
+        "winners.statusLive": "En vivo",
         "stats.overview": "Resumen",
         "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
         "stats.teamsChartTitle": "Equipos registrados por torneo",
@@ -299,6 +326,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Participanți",
         "participants.selectTournament": "Turneu",
         "participants.selectPlaceholder": "— selectează un turneu —",
+        "tabs.winners": "Câștigători",
+        "winners.selectTournament": "Turneu",
+        "winners.selectPlaceholder": "— selectează un turneu —",
+        "winners.hint": "Afișează finala tabloului, preluată live de pe Matcherino (se actualizează la 30s).",
+        "winners.finalMatch": "Meciul final",
+        "winners.noFinalYet": "Finala tabloului nu a început încă.",
+        "winners.loadError": "Nu s-au putut încărca datele meciului de pe Matcherino.",
+        "winners.statusDone": "Finalizat",
+        "winners.statusLive": "În direct",
         "stats.overview": "Prezentare generală",
         "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
         "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
@@ -381,6 +417,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Partecipanti",
         "participants.selectTournament": "Torneo",
         "participants.selectPlaceholder": "— seleziona un torneo —",
+        "tabs.winners": "Vincitori",
+        "winners.selectTournament": "Torneo",
+        "winners.selectPlaceholder": "— seleziona un torneo —",
+        "winners.hint": "Mostra la finale del tabellone, in diretta da Matcherino (si aggiorna ogni 30s).",
+        "winners.finalMatch": "Finale",
+        "winners.noFinalYet": "La finale del tabellone non è ancora iniziata.",
+        "winners.loadError": "Impossibile caricare i dati della partita da Matcherino.",
+        "winners.statusDone": "Terminata",
+        "winners.statusLive": "In corso",
         "stats.overview": "Panoramica",
         "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
         "stats.teamsChartTitle": "Squadre registrate per torneo",
@@ -463,6 +508,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Deelnemers",
         "participants.selectTournament": "Toernooi",
         "participants.selectPlaceholder": "— selecteer een toernooi —",
+        "tabs.winners": "Winnaars",
+        "winners.selectTournament": "Toernooi",
+        "winners.selectPlaceholder": "— selecteer een toernooi —",
+        "winners.hint": "Toont de finale van het schema, live vanuit Matcherino (wordt elke 30s vernieuwd).",
+        "winners.finalMatch": "Finale",
+        "winners.noFinalYet": "De finale van het schema is nog niet begonnen.",
+        "winners.loadError": "Kan wedstrijdgegevens niet laden vanuit Matcherino.",
+        "winners.statusDone": "Afgelopen",
+        "winners.statusLive": "Live",
         "stats.overview": "Overzicht",
         "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
         "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
@@ -545,6 +599,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Participantes",
         "participants.selectTournament": "Torneio",
         "participants.selectPlaceholder": "— selecione um torneio —",
+        "tabs.winners": "Vencedores",
+        "winners.selectTournament": "Torneio",
+        "winners.selectPlaceholder": "— selecione um torneio —",
+        "winners.hint": "Mostra a final da chave, obtida em tempo real do Matcherino (atualiza a cada 30s).",
+        "winners.finalMatch": "Final",
+        "winners.noFinalYet": "A final da chave ainda não começou.",
+        "winners.loadError": "Não foi possível carregar os dados da partida do Matcherino.",
+        "winners.statusDone": "Finalizada",
+        "winners.statusLive": "Em andamento",
         "stats.overview": "Visão geral",
         "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
         "stats.teamsChartTitle": "Equipas registadas por torneio",
@@ -627,6 +690,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Συμμετέχοντες",
         "participants.selectTournament": "Τουρνουά",
         "participants.selectPlaceholder": "— επιλέξτε τουρνουά —",
+        "tabs.winners": "Νικητές",
+        "winners.selectTournament": "Τουρνουά",
+        "winners.selectPlaceholder": "— επιλέξτε τουρνουά —",
+        "winners.hint": "Εμφανίζει τον τελικό του πίνακα, ζωντανά από το Matcherino (ανανεώνεται κάθε 30s).",
+        "winners.finalMatch": "Τελικός αγώνας",
+        "winners.noFinalYet": "Ο τελικός του πίνακα δεν έχει ξεκινήσει ακόμα.",
+        "winners.loadError": "Δεν ήταν δυνατή η φόρτωση δεδομένων αγώνα από το Matcherino.",
+        "winners.statusDone": "Ολοκληρώθηκε",
+        "winners.statusLive": "Ζωντανά",
         "stats.overview": "Επισκόπηση",
         "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
         "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
@@ -709,6 +781,15 @@ const TRANSLATIONS = {
         "tabs.participants": "Participants",
         "participants.selectTournament": "Tournoi",
         "participants.selectPlaceholder": "— sélectionnez un tournoi —",
+        "tabs.winners": "Vainqueurs",
+        "winners.selectTournament": "Tournoi",
+        "winners.selectPlaceholder": "— sélectionnez un tournoi —",
+        "winners.hint": "Affiche la finale du tableau, en direct depuis Matcherino (actualisée toutes les 30s).",
+        "winners.finalMatch": "Match final",
+        "winners.noFinalYet": "La finale du tableau n'a pas encore commencé.",
+        "winners.loadError": "Impossible de charger les données du match depuis Matcherino.",
+        "winners.statusDone": "Terminé",
+        "winners.statusLive": "En direct",
         "stats.overview": "Vue d'ensemble",
         "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
         "stats.teamsChartTitle": "Équipes inscrites par tournoi",
@@ -1246,6 +1327,11 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
         }
         if (btn.dataset.tab === "stats") loadStats();
         if (btn.dataset.tab === "participants") populateParticipantsSelect();
+        if (btn.dataset.tab === "winners") {
+            populateWinnersSelect();
+        } else {
+            stopWinnersPolling();
+        }
     });
 });
 
@@ -1268,6 +1354,7 @@ async function loadTournaments() {
         state.tournaments = tournaments;
         renderTournamentList();
         populateParticipantsSelect();
+        populateWinnersSelect();
     } catch (err) {
         // transient — keep showing the last known list
     }
@@ -1498,10 +1585,42 @@ function openTournamentDetail(t) {
         <div class="tournament-name">${escapeHtml(t.name)}</div>
         <div class="tournament-meta">${escapeHtml(meta)}</div>
         ${matcherinoLine}
+        ${t.matcherino_bounty_id ? `<div id="detail-last-match" class="match-mini hidden"></div>` : ""}
         <div class="tournament-meta">${slots}/${t.max_participants} teams</div>
         <span class="badge badge-${dashboardStatusKey(t)}">${DASHBOARD_STATUS_LABELS[dashboardStatusKey(t)]}</span>
         ${buildTournamentActions(t)}`;
     openModal(document.getElementById("tournament-detail-modal"));
+    if (t.matcherino_bounty_id) loadDetailLastMatch(t.id);
+}
+
+// Small, best-effort "last match" snapshot shown in the tournament detail
+// modal — a compact version of the Winners tab's live scoreboard. Fetched
+// once per modal open/refresh rather than polled: the full live, auto-
+// refreshing view lives in the Winners tab, this is just a glance. Stays
+// hidden (not an error message) when there's nothing to show yet, since it's
+// a bonus widget, not core to the modal.
+async function loadDetailLastMatch(tournamentId) {
+    const el = document.getElementById("detail-last-match");
+    if (!el) return;
+    try {
+        const { match } = await apiFetch(`/api/tournaments/${tournamentId}/last-match`);
+        if (!document.getElementById("detail-last-match") || !match.games.length) return;
+        const lastGame = match.games[match.games.length - 1];
+        const teamA = (lastGame.teams[0]?.players || []).join(", ");
+        const teamB = (lastGame.teams[1]?.players || []).join(", ");
+        const aWins = match.scoreA > match.scoreB;
+        const bWins = match.scoreB > match.scoreA;
+        el.innerHTML = `
+            <div class="match-mini-label">${tr("winners.finalMatch")}</div>
+            <div class="match-mini-row">
+                <span class="match-mini-team${aWins ? " is-winner" : ""}">${escapeHtml(teamA)}</span>
+                <span class="match-mini-score">${match.scoreA} : ${match.scoreB}</span>
+                <span class="match-mini-team${bWins ? " is-winner" : ""}">${escapeHtml(teamB)}</span>
+            </div>`;
+        el.classList.remove("hidden");
+    } catch (err) {
+        // best-effort — leave it hidden
+    }
 }
 
 function closeTournamentDetail() {
@@ -1924,6 +2043,107 @@ document.getElementById("participants-tournament-select").addEventListener("chan
         showParticipants(tournament);
     } else {
         document.getElementById("participants-card").classList.add("hidden");
+    }
+});
+
+// =========================================================================
+// Winners tab — live scoreboard for a tournament's final Matcherino match
+// =========================================================================
+
+let winnersPollTimer = null;
+
+function stopWinnersPolling() {
+    if (winnersPollTimer) clearInterval(winnersPollTimer);
+    winnersPollTimer = null;
+}
+
+// Only tournaments linked to a Matcherino bracket have a final match to show.
+function populateWinnersSelect() {
+    const select = document.getElementById("winners-tournament-select");
+    const previous = select.value;
+    const eligible = state.tournaments.filter((t) => t.isMatcherino);
+    select.innerHTML =
+        `<option value="">${tr("winners.selectPlaceholder")}</option>` +
+        eligible.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join("");
+    if (eligible.some((t) => t.id === previous)) {
+        select.value = previous;
+    } else {
+        stopWinnersPolling();
+        document.getElementById("winners-card").classList.add("hidden");
+    }
+}
+
+async function showLastMatch(tournament) {
+    document.getElementById("winners-card").classList.remove("hidden");
+    document.getElementById("winners-title").textContent = `${tr("winners.finalMatch")} — ${tournament.name}`;
+    stopWinnersPolling();
+    await loadLastMatch(tournament.id);
+    // ~30s cadence, as requested — the server caches the Matcherino call
+    // itself for ~25s, so this never hammers their API even with multiple
+    // organizers watching the same tournament at once.
+    winnersPollTimer = setInterval(() => loadLastMatch(tournament.id), 30_000);
+}
+
+async function loadLastMatch(tournamentId) {
+    const board = document.getElementById("winners-scoreboard");
+    const empty = document.getElementById("winners-empty");
+    const error = document.getElementById("winners-error");
+    const status = document.getElementById("winners-status");
+    try {
+        const { match } = await apiFetch(`/api/tournaments/${tournamentId}/last-match`);
+        error.classList.add("hidden");
+
+        if (!match.games.length) {
+            board.innerHTML = "";
+            status.textContent = "";
+            empty.classList.remove("hidden");
+            return;
+        }
+        empty.classList.add("hidden");
+        status.textContent = match.status === "done" ? tr("winners.statusDone") : tr("winners.statusLive");
+        status.classList.toggle("is-live", match.status !== "done");
+
+        const lastGame = match.games[match.games.length - 1];
+        const teamA = lastGame.teams[0]?.players || [];
+        const teamB = lastGame.teams[1]?.players || [];
+        const aWins = match.scoreA > match.scoreB;
+        const bWins = match.scoreB > match.scoreA;
+
+        const chips = match.games
+            .map((g) => {
+                const side = g.teams.findIndex((t) => t.isWinner);
+                const cls = side === 0 ? "side-a" : side === 1 ? "side-b" : "";
+                return `<span class="match-game-chip ${cls}" title="${g.scoreA}-${g.scoreB}">${g.gameNumber}</span>`;
+            })
+            .join("");
+
+        board.innerHTML = `
+            <div class="match-score-row">
+                <div class="match-team-score${aWins ? " is-winner" : ""}">
+                    <div class="match-team-players">${teamA.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
+                </div>
+                <div class="match-score-big">${match.scoreA} : ${match.scoreB}</div>
+                <div class="match-team-score${bWins ? " is-winner" : ""}">
+                    <div class="match-team-players">${teamB.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
+                </div>
+            </div>
+            <div class="match-games-row">${chips}</div>
+        `;
+    } catch (err) {
+        board.innerHTML = "";
+        empty.classList.add("hidden");
+        status.textContent = "";
+        error.classList.remove("hidden");
+    }
+}
+
+document.getElementById("winners-tournament-select").addEventListener("change", (e) => {
+    const tournament = state.tournaments.find((t) => t.id === e.target.value);
+    if (tournament) {
+        showLastMatch(tournament);
+    } else {
+        stopWinnersPolling();
+        document.getElementById("winners-card").classList.add("hidden");
     }
 });
 
