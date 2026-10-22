@@ -2061,7 +2061,7 @@ function stopWinnersPolling() {
 function populateWinnersSelect() {
     const select = document.getElementById("winners-tournament-select");
     const previous = select.value;
-    const eligible = state.tournaments.filter((t) => t.isMatcherino);
+    const eligible = state.tournaments.filter((t) => t.matcherino_bounty_id);
     select.innerHTML =
         `<option value="">${tr("winners.selectPlaceholder")}</option>` +
         eligible.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join("");
