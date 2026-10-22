@@ -1513,13 +1513,18 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 }
 
 .match-team-score { flex: 1; min-width: 140px; }
+/* Each side keeps its own color (left = blue, right = red) regardless of
+   who's currently ahead — winning only adds weight, it doesn't recolor. */
+.match-team-score.side-left .match-team-name,
+.match-team-score.side-left .match-team-players { color: var(--accent); }
+.match-team-score.side-right .match-team-name,
+.match-team-score.side-right .match-team-players { color: var(--error); }
 .match-team-score.is-winner .match-team-players,
-.match-team-score.is-winner .match-team-name { color: var(--ok); font-weight: 600; }
+.match-team-score.is-winner .match-team-name { font-weight: 700; }
 
 .match-team-name {
     font-size: 15px;
     font-weight: 700;
-    color: var(--text);
     text-align: center;
     margin-bottom: 6px;
 }
@@ -1529,7 +1534,6 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     flex-direction: column;
     gap: 4px;
     font-size: 14px;
-    color: var(--text);
     text-align: center;
 }
 
@@ -1566,8 +1570,8 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     border: 2px solid var(--border);
     background: transparent;
 }
-.set-game-dot.side-left { background: var(--error); border-color: var(--error); }
-.set-game-dot.side-right { background: var(--accent); border-color: var(--accent); }
+.set-game-dot.side-left { background: var(--accent); border-color: var(--accent); }
+.set-game-dot.side-right { background: var(--error); border-color: var(--error); }
 
 /* --- Tournament detail modal: compact "last match" snapshot --- */
 .match-mini {
@@ -1581,7 +1585,9 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .match-mini-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
 .match-mini-row.match-mini-names { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
 .match-mini-team { flex: 1; color: var(--text); }
-.match-mini-team.is-winner { color: var(--ok); font-weight: 600; }
+.match-mini-team.side-left { color: var(--accent); }
+.match-mini-team.side-right { color: var(--error); }
+.match-mini-team.is-winner { font-weight: 700; }
 .match-mini-team:last-child { text-align: right; }
 .match-mini-score { font-weight: 700; white-space: nowrap; }
 

@@ -1622,17 +1622,17 @@ async function loadDetailLastMatch(tournamentId) {
         const namesRow =
             match.teamAName || match.teamBName
                 ? `<div class="match-mini-row match-mini-names">
-                       <span class="match-mini-team${aWins ? " is-winner" : ""}">${escapeHtml(match.teamAName || "")}</span>
-                       <span class="match-mini-team${bWins ? " is-winner" : ""}">${escapeHtml(match.teamBName || "")}</span>
+                       <span class="match-mini-team side-left${aWins ? " is-winner" : ""}">${escapeHtml(match.teamAName || "")}</span>
+                       <span class="match-mini-team side-right${bWins ? " is-winner" : ""}">${escapeHtml(match.teamBName || "")}</span>
                    </div>`
                 : "";
         el.innerHTML = `
             <div class="match-mini-label">${tr("winners.finalMatch")}</div>
             ${namesRow}
             <div class="match-mini-row">
-                <span class="match-mini-team${aWins ? " is-winner" : ""}">${escapeHtml(teamA)}</span>
+                <span class="match-mini-team side-left${aWins ? " is-winner" : ""}">${escapeHtml(teamA)}</span>
                 <span class="match-mini-score">${match.scoreA} : ${match.scoreB}</span>
-                <span class="match-mini-team${bWins ? " is-winner" : ""}">${escapeHtml(teamB)}</span>
+                <span class="match-mini-team side-right${bWins ? " is-winner" : ""}">${escapeHtml(teamB)}</span>
             </div>`;
         el.classList.remove("hidden");
     } catch (err) {
@@ -2144,12 +2144,12 @@ async function loadLastMatch(tournamentId) {
 
         board.innerHTML = `
             <div class="match-score-row">
-                <div class="match-team-score${aWins ? " is-winner" : ""}">
+                <div class="match-team-score side-left${aWins ? " is-winner" : ""}">
                     ${match.teamAName ? `<div class="match-team-name">${escapeHtml(match.teamAName)}</div>` : ""}
                     <div class="match-team-players">${teamA.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
                 </div>
                 <div class="match-score-big">${match.scoreA} : ${match.scoreB}</div>
-                <div class="match-team-score${bWins ? " is-winner" : ""}">
+                <div class="match-team-score side-right${bWins ? " is-winner" : ""}">
                     ${match.teamBName ? `<div class="match-team-name">${escapeHtml(match.teamBName)}</div>` : ""}
                     <div class="match-team-players">${teamB.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
                 </div>
