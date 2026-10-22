@@ -349,16 +349,17 @@ app.get("/api/tournaments/:id/last-match", requireAuth, async (req, res) => {
         const cached = lastMatchCache.get(tournament.id) || {};
 
         if (!cached.finalMatchId || now - (cached.resolvedAt || 0) > FINAL_MATCH_ID_TTL_MS) {
-            const matches = await matcherino.fetchBracketMatches(tournament.matcherino_bounty_id);
+            const { matches, entrants } = await matcherino.fetchBracketMatches(tournament.matcherino_bounty_id);
             const final = matcherino.findFinalMatch(matches);
             if (!final) return res.status(404).json({ error: "No matches found yet for this bracket" });
             cached.finalMatchId = final.id;
+            cached.teamNamesById = Object.fromEntries(entrants.filter((e) => e && e.id != null && e.name).map((e) => [e.id, e.name]));
             cached.resolvedAt = now;
             cached.stats = null; // a newly-(re)resolved match id needs fresh stats
         }
 
         if (!cached.stats || now - (cached.statsAt || 0) > MATCH_STATS_TTL_MS) {
-            cached.stats = await matcherino.fetchMatchStats(tournament.matcherino_bounty_id, cached.finalMatchId);
+            cached.stats = await matcherino.fetchMatchStats(tournament.matcherino_bounty_id, cached.finalMatchId, cached.teamNamesById);
             cached.statsAt = now;
         }
 

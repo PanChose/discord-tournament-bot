@@ -62,6 +62,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Couldn't load match data from Matcherino.",
         "winners.statusDone": "Finished",
         "winners.statusLive": "Live",
+        "winners.currentSet": "Current set",
         "stats.overview": "Overview",
         "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
         "stats.teamsChartTitle": "Teams registered per tournament",
@@ -153,6 +154,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Не удалось загрузить данные матча с Matcherino.",
         "winners.statusDone": "Завершён",
         "winners.statusLive": "Идёт сейчас",
+        "winners.currentSet": "Текущий сет",
         "stats.overview": "Обзор",
         "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
         "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
@@ -244,6 +246,7 @@ const TRANSLATIONS = {
         "winners.loadError": "No se pudieron cargar los datos del partido desde Matcherino.",
         "winners.statusDone": "Finalizado",
         "winners.statusLive": "En vivo",
+        "winners.currentSet": "Set actual",
         "stats.overview": "Resumen",
         "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
         "stats.teamsChartTitle": "Equipos registrados por torneo",
@@ -335,6 +338,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Nu s-au putut încărca datele meciului de pe Matcherino.",
         "winners.statusDone": "Finalizat",
         "winners.statusLive": "În direct",
+        "winners.currentSet": "Setul curent",
         "stats.overview": "Prezentare generală",
         "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
         "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
@@ -426,6 +430,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Impossibile caricare i dati della partita da Matcherino.",
         "winners.statusDone": "Terminata",
         "winners.statusLive": "In corso",
+        "winners.currentSet": "Set attuale",
         "stats.overview": "Panoramica",
         "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
         "stats.teamsChartTitle": "Squadre registrate per torneo",
@@ -517,6 +522,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Kan wedstrijdgegevens niet laden vanuit Matcherino.",
         "winners.statusDone": "Afgelopen",
         "winners.statusLive": "Live",
+        "winners.currentSet": "Huidige set",
         "stats.overview": "Overzicht",
         "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
         "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
@@ -608,6 +614,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Não foi possível carregar os dados da partida do Matcherino.",
         "winners.statusDone": "Finalizada",
         "winners.statusLive": "Em andamento",
+        "winners.currentSet": "Set atual",
         "stats.overview": "Visão geral",
         "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
         "stats.teamsChartTitle": "Equipas registadas por torneio",
@@ -699,6 +706,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Δεν ήταν δυνατή η φόρτωση δεδομένων αγώνα από το Matcherino.",
         "winners.statusDone": "Ολοκληρώθηκε",
         "winners.statusLive": "Ζωντανά",
+        "winners.currentSet": "Τρέχον σετ",
         "stats.overview": "Επισκόπηση",
         "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
         "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
@@ -790,6 +798,7 @@ const TRANSLATIONS = {
         "winners.loadError": "Impossible de charger les données du match depuis Matcherino.",
         "winners.statusDone": "Terminé",
         "winners.statusLive": "En direct",
+        "winners.currentSet": "Set en cours",
         "stats.overview": "Vue d'ensemble",
         "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
         "stats.teamsChartTitle": "Équipes inscrites par tournoi",
@@ -1610,8 +1619,16 @@ async function loadDetailLastMatch(tournamentId) {
         const teamB = (lastGame.teams[1]?.players || []).join(", ");
         const aWins = match.scoreA > match.scoreB;
         const bWins = match.scoreB > match.scoreA;
+        const namesRow =
+            match.teamAName || match.teamBName
+                ? `<div class="match-mini-row match-mini-names">
+                       <span class="match-mini-team${aWins ? " is-winner" : ""}">${escapeHtml(match.teamAName || "")}</span>
+                       <span class="match-mini-team${bWins ? " is-winner" : ""}">${escapeHtml(match.teamBName || "")}</span>
+                   </div>`
+                : "";
         el.innerHTML = `
             <div class="match-mini-label">${tr("winners.finalMatch")}</div>
+            ${namesRow}
             <div class="match-mini-row">
                 <span class="match-mini-team${aWins ? " is-winner" : ""}">${escapeHtml(teamA)}</span>
                 <span class="match-mini-score">${match.scoreA} : ${match.scoreB}</span>
@@ -2109,25 +2126,38 @@ async function loadLastMatch(tournamentId) {
         const aWins = match.scoreA > match.scoreB;
         const bWins = match.scoreB > match.scoreA;
 
-        const chips = match.games
-            .map((g) => {
-                const side = g.teams.findIndex((t) => t.isWinner);
-                const cls = side === 0 ? "side-a" : side === 1 ? "side-b" : "";
-                return `<span class="match-game-chip ${cls}" title="${g.scoreA}-${g.scoreB}">${g.gameNumber}</span>`;
+        // Each set is itself a best-of-3 of games. This tracks only the
+        // CURRENT set's games (not the whole match's history) — three dots,
+        // filled left/right by whichever side won that game — and resets on
+        // its own as soon as a new set starts, since it's recomputed from
+        // match.games on every poll rather than stored anywhere.
+        const currentSetGames = match.games.filter((g) => g.setNumber === lastGame.setNumber);
+        const dots = [1, 2, 3]
+            .map((n) => {
+                const game = currentSetGames.find((g) => g.gameNumber === n);
+                if (!game) return `<span class="set-game-dot"></span>`;
+                const side = game.teams.findIndex((t) => t.isWinner);
+                const cls = side === 0 ? "side-left" : side === 1 ? "side-right" : "";
+                return `<span class="set-game-dot ${cls}"></span>`;
             })
             .join("");
 
         board.innerHTML = `
             <div class="match-score-row">
                 <div class="match-team-score${aWins ? " is-winner" : ""}">
+                    ${match.teamAName ? `<div class="match-team-name">${escapeHtml(match.teamAName)}</div>` : ""}
                     <div class="match-team-players">${teamA.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
                 </div>
                 <div class="match-score-big">${match.scoreA} : ${match.scoreB}</div>
                 <div class="match-team-score${bWins ? " is-winner" : ""}">
+                    ${match.teamBName ? `<div class="match-team-name">${escapeHtml(match.teamBName)}</div>` : ""}
                     <div class="match-team-players">${teamB.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
                 </div>
             </div>
-            <div class="match-games-row">${chips}</div>
+            <div class="current-set-block">
+                <div class="current-set-label">${tr("winners.currentSet")}</div>
+                <div class="match-games-row">${dots}</div>
+            </div>
         `;
     } catch (err) {
         board.innerHTML = "";
