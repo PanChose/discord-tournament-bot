@@ -1,24 +1,31 @@
 :root {
-    --bg: #1e1f27;
-    --card: #2a2c38;
-    --accent: #5865f2;
-    --accent-hover: #4752c4;
-    --text: #e7e8ee;
-    --muted: #9a9cad;
-    --error: #f26b6b;
+    /* Dark indigo/purple family, close together in lightness (header <
+       page < card < the tiles/rows nested inside a card) so moving between
+       them reads as a soft gradient instead of a hard edge. */
+    --header-bg: #1c1e38;
+    --bg: #23263f;
+    --card: #2d3052;
+    --card-soft: #383c63;
+    --accent: #6366f1;
+    --accent-hover: #4f52d6;
+    --text: #e9e9f5;
+    --muted: #a3a5c7;
+    --error: #f2697b;
     --ok: #57d38c;
     --warn: #e8b74b;
-    --border: #3d3f4d;
-    --dashed-border: #4a4c5c;
-    --hover-bg: #262835;
+    --border: #44487a;
+    --dashed-border: #51558c;
+    --hover-bg: #363a60;
 }
 
 /* Light theme — only the site's own chrome (cards, inputs, buttons) switches;
    the Discord message/embed preview intentionally stays fixed-dark everywhere,
    since it's simulating Discord's own dark UI, not reflecting this site's theme. */
 :root[data-theme="light"] {
+    --header-bg: #ffffff;
     --bg: #f2f3f7;
     --card: #ffffff;
+    --card-soft: #eef0f8;
     --text: #1e1f27;
     --muted: #6b6d7a;
     --error: #d9363e;
@@ -211,10 +218,39 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 16px 24px;
-    background: var(--card);
+    background: var(--header-bg);
     flex-wrap: wrap;
     gap: 10px;
 }
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: var(--card-soft);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* Native <select>, restyled to read as a solid pill button rather than a
+   bordered form field — keeps the browser's own dropdown behavior. */
+#guild-select {
+    width: auto;
+    background: var(--card-soft);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+#guild-select:hover { background: var(--hover-bg); }
 
 .header-left, .header-right {
     display: flex;
@@ -298,12 +334,16 @@ main {
 .sidebar {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     width: 200px;
     flex-shrink: 0;
     position: fixed;
     top: calc(var(--header-h, 72px) + 24px);
     left: 16px;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 /* Sidebar is fixed (out of flow), so content-area gets the full width here —
@@ -341,17 +381,19 @@ main {
     margin: 0;
     padding: 14px 16px;
     text-align: left;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
+    background: var(--card-soft);
+    border: none;
+    border-radius: 12px;
+    color: var(--text);
     font-size: 15px;
     font-weight: 600;
 }
 
+.tab-btn:hover { background: var(--hover-bg); }
+
 .tab-btn.active {
     background: var(--accent);
     color: #fff;
-    border-color: var(--accent);
 }
 
 .tab-panel.hidden { display: none; }
@@ -656,12 +698,19 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .tile-group:last-child { margin-bottom: 0; }
 
 .tile-group-title {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--muted);
-    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 14px;
+}
+
+.tile-group-title .tile-group-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
 }
 
 .tile-grid {
@@ -669,6 +718,36 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
     flex-wrap: wrap;
     gap: 16px;
 }
+
+/* --- Dashboard's Small/Big tile-size toggle --- */
+.tile-size-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--bg);
+    border-radius: 999px;
+    padding: 3px;
+    flex-shrink: 0;
+}
+
+.tile-size-btn {
+    width: auto;
+    margin: 0;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    color: var(--muted);
+}
+
+.tile-size-btn:hover { color: var(--text); }
+.tile-size-btn.active { background: var(--accent); color: #fff; }
+
+/* "Big" tile density — same tiles, just scaled up. */
+#tournament-list.tiles-big .tournament-tile { width: 140px; }
+#tournament-list.tiles-big .tile-icon { width: 120px; height: 120px; border-radius: 22px; font-size: 32px; }
+#tournament-list.tiles-big .tile-name { font-size: 14px; }
 
 .tournament-tile {
     width: 96px;

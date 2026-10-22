@@ -12,6 +12,13 @@ const state = {
     pollTimer: null,
     emojis: null, // cached custom emojis for the current guild, fetched lazily on first use
     stats: null,
+    tileSize: (() => {
+        try {
+            return localStorage.getItem("dashboard-tile-size") === "big" ? "big" : "small";
+        } catch (err) {
+            return "small";
+        }
+    })(),
 };
 
 const FORMAT_LABELS = {
@@ -80,6 +87,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Dashboard",
         "tabs.newTournament": "＋ New tournament",
         "dashboard.tournaments": "Tournaments",
+        "dashboard.sizeSmall": "▦ Small",
+        "dashboard.sizeBig": "▦ Big",
         "dashboard.exportCsv": "Export CSV",
         "dashboard.user": "User",
         "dashboard.registered": "Registered",
@@ -172,6 +181,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Дашборд",
         "tabs.newTournament": "＋ Новый турнир",
         "dashboard.tournaments": "Турниры",
+        "dashboard.sizeSmall": "▦ Мелко",
+        "dashboard.sizeBig": "▦ Крупно",
         "dashboard.exportCsv": "Экспорт CSV",
         "dashboard.user": "Пользователь",
         "dashboard.registered": "Зарегистрирован",
@@ -264,6 +275,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Panel",
         "tabs.newTournament": "＋ Nuevo torneo",
         "dashboard.tournaments": "Torneos",
+        "dashboard.sizeSmall": "▦ Pequeño",
+        "dashboard.sizeBig": "▦ Grande",
         "dashboard.exportCsv": "Exportar CSV",
         "dashboard.user": "Usuario",
         "dashboard.registered": "Registrado",
@@ -356,6 +369,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Panou",
         "tabs.newTournament": "＋ Turneu nou",
         "dashboard.tournaments": "Turnee",
+        "dashboard.sizeSmall": "▦ Mic",
+        "dashboard.sizeBig": "▦ Mare",
         "dashboard.exportCsv": "Exportă CSV",
         "dashboard.user": "Utilizator",
         "dashboard.registered": "Înregistrat",
@@ -448,6 +463,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Dashboard",
         "tabs.newTournament": "＋ Nuovo torneo",
         "dashboard.tournaments": "Tornei",
+        "dashboard.sizeSmall": "▦ Piccolo",
+        "dashboard.sizeBig": "▦ Grande",
         "dashboard.exportCsv": "Esporta CSV",
         "dashboard.user": "Utente",
         "dashboard.registered": "Registrato",
@@ -540,6 +557,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Dashboard",
         "tabs.newTournament": "＋ Nieuw toernooi",
         "dashboard.tournaments": "Toernooien",
+        "dashboard.sizeSmall": "▦ Klein",
+        "dashboard.sizeBig": "▦ Groot",
         "dashboard.exportCsv": "CSV exporteren",
         "dashboard.user": "Gebruiker",
         "dashboard.registered": "Geregistreerd",
@@ -632,6 +651,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Painel",
         "tabs.newTournament": "＋ Novo torneio",
         "dashboard.tournaments": "Torneios",
+        "dashboard.sizeSmall": "▦ Pequeno",
+        "dashboard.sizeBig": "▦ Grande",
         "dashboard.exportCsv": "Exportar CSV",
         "dashboard.user": "Utilizador",
         "dashboard.registered": "Registado",
@@ -724,6 +745,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Πίνακας ελέγχου",
         "tabs.newTournament": "＋ Νέο τουρνουά",
         "dashboard.tournaments": "Τουρνουά",
+        "dashboard.sizeSmall": "▦ Μικρό",
+        "dashboard.sizeBig": "▦ Μεγάλο",
         "dashboard.exportCsv": "Εξαγωγή CSV",
         "dashboard.user": "Χρήστης",
         "dashboard.registered": "Εγγεγραμμένος",
@@ -816,6 +839,8 @@ const TRANSLATIONS = {
         "tabs.dashboard": "Tableau de bord",
         "tabs.newTournament": "＋ Nouveau tournoi",
         "dashboard.tournaments": "Tournois",
+        "dashboard.sizeSmall": "▦ Petit",
+        "dashboard.sizeBig": "▦ Grand",
         "dashboard.exportCsv": "Exporter en CSV",
         "dashboard.user": "Utilisateur",
         "dashboard.registered": "Inscrit",
@@ -1189,6 +1214,20 @@ document.getElementById("whats-new-modal").addEventListener("click", (e) => {
     if (e.target.id === "whats-new-modal") dismissWhatsNew();
 });
 
+// Real Discord avatar when one's set, otherwise the same lettered-circle
+// fallback the tournament tiles use.
+function renderUserAvatar(user) {
+    const el = document.getElementById("user-avatar");
+    if (user.avatar) {
+        const ext = user.avatar.startsWith("a_") ? "gif" : "png";
+        el.style.backgroundImage = `url(https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=64)`;
+        el.textContent = "";
+    } else {
+        el.style.backgroundImage = "";
+        el.textContent = (user.username || "?").trim().charAt(0).toUpperCase() || "?";
+    }
+}
+
 async function init() {
     loadInviteLink();
     try {
@@ -1196,6 +1235,7 @@ async function init() {
         state.user = me.user;
         state.guilds = me.guilds;
         document.getElementById("user-tag").textContent = me.user.username;
+        renderUserAvatar(me.user);
         showApp();
         populateGuildSelect();
         if (state.guilds.length) await switchGuild(state.guilds[0].id);
@@ -1488,6 +1528,7 @@ const DASHBOARD_GROUP_ORDER = ["draft", "published", "in_progress", "finalized",
 // renders once you click into a tile — see openTournamentDetail().
 function renderTournamentList() {
     const container = document.getElementById("tournament-list");
+    container.classList.toggle("tiles-big", state.tileSize === "big");
     if (!state.tournaments.length) {
         container.innerHTML = `<p class="hint">No tournaments yet — create one in the "New tournament" tab.</p>`;
         return;
@@ -1504,12 +1545,31 @@ function renderTournamentList() {
             const tiles = groups[key].map((t) => tournamentTileHtml(t)).join("");
             return `
                 <div class="tile-group">
-                    <h3 class="tile-group-title">${DASHBOARD_STATUS_LABELS[key]}</h3>
+                    <h3 class="tile-group-title"><span>${DASHBOARD_STATUS_LABELS[key]}</span><span class="tile-group-line"></span></h3>
                     <div class="tile-grid">${tiles}</div>
                 </div>`;
         })
         .join("");
 }
+
+// "Small"/"Big" tile-density toggle above the dashboard grid — purely a
+// display preference (persisted locally), it re-sizes the existing tiles via
+// CSS rather than re-fetching or changing what's shown.
+document.querySelectorAll(".tile-size-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const size = btn.dataset.size;
+        if (size === state.tileSize) return;
+        state.tileSize = size;
+        try {
+            localStorage.setItem("dashboard-tile-size", size);
+        } catch (err) {
+            // best-effort — falls back to "small" next visit
+        }
+        document.querySelectorAll(".tile-size-btn").forEach((b) => b.classList.toggle("active", b.dataset.size === size));
+        document.getElementById("tournament-list").classList.toggle("tiles-big", size === "big");
+    });
+});
+document.querySelectorAll(".tile-size-btn").forEach((b) => b.classList.toggle("active", b.dataset.size === state.tileSize));
 
 function tournamentTileHtml(t) {
     const image = t.thumbnail || t.banner;
