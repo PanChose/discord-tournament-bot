@@ -1586,15 +1586,16 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 .ms-header-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 14px;
     margin-top: 10px;
 }
 
 .ms-team-badge {
-    flex: 1;
-    min-width: 0;
-    padding: 14px 12px;
-    border-radius: 12px;
+    flex: 0 1 auto;
+    max-width: 220px;
+    padding: 10px 18px;
+    border-radius: 10px;
     color: #fff;
     font-weight: 700;
     font-size: 14px;
