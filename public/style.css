@@ -1582,62 +1582,72 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 }
 .winners-status-badge.is-live { color: var(--ok); border-color: var(--ok); }
 
-.match-score-row {
+/* Team-name badges + "FINALS" label, side by side above the score. */
+.ms-header-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 24px;
-    flex-wrap: wrap;
+    gap: 14px;
     margin-top: 10px;
 }
 
-.match-team-score { flex: 1; min-width: 140px; }
-/* Each side keeps its own color (left = blue, right = red) regardless of
-   who's currently ahead — winning only adds weight, it doesn't recolor. */
-.match-team-score.side-left .match-team-name,
-.match-team-score.side-left .match-team-players { color: var(--accent); }
-.match-team-score.side-right .match-team-name,
-.match-team-score.side-right .match-team-players { color: var(--error); }
-.match-team-score.is-winner .match-team-players,
-.match-team-score.is-winner .match-team-name { font-weight: 700; }
-
-.match-team-name {
-    font-size: 15px;
+.ms-team-badge {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 12px;
+    border-radius: 12px;
+    color: #fff;
     font-weight: 700;
+    font-size: 14px;
     text-align: center;
-    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ms-team-badge.side-left { background: var(--accent); }
+.ms-team-badge.side-right { background: var(--error); }
+
+.ms-header-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    white-space: nowrap;
 }
 
-.match-team-players {
+/* Score + nicknames on each side, with the current-set dots stacked
+   vertically between them. */
+.ms-body-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.ms-side { flex: 1; min-width: 100px; text-align: center; }
+/* Each side keeps its own color (left = blue, right = red) regardless of
+   who's currently ahead — winning only adds weight, it doesn't recolor. */
+.ms-side.side-left { color: var(--accent); }
+.ms-side.side-right { color: var(--error); }
+.ms-side.is-winner { font-weight: 700; }
+
+.ms-score { font-size: 44px; font-weight: 800; line-height: 1; }
+
+.ms-players {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    margin-top: 10px;
     font-size: 14px;
-    text-align: center;
 }
 
-.match-score-big {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--text);
-    white-space: nowrap;
-    padding: 0 8px;
-}
-
-.current-set-block { margin-top: 18px; text-align: center; }
-
-.current-set-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-bottom: 8px;
-}
-
-.match-games-row {
+.ms-dots-col {
     display: flex;
-    justify-content: center;
-    gap: 8px;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 /* Current set's best-of-3 games, left dot = left-side team, right dot =

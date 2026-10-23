@@ -70,6 +70,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Finished",
         "winners.statusLive": "Live",
         "winners.currentSet": "Current set",
+        "winners.finalsLabel": "Finals",
         "stats.overview": "Overview",
         "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
         "stats.teamsChartTitle": "Teams registered per tournament",
@@ -164,6 +165,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Завершён",
         "winners.statusLive": "Идёт сейчас",
         "winners.currentSet": "Текущий сет",
+        "winners.finalsLabel": "Финал",
         "stats.overview": "Обзор",
         "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
         "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
@@ -258,6 +260,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Finalizado",
         "winners.statusLive": "En vivo",
         "winners.currentSet": "Set actual",
+        "winners.finalsLabel": "Final",
         "stats.overview": "Resumen",
         "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
         "stats.teamsChartTitle": "Equipos registrados por torneo",
@@ -352,6 +355,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Finalizat",
         "winners.statusLive": "În direct",
         "winners.currentSet": "Setul curent",
+        "winners.finalsLabel": "Finala",
         "stats.overview": "Prezentare generală",
         "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
         "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
@@ -446,6 +450,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Terminata",
         "winners.statusLive": "In corso",
         "winners.currentSet": "Set attuale",
+        "winners.finalsLabel": "Finale",
         "stats.overview": "Panoramica",
         "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
         "stats.teamsChartTitle": "Squadre registrate per torneo",
@@ -540,6 +545,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Afgelopen",
         "winners.statusLive": "Live",
         "winners.currentSet": "Huidige set",
+        "winners.finalsLabel": "Finale",
         "stats.overview": "Overzicht",
         "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
         "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
@@ -634,6 +640,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Finalizada",
         "winners.statusLive": "Em andamento",
         "winners.currentSet": "Set atual",
+        "winners.finalsLabel": "Final",
         "stats.overview": "Visão geral",
         "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
         "stats.teamsChartTitle": "Equipas registadas por torneio",
@@ -728,6 +735,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Ολοκληρώθηκε",
         "winners.statusLive": "Ζωντανά",
         "winners.currentSet": "Τρέχον σετ",
+        "winners.finalsLabel": "Τελικός",
         "stats.overview": "Επισκόπηση",
         "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
         "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
@@ -822,6 +830,7 @@ const TRANSLATIONS = {
         "winners.statusDone": "Terminé",
         "winners.statusLive": "En direct",
         "winners.currentSet": "Set en cours",
+        "winners.finalsLabel": "Finale",
         "stats.overview": "Vue d'ensemble",
         "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
         "stats.teamsChartTitle": "Équipes inscrites par tournoi",
@@ -2203,20 +2212,21 @@ async function loadLastMatch(tournamentId) {
             .join("");
 
         board.innerHTML = `
-            <div class="match-score-row">
-                <div class="match-team-score side-left${aWins ? " is-winner" : ""}">
-                    ${match.teamAName ? `<div class="match-team-name">${escapeHtml(match.teamAName)}</div>` : ""}
-                    <div class="match-team-players">${teamA.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
-                </div>
-                <div class="match-score-big">${match.scoreA} : ${match.scoreB}</div>
-                <div class="match-team-score side-right${bWins ? " is-winner" : ""}">
-                    ${match.teamBName ? `<div class="match-team-name">${escapeHtml(match.teamBName)}</div>` : ""}
-                    <div class="match-team-players">${teamB.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
-                </div>
+            <div class="ms-header-row">
+                <div class="ms-team-badge side-left">${escapeHtml(match.teamAName || "")}</div>
+                <div class="ms-header-label">${tr("winners.finalsLabel")}</div>
+                <div class="ms-team-badge side-right">${escapeHtml(match.teamBName || "")}</div>
             </div>
-            <div class="current-set-block">
-                <div class="current-set-label">${tr("winners.currentSet")}</div>
-                <div class="match-games-row">${dots}</div>
+            <div class="ms-body-row">
+                <div class="ms-side side-left${aWins ? " is-winner" : ""}">
+                    <div class="ms-score">${match.scoreA}</div>
+                    <div class="ms-players">${teamA.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
+                </div>
+                <div class="ms-dots-col">${dots}</div>
+                <div class="ms-side side-right${bWins ? " is-winner" : ""}">
+                    <div class="ms-score">${match.scoreB}</div>
+                    <div class="ms-players">${teamB.map((n) => `<div>${escapeHtml(n)}</div>`).join("")}</div>
+                </div>
             </div>
         `;
     } catch (err) {
