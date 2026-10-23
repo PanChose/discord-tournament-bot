@@ -128,6 +128,64 @@
                 <p id="winners-empty" class="hint hidden" data-i18n="winners.noFinalYet">The bracket's final match hasn't started yet.</p>
                 <p id="winners-error" class="hint hidden" data-i18n="winners.loadError">Couldn't load match data from Matcherino.</p>
             </section>
+
+            <!-- ===== Winner announcement message editor ===== -->
+            <section id="winner-message-card" class="card hidden">
+                <h2 data-i18n="winners.messageTitle">Winner announcement message</h2>
+                <p class="hint" data-i18n="winners.messageHint">Tournament name, game and branding are pulled in automatically. Write the rest below — use the buttons to insert the winning team, score and player names, filled in live from the current match.</p>
+
+                <div class="discord-preview">
+                    <div class="dp-avatar">🏆</div>
+                    <div class="dp-body">
+                        <div class="dp-header">
+                            <span class="dp-username">Tournament Bot</span>
+                            <span class="dp-botTag">BOT</span>
+                            <span class="dp-time">today, just now</span>
+                        </div>
+                        <div class="dp-embed">
+                            <div class="dp-embed-author hidden" id="wm-pv-author">
+                                <img class="dp-author-icon hidden" id="wm-pv-author-icon" />
+                                <span id="wm-pv-author-name"></span>
+                            </div>
+                            <div class="dp-embed-top">
+                                <img class="dp-embed-thumbnail hidden" id="wm-pv-thumbnail" />
+                                <div class="dp-embed-title" id="wm-pv-title">🏆 Tournament name</div>
+                                <div class="dp-embed-desc" id="wm-pv-desc"></div>
+                            </div>
+                            <img class="dp-embed-image hidden" id="wm-pv-image" />
+                        </div>
+                    </div>
+                </div>
+
+                <label data-i18n="winners.messageLabel">Message</label>
+                <div class="format-toolbar" id="wm-toolbar">
+                    <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
+                    <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
+                    <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
+                    <button type="button" data-fmt="strike" title="Strikethrough"><s>S</s></button>
+                    <button type="button" data-fmt="spoiler" title="Spoiler (hidden until clicked)">||S||</button>
+                    <button type="button" data-fmt="code" title="Inline code">`code`</button>
+                    <button type="button" data-fmt="codeblock" title="Code block">{ }</button>
+                    <button type="button" data-fmt="quote" title="Quote">❝</button>
+                    <button type="button" data-fmt="bullet" title="Bullet list">•</button>
+                    <button type="button" data-fmt="header" title="Header">H</button>
+                    <button type="button" data-fmt="link" title="Link">Link</button>
+                </div>
+                <div class="format-toolbar" id="wm-placeholder-toolbar">
+                    <button type="button" data-ph="{winner}" data-i18n="winners.phWinner">Winner</button>
+                    <button type="button" data-ph="{winnerPlayers}" data-i18n="winners.phWinnerPlayers">Winner players</button>
+                    <button type="button" data-ph="{loser}" data-i18n="winners.phLoser">Loser</button>
+                    <button type="button" data-ph="{loserPlayers}" data-i18n="winners.phLoserPlayers">Loser players</button>
+                    <button type="button" data-ph="{score}" data-i18n="winners.phScore">Score</button>
+                    <button type="button" data-ph="{tournament}" data-i18n="winners.phTournament">Tournament</button>
+                    <button type="button" data-ph="{game}" data-i18n="winners.phGame">Game</button>
+                </div>
+                <textarea id="wm-text" class="description-textarea" rows="8" maxlength="2000" placeholder="GG {winner}! Final score {score}. MVPs: {winnerPlayers} 🏆"></textarea>
+
+                <button type="button" id="wm-save-btn" data-i18n="winners.saveMessage">Save</button>
+                <p id="wm-save-result" class="result"></p>
+                <button type="button" id="wm-send-btn" class="secondary-btn full-width-btn" data-i18n="winners.sendMessage">Send to Discord</button>
+            </section>
         </section>
 
         <!-- ============== EDITOR (constructor + live preview) ============== -->

@@ -17,6 +17,7 @@ const {
     closeTournamentAnnouncement,
     refreshAnnouncementMessage,
     applyReaction,
+    sendWinnerMessage,
 } = require("./lib/discordClient");
 const tournamentsLib = require("./lib/tournaments");
 const matcherinoSync = require("./lib/matcherinoSync");
@@ -338,6 +339,31 @@ const lastMatchCache = new Map();
 const FINAL_MATCH_ID_TTL_MS = 60 * 60 * 1000;
 const MATCH_STATS_TTL_MS = 25 * 1000;
 
+// Shared by the GET route below and the winner-message send route — both
+// need the same cache-aware "what's the final match doing right now" data.
+async function getLastMatch(tournament) {
+    const now = Date.now();
+    const cached = lastMatchCache.get(tournament.id) || {};
+
+    if (!cached.finalMatchId || now - (cached.resolvedAt || 0) > FINAL_MATCH_ID_TTL_MS) {
+        const { matches, entrants } = await matcherino.fetchBracketMatches(tournament.matcherino_bounty_id);
+        const final = matcherino.findFinalMatch(matches);
+        if (!final) return null;
+        cached.finalMatchId = final.id;
+        cached.teamNamesById = Object.fromEntries(entrants.filter((e) => e && e.id != null && e.name).map((e) => [e.id, e.name]));
+        cached.resolvedAt = now;
+        cached.stats = null; // a newly-(re)resolved match id needs fresh stats
+    }
+
+    if (!cached.stats || now - (cached.statsAt || 0) > MATCH_STATS_TTL_MS) {
+        cached.stats = await matcherino.fetchMatchStats(tournament.matcherino_bounty_id, cached.finalMatchId, cached.teamNamesById);
+        cached.statsAt = now;
+    }
+
+    lastMatchCache.set(tournament.id, cached);
+    return cached.stats;
+}
+
 app.get("/api/tournaments/:id/last-match", requireAuth, async (req, res) => {
     const tournament = await loadOwnedTournament(req, res);
     if (!tournament) return;
@@ -345,29 +371,36 @@ app.get("/api/tournaments/:id/last-match", requireAuth, async (req, res) => {
         return res.status(400).json({ error: "This tournament isn't linked to a Matcherino bracket" });
     }
     try {
-        const now = Date.now();
-        const cached = lastMatchCache.get(tournament.id) || {};
-
-        if (!cached.finalMatchId || now - (cached.resolvedAt || 0) > FINAL_MATCH_ID_TTL_MS) {
-            const { matches, entrants } = await matcherino.fetchBracketMatches(tournament.matcherino_bounty_id);
-            const final = matcherino.findFinalMatch(matches);
-            if (!final) return res.status(404).json({ error: "No matches found yet for this bracket" });
-            cached.finalMatchId = final.id;
-            cached.teamNamesById = Object.fromEntries(entrants.filter((e) => e && e.id != null && e.name).map((e) => [e.id, e.name]));
-            cached.resolvedAt = now;
-            cached.stats = null; // a newly-(re)resolved match id needs fresh stats
-        }
-
-        if (!cached.stats || now - (cached.statsAt || 0) > MATCH_STATS_TTL_MS) {
-            cached.stats = await matcherino.fetchMatchStats(tournament.matcherino_bounty_id, cached.finalMatchId, cached.teamNamesById);
-            cached.statsAt = now;
-        }
-
-        lastMatchCache.set(tournament.id, cached);
-        res.json({ match: cached.stats });
+        const match = await getLastMatch(tournament);
+        if (!match) return res.status(404).json({ error: "No matches found yet for this bracket" });
+        res.json({ match });
     } catch (err) {
         console.error(`[matcherino] Failed to fetch last-match for tournament ${tournament.id}:`, err.message);
         res.status(502).json({ error: "Failed to fetch match data from Matcherino" });
+    }
+});
+
+// Manually posts the Winners tab's "winner announcement" message (built from
+// the organizer's saved template + the current live match data) to the
+// tournament's announcement channel. No auto-trigger — the organizer decides
+// when the match is actually done enough to announce.
+app.post("/api/tournaments/:id/winner-message/send", requireAuth, async (req, res) => {
+    const tournament = await loadOwnedTournament(req, res);
+    if (!tournament) return;
+    if (!tournament.matcherino_bounty_id) {
+        return res.status(400).json({ error: "This tournament isn't linked to a Matcherino bracket" });
+    }
+    if (!tournament.winner_message_text) {
+        return res.status(400).json({ error: "Write a winner announcement message first" });
+    }
+    try {
+        const match = await getLastMatch(tournament);
+        if (!match) return res.status(404).json({ error: "No matches found yet for this bracket" });
+        await sendWinnerMessage(tournament, match);
+        res.json({ ok: true });
+    } catch (err) {
+        console.error(`[discord] Failed to send winner message for tournament ${tournament.id}:`, err.message);
+        res.status(500).json({ error: err.message });
     }
 });
 

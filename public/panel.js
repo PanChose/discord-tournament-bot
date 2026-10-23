@@ -71,6 +71,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "Live",
         "winners.currentSet": "Current set",
         "winners.finalsLabel": "Finals",
+        "winners.messageTitle": "Winner announcement message",
+        "winners.messageHint": "Tournament name, game and branding are pulled in automatically. Write the rest below — use the buttons to insert the winning team, score and player names, filled in live from the current match.",
+        "winners.messageLabel": "Message",
+        "winners.phWinner": "Winner",
+        "winners.phWinnerPlayers": "Winner players",
+        "winners.phLoser": "Loser",
+        "winners.phLoserPlayers": "Loser players",
+        "winners.phScore": "Score",
+        "winners.phTournament": "Tournament",
+        "winners.phGame": "Game",
+        "winners.saveMessage": "Save",
+        "winners.sendMessage": "Send to Discord",
+        "winners.messageSaved": "Saved",
+        "winners.messageSent": "Sent to Discord",
+        "winners.sendConfirmTitle": "Send winner announcement?",
+        "winners.sendConfirmBody": "Posts this message to the tournament's announcement channel right now. This can't be undone.",
         "stats.overview": "Overview",
         "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
         "stats.teamsChartTitle": "Teams registered per tournament",
@@ -166,6 +182,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "Идёт сейчас",
         "winners.currentSet": "Текущий сет",
         "winners.finalsLabel": "Финал",
+        "winners.messageTitle": "Сообщение о победителях",
+        "winners.messageHint": "Название турнира, игра и оформление подставляются автоматически. Остальное напишите сами — кнопками можно вставить команду-победителя, счёт и игроков, они подтягиваются из текущего матча в реальном времени.",
+        "winners.messageLabel": "Сообщение",
+        "winners.phWinner": "Победитель",
+        "winners.phWinnerPlayers": "Игроки победителя",
+        "winners.phLoser": "Проигравший",
+        "winners.phLoserPlayers": "Игроки проигравшего",
+        "winners.phScore": "Счёт",
+        "winners.phTournament": "Турнир",
+        "winners.phGame": "Игра",
+        "winners.saveMessage": "Сохранить",
+        "winners.sendMessage": "Отправить в Discord",
+        "winners.messageSaved": "Сохранено",
+        "winners.messageSent": "Отправлено в Discord",
+        "winners.sendConfirmTitle": "Отправить анонс победителей?",
+        "winners.sendConfirmBody": "Сообщение будет опубликовано в канале турнира прямо сейчас. Это нельзя отменить.",
         "stats.overview": "Обзор",
         "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
         "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
@@ -261,6 +293,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "En vivo",
         "winners.currentSet": "Set actual",
         "winners.finalsLabel": "Final",
+        "winners.messageTitle": "Mensaje de anuncio de ganadores",
+        "winners.messageHint": "El nombre del torneo, el juego y la marca se completan automáticamente. Escribe el resto abajo — usa los botones para insertar el equipo ganador, el marcador y los jugadores, tomados en vivo del partido actual.",
+        "winners.messageLabel": "Mensaje",
+        "winners.phWinner": "Ganador",
+        "winners.phWinnerPlayers": "Jugadores del ganador",
+        "winners.phLoser": "Perdedor",
+        "winners.phLoserPlayers": "Jugadores del perdedor",
+        "winners.phScore": "Marcador",
+        "winners.phTournament": "Torneo",
+        "winners.phGame": "Juego",
+        "winners.saveMessage": "Guardar",
+        "winners.sendMessage": "Enviar a Discord",
+        "winners.messageSaved": "Guardado",
+        "winners.messageSent": "Enviado a Discord",
+        "winners.sendConfirmTitle": "¿Enviar el anuncio de ganadores?",
+        "winners.sendConfirmBody": "Publica este mensaje en el canal del torneo ahora mismo. Esto no se puede deshacer.",
         "stats.overview": "Resumen",
         "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
         "stats.teamsChartTitle": "Equipos registrados por torneo",
@@ -356,6 +404,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "În direct",
         "winners.currentSet": "Setul curent",
         "winners.finalsLabel": "Finala",
+        "winners.messageTitle": "Mesaj de anunțare a câștigătorilor",
+        "winners.messageHint": "Numele turneului, jocul și elementele de branding sunt preluate automat. Scrie restul mai jos — folosește butoanele pentru a insera echipa câștigătoare, scorul și jucătorii, preluate live din meciul curent.",
+        "winners.messageLabel": "Mesaj",
+        "winners.phWinner": "Câștigător",
+        "winners.phWinnerPlayers": "Jucătorii câștigătorului",
+        "winners.phLoser": "Învins",
+        "winners.phLoserPlayers": "Jucătorii învinsului",
+        "winners.phScore": "Scor",
+        "winners.phTournament": "Turneu",
+        "winners.phGame": "Joc",
+        "winners.saveMessage": "Salvează",
+        "winners.sendMessage": "Trimite pe Discord",
+        "winners.messageSaved": "Salvat",
+        "winners.messageSent": "Trimis pe Discord",
+        "winners.sendConfirmTitle": "Trimiți anunțul câștigătorilor?",
+        "winners.sendConfirmBody": "Publică acest mesaj în canalul turneului chiar acum. Nu poate fi anulat.",
         "stats.overview": "Prezentare generală",
         "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
         "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
@@ -451,6 +515,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "In corso",
         "winners.currentSet": "Set attuale",
         "winners.finalsLabel": "Finale",
+        "winners.messageTitle": "Messaggio di annuncio vincitori",
+        "winners.messageHint": "Nome del torneo, gioco e branding vengono inseriti automaticamente. Scrivi il resto qui sotto — usa i pulsanti per inserire la squadra vincitrice, il punteggio e i giocatori, presi in tempo reale dalla partita attuale.",
+        "winners.messageLabel": "Messaggio",
+        "winners.phWinner": "Vincitore",
+        "winners.phWinnerPlayers": "Giocatori del vincitore",
+        "winners.phLoser": "Sconfitto",
+        "winners.phLoserPlayers": "Giocatori dello sconfitto",
+        "winners.phScore": "Punteggio",
+        "winners.phTournament": "Torneo",
+        "winners.phGame": "Gioco",
+        "winners.saveMessage": "Salva",
+        "winners.sendMessage": "Invia su Discord",
+        "winners.messageSaved": "Salvato",
+        "winners.messageSent": "Inviato su Discord",
+        "winners.sendConfirmTitle": "Inviare l'annuncio dei vincitori?",
+        "winners.sendConfirmBody": "Pubblica subito questo messaggio nel canale del torneo. Non può essere annullato.",
         "stats.overview": "Panoramica",
         "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
         "stats.teamsChartTitle": "Squadre registrate per torneo",
@@ -546,6 +626,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "Live",
         "winners.currentSet": "Huidige set",
         "winners.finalsLabel": "Finale",
+        "winners.messageTitle": "Winnaarsaankondiging",
+        "winners.messageHint": "Toernooinaam, game en branding worden automatisch ingevuld. Schrijf de rest hieronder — gebruik de knoppen om het winnende team, de score en de spelers in te voegen, live opgehaald uit de huidige wedstrijd.",
+        "winners.messageLabel": "Bericht",
+        "winners.phWinner": "Winnaar",
+        "winners.phWinnerPlayers": "Spelers winnaar",
+        "winners.phLoser": "Verliezer",
+        "winners.phLoserPlayers": "Spelers verliezer",
+        "winners.phScore": "Score",
+        "winners.phTournament": "Toernooi",
+        "winners.phGame": "Game",
+        "winners.saveMessage": "Opslaan",
+        "winners.sendMessage": "Verzenden naar Discord",
+        "winners.messageSaved": "Opgeslagen",
+        "winners.messageSent": "Verzonden naar Discord",
+        "winners.sendConfirmTitle": "Winnaarsaankondiging verzenden?",
+        "winners.sendConfirmBody": "Plaatst dit bericht nu meteen in het aankondigingskanaal van het toernooi. Dit kan niet ongedaan worden gemaakt.",
         "stats.overview": "Overzicht",
         "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
         "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
@@ -641,6 +737,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "Em andamento",
         "winners.currentSet": "Set atual",
         "winners.finalsLabel": "Final",
+        "winners.messageTitle": "Mensagem de anúncio dos vencedores",
+        "winners.messageHint": "O nome do torneio, o jogo e a identidade visual são preenchidos automaticamente. Escreva o resto abaixo — use os botões para inserir o time vencedor, o placar e os jogadores, obtidos ao vivo da partida atual.",
+        "winners.messageLabel": "Mensagem",
+        "winners.phWinner": "Vencedor",
+        "winners.phWinnerPlayers": "Jogadores do vencedor",
+        "winners.phLoser": "Perdedor",
+        "winners.phLoserPlayers": "Jogadores do perdedor",
+        "winners.phScore": "Placar",
+        "winners.phTournament": "Torneio",
+        "winners.phGame": "Jogo",
+        "winners.saveMessage": "Salvar",
+        "winners.sendMessage": "Enviar para o Discord",
+        "winners.messageSaved": "Salvo",
+        "winners.messageSent": "Enviado para o Discord",
+        "winners.sendConfirmTitle": "Enviar o anúncio dos vencedores?",
+        "winners.sendConfirmBody": "Publica esta mensagem no canal do torneio agora mesmo. Isso não pode ser desfeito.",
         "stats.overview": "Visão geral",
         "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
         "stats.teamsChartTitle": "Equipas registadas por torneio",
@@ -736,6 +848,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "Ζωντανά",
         "winners.currentSet": "Τρέχον σετ",
         "winners.finalsLabel": "Τελικός",
+        "winners.messageTitle": "Μήνυμα ανακοίνωσης νικητών",
+        "winners.messageHint": "Το όνομα του τουρνουά, το παιχνίδι και η επωνυμία συμπληρώνονται αυτόματα. Γράψτε τα υπόλοιπα παρακάτω — χρησιμοποιήστε τα κουμπιά για να εισαγάγετε τη νικήτρια ομάδα, το σκορ και τους παίκτες, που ενημερώνονται ζωντανά από τον τρέχοντα αγώνα.",
+        "winners.messageLabel": "Μήνυμα",
+        "winners.phWinner": "Νικητής",
+        "winners.phWinnerPlayers": "Παίκτες νικητή",
+        "winners.phLoser": "Ηττημένος",
+        "winners.phLoserPlayers": "Παίκτες ηττημένου",
+        "winners.phScore": "Σκορ",
+        "winners.phTournament": "Τουρνουά",
+        "winners.phGame": "Παιχνίδι",
+        "winners.saveMessage": "Αποθήκευση",
+        "winners.sendMessage": "Αποστολή στο Discord",
+        "winners.messageSaved": "Αποθηκεύτηκε",
+        "winners.messageSent": "Στάλθηκε στο Discord",
+        "winners.sendConfirmTitle": "Αποστολή ανακοίνωσης νικητών;",
+        "winners.sendConfirmBody": "Δημοσιεύει αυτό το μήνυμα στο κανάλι ανακοινώσεων του τουρνουά τώρα. Δεν μπορεί να αναιρεθεί.",
         "stats.overview": "Επισκόπηση",
         "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
         "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
@@ -831,6 +959,22 @@ const TRANSLATIONS = {
         "winners.statusLive": "En direct",
         "winners.currentSet": "Set en cours",
         "winners.finalsLabel": "Finale",
+        "winners.messageTitle": "Message d'annonce des vainqueurs",
+        "winners.messageHint": "Le nom du tournoi, le jeu et l'identité visuelle sont insérés automatiquement. Écrivez le reste ci-dessous — utilisez les boutons pour insérer l'équipe gagnante, le score et les joueurs, mis à jour en direct depuis le match en cours.",
+        "winners.messageLabel": "Message",
+        "winners.phWinner": "Vainqueur",
+        "winners.phWinnerPlayers": "Joueurs du vainqueur",
+        "winners.phLoser": "Perdant",
+        "winners.phLoserPlayers": "Joueurs du perdant",
+        "winners.phScore": "Score",
+        "winners.phTournament": "Tournoi",
+        "winners.phGame": "Jeu",
+        "winners.saveMessage": "Enregistrer",
+        "winners.sendMessage": "Envoyer sur Discord",
+        "winners.messageSaved": "Enregistré",
+        "winners.messageSent": "Envoyé sur Discord",
+        "winners.sendConfirmTitle": "Envoyer l'annonce des vainqueurs ?",
+        "winners.sendConfirmBody": "Publie ce message dans le salon d'annonce du tournoi dès maintenant. Cette action est irréversible.",
         "stats.overview": "Vue d'ensemble",
         "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
         "stats.teamsChartTitle": "Équipes inscrites par tournoi",
@@ -2137,6 +2281,8 @@ document.getElementById("participants-tournament-select").addEventListener("chan
 // =========================================================================
 
 let winnersPollTimer = null;
+let winnersCurrentTournament = null;
+let winnersCurrentMatch = null; // last successful /last-match response, or null
 
 function stopWinnersPolling() {
     if (winnersPollTimer) clearInterval(winnersPollTimer);
@@ -2155,7 +2301,10 @@ function populateWinnersSelect() {
         select.value = previous;
     } else {
         stopWinnersPolling();
+        winnersCurrentTournament = null;
+        winnersCurrentMatch = null;
         document.getElementById("winners-card").classList.add("hidden");
+        document.getElementById("winner-message-card").classList.add("hidden");
     }
 }
 
@@ -2163,6 +2312,14 @@ async function showLastMatch(tournament) {
     document.getElementById("winners-card").classList.remove("hidden");
     document.getElementById("winners-title").textContent = `${tr("winners.finalMatch")} — ${tournament.name}`;
     stopWinnersPolling();
+
+    winnersCurrentTournament = tournament;
+    winnersCurrentMatch = null;
+    document.getElementById("winner-message-card").classList.remove("hidden");
+    document.getElementById("wm-text").value = tournament.winner_message_text || "";
+    document.getElementById("wm-save-result").textContent = "";
+    renderWinnerMessagePreview();
+
     await loadLastMatch(tournament.id);
     // ~30s cadence, as requested — the server caches the Matcherino call
     // itself for ~25s, so this never hammers their API even with multiple
@@ -2178,6 +2335,7 @@ async function loadLastMatch(tournamentId) {
     try {
         const { match } = await apiFetch(`/api/tournaments/${tournamentId}/last-match`);
         error.classList.add("hidden");
+        winnersCurrentMatch = match;
 
         if (!match.games.length) {
             board.innerHTML = "";
@@ -2230,10 +2388,13 @@ async function loadLastMatch(tournamentId) {
             </div>
         `;
     } catch (err) {
+        winnersCurrentMatch = null;
         board.innerHTML = "";
         empty.classList.add("hidden");
         status.textContent = "";
         error.classList.remove("hidden");
+    } finally {
+        renderWinnerMessagePreview();
     }
 }
 
@@ -2243,7 +2404,153 @@ document.getElementById("winners-tournament-select").addEventListener("change", 
         showLastMatch(tournament);
     } else {
         stopWinnersPolling();
+        winnersCurrentTournament = null;
+        winnersCurrentMatch = null;
         document.getElementById("winners-card").classList.add("hidden");
+        document.getElementById("winner-message-card").classList.add("hidden");
+    }
+});
+
+// =========================================================================
+// Winner announcement message editor — composed from a template with
+// {tournament}/{game}/{winner}/{winnerPlayers}/{loser}/{loserPlayers}/{score}
+// placeholders, resolved client-side (mirrors resolveWinnerMessageText in
+// lib/tournaments.js) against whatever loadLastMatch last fetched, so the
+// preview stays live without a separate fetch of its own.
+// =========================================================================
+
+function resolveWinnerMessageTextClient(tournament, match, template) {
+    if (!template) return "";
+    const lastGame = match?.games?.length ? match.games[match.games.length - 1] : null;
+    const scoreA = match?.scoreA ?? 0;
+    const scoreB = match?.scoreB ?? 0;
+    const aIsWinner = scoreA >= scoreB;
+
+    const winnerName = aIsWinner ? match?.teamAName : match?.teamBName;
+    const loserName = aIsWinner ? match?.teamBName : match?.teamAName;
+    const winnerPlayers = (aIsWinner ? lastGame?.teams?.[0] : lastGame?.teams?.[1])?.players || [];
+    const loserPlayers = (aIsWinner ? lastGame?.teams?.[1] : lastGame?.teams?.[0])?.players || [];
+    const winnerScore = aIsWinner ? scoreA : scoreB;
+    const loserScore = aIsWinner ? scoreB : scoreA;
+
+    const replacements = {
+        "{tournament}": tournament.name || "",
+        "{game}": tournament.game || "",
+        "{winner}": winnerName || "",
+        "{winnerPlayers}": winnerPlayers.join(", "),
+        "{loser}": loserName || "",
+        "{loserPlayers}": loserPlayers.join(", "),
+        "{score}": `${winnerScore}-${loserScore}`,
+    };
+    return template.replace(/\{tournament\}|\{game\}|\{winner\}|\{winnerPlayers\}|\{loser\}|\{loserPlayers\}|\{score\}/g, (token) => replacements[token]);
+}
+
+function renderWinnerMessagePreview() {
+    const t = winnersCurrentTournament;
+    if (!t) return;
+
+    const authorEl = document.getElementById("wm-pv-author");
+    if (t.author_name) {
+        document.getElementById("wm-pv-author-name").textContent = t.author_name;
+        const iconEl = document.getElementById("wm-pv-author-icon");
+        if (t.author_icon) {
+            iconEl.src = t.author_icon;
+            iconEl.classList.remove("hidden");
+        } else {
+            iconEl.classList.add("hidden");
+        }
+        authorEl.classList.remove("hidden");
+    } else {
+        authorEl.classList.add("hidden");
+    }
+
+    const thumbEl = document.getElementById("wm-pv-thumbnail");
+    if (t.thumbnail) {
+        thumbEl.src = t.thumbnail;
+        thumbEl.classList.remove("hidden");
+    } else {
+        thumbEl.classList.add("hidden");
+    }
+
+    document.getElementById("wm-pv-title").textContent = `🏆 ${t.name || ""}`;
+
+    const template = document.getElementById("wm-text").value;
+    const resolved = resolveWinnerMessageTextClient(t, winnersCurrentMatch, template);
+    const descEl = document.getElementById("wm-pv-desc");
+    descEl.innerHTML = renderDiscordMarkup(resolved);
+    descEl.classList.toggle("hidden", !resolved);
+
+    const imgEl = document.getElementById("wm-pv-image");
+    if (t.banner) {
+        imgEl.src = t.banner;
+        imgEl.classList.remove("hidden");
+    } else {
+        imgEl.classList.add("hidden");
+    }
+
+    document.querySelector("#winner-message-card .dp-embed").style.borderLeftColor = t.color || "#8b5cf6";
+}
+
+document.getElementById("wm-text").addEventListener("input", renderWinnerMessagePreview);
+
+document.getElementById("wm-toolbar").addEventListener("click", (e) => {
+    const fmtBtn = e.target.closest("button[data-fmt]");
+    if (!fmtBtn) return;
+    const textarea = document.getElementById("wm-text");
+
+    if (fmtBtn.dataset.fmt === "link") {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const label = textarea.value.slice(start, end) || "link text";
+        const url = prompt("Link URL:", "https://");
+        if (!url) return;
+        wrapSelection(textarea, "[", `](${url})`, label);
+        renderWinnerMessagePreview();
+        return;
+    }
+
+    const [prefix, suffix, placeholder] = FORMAT_MAP[fmtBtn.dataset.fmt];
+    wrapSelection(textarea, prefix, suffix, placeholder);
+    renderWinnerMessagePreview();
+});
+
+document.getElementById("wm-placeholder-toolbar").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-ph]");
+    if (!btn) return;
+    insertAtCursor(document.getElementById("wm-text"), btn.dataset.ph);
+    renderWinnerMessagePreview();
+});
+
+document.getElementById("wm-save-btn").addEventListener("click", async () => {
+    if (!winnersCurrentTournament) return;
+    const result = document.getElementById("wm-save-result");
+    result.textContent = "";
+    try {
+        const text = document.getElementById("wm-text").value.trim() || null;
+        const { tournament } = await apiFetch(`/api/tournaments/${winnersCurrentTournament.id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ winnerMessageText: text }),
+        });
+        winnersCurrentTournament = tournament;
+        const idx = state.tournaments.findIndex((t) => t.id === tournament.id);
+        if (idx !== -1) state.tournaments[idx] = tournament;
+        result.textContent = `✅ ${tr("winners.messageSaved")}`;
+    } catch (err) {
+        result.textContent = `❌ ${err.message}`;
+    }
+});
+
+document.getElementById("wm-send-btn").addEventListener("click", async () => {
+    if (!winnersCurrentTournament) return;
+    const ok = await showConfirmModal(tr("winners.sendConfirmTitle"), tr("winners.sendConfirmBody"));
+    if (!ok) return;
+    const result = document.getElementById("wm-save-result");
+    result.textContent = "";
+    try {
+        await apiFetch(`/api/tournaments/${winnersCurrentTournament.id}/winner-message/send`, { method: "POST" });
+        result.textContent = `✅ ${tr("winners.messageSent")}`;
+    } catch (err) {
+        result.textContent = `❌ ${err.message}`;
     }
 });
 
@@ -2795,7 +3102,10 @@ function renderPreview() {
     // the status text plus a live "Today at HH:MM" clock.
     const nowLabel = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     document.getElementById("pv-footer").textContent = `${STATUS_LABELS[status]} • Today at ${nowLabel}`;
-    document.querySelector(".dp-embed").style.borderLeftColor = data.color;
+    // Scoped to .preview-card — the Winners tab's message preview below adds
+    // a second .dp-embed on the page, so a bare selector here would grab
+    // whichever one happens to come first in the DOM.
+    document.querySelector(".preview-card .dp-embed").style.borderLeftColor = data.color;
 
     const registerBtn = document.getElementById("pv-register-btn");
     const isFull = activeCount >= data.maxParticipants;
