@@ -1334,14 +1334,9 @@ const WHATS_NEW = {
         {
             label: "✨ New Features",
             items: [
-                "New Winners tab — live scoreboard for a tournament's final Matcherino match (score, player nicknames, current set), auto-refreshing",
-                "Winner announcement message editor — write a message with the winning team/score/players auto-filled in, and send it straight to Discord",
-                "Dashboard: Small/Big tile size toggle",
+                "Winner message: option to show no title at all, instead of always falling back to the tournament name",
+                "Winner message: player list can render inline or as a bulleted list, via a toggle next to the Winner/Loser players buttons",
             ],
-        },
-        {
-            label: "🎨 Design",
-            items: ["Redesigned color palette and overall look — a softer indigo/purple theme across the header, sidebar and cards"],
         },
     ],
 };
