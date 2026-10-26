@@ -1325,20 +1325,14 @@ const WHATS_NEW = {
         {
             label: "✨ New Features",
             items: [
-                "New Participants tab — pick any tournament to see who registered via Discord",
-                "Statistics: total and average Discord joins per tournament",
+                "New Winners tab — live scoreboard for a tournament's final Matcherino match (score, player nicknames, current set), auto-refreshing",
+                "Winner announcement message editor — write a message with the winning team/score/players auto-filled in, and send it straight to Discord",
+                "Dashboard: Small/Big tile size toggle",
             ],
         },
         {
             label: "🎨 Design",
-            items: ["Custom color picker that matches the app's dark theme, instead of the browser's own"],
-        },
-        {
-            label: "🐛 Bug Fixes",
-            items: [
-                "Close/Delete/Publish/Sync/Republish no longer make the tournament popup disappear — it stays open and updates in place",
-                "Publish (from a tournament's popup) now asks for confirmation too",
-            ],
+            items: ["Redesigned color palette and overall look — a softer indigo/purple theme across the header, sidebar and cards"],
         },
     ],
 };
