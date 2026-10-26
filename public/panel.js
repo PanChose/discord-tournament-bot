@@ -12,6 +12,7 @@ const state = {
     pollTimer: null,
     emojis: null, // cached custom emojis for the current guild, fetched lazily on first use
     stats: null,
+    wmThumbnailOverride: null, // winner-message "full edit" thumbnail upload, same idea as thumbnailOverride below
     tileSize: (() => {
         try {
             return localStorage.getItem("dashboard-tile-size") === "big" ? "big" : "small";
@@ -87,6 +88,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Sent to Discord",
         "winners.sendConfirmTitle": "Send winner announcement?",
         "winners.sendConfirmBody": "Posts this message to the tournament's announcement channel right now. This can't be undone.",
+        "winners.fullEdit": "Full edit",
+        "winners.fullEditHint": "Override the title, color and thumbnail for this message only — leave blank to keep using the tournament's own.",
+        "winners.fieldTitle": "Title",
         "stats.overview": "Overview",
         "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
         "stats.teamsChartTitle": "Teams registered per tournament",
@@ -198,6 +202,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Отправлено в Discord",
         "winners.sendConfirmTitle": "Отправить анонс победителей?",
         "winners.sendConfirmBody": "Сообщение будет опубликовано в канале турнира прямо сейчас. Это нельзя отменить.",
+        "winners.fullEdit": "Полное редактирование",
+        "winners.fullEditHint": "Переопределите заголовок, цвет и миниатюру только для этого сообщения — оставьте пустым, чтобы использовать настройки турнира.",
+        "winners.fieldTitle": "Заголовок",
         "stats.overview": "Обзор",
         "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
         "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
@@ -309,6 +316,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Enviado a Discord",
         "winners.sendConfirmTitle": "¿Enviar el anuncio de ganadores?",
         "winners.sendConfirmBody": "Publica este mensaje en el canal del torneo ahora mismo. Esto no se puede deshacer.",
+        "winners.fullEdit": "Edición completa",
+        "winners.fullEditHint": "Anula el título, el color y la miniatura solo para este mensaje — déjalo en blanco para seguir usando los del torneo.",
+        "winners.fieldTitle": "Título",
         "stats.overview": "Resumen",
         "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
         "stats.teamsChartTitle": "Equipos registrados por torneo",
@@ -420,6 +430,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Trimis pe Discord",
         "winners.sendConfirmTitle": "Trimiți anunțul câștigătorilor?",
         "winners.sendConfirmBody": "Publică acest mesaj în canalul turneului chiar acum. Nu poate fi anulat.",
+        "winners.fullEdit": "Editare completă",
+        "winners.fullEditHint": "Suprascrie titlul, culoarea și miniatura doar pentru acest mesaj — lasă necompletat pentru a folosi în continuare cele ale turneului.",
+        "winners.fieldTitle": "Titlu",
         "stats.overview": "Prezentare generală",
         "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
         "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
@@ -531,6 +544,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Inviato su Discord",
         "winners.sendConfirmTitle": "Inviare l'annuncio dei vincitori?",
         "winners.sendConfirmBody": "Pubblica subito questo messaggio nel canale del torneo. Non può essere annullato.",
+        "winners.fullEdit": "Modifica completa",
+        "winners.fullEditHint": "Sovrascrivi titolo, colore e miniatura solo per questo messaggio — lascia vuoto per continuare a usare quelli del torneo.",
+        "winners.fieldTitle": "Titolo",
         "stats.overview": "Panoramica",
         "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
         "stats.teamsChartTitle": "Squadre registrate per torneo",
@@ -642,6 +658,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Verzonden naar Discord",
         "winners.sendConfirmTitle": "Winnaarsaankondiging verzenden?",
         "winners.sendConfirmBody": "Plaatst dit bericht nu meteen in het aankondigingskanaal van het toernooi. Dit kan niet ongedaan worden gemaakt.",
+        "winners.fullEdit": "Volledig bewerken",
+        "winners.fullEditHint": "Overschrijf de titel, kleur en miniatuur alleen voor dit bericht — laat leeg om die van het toernooi te blijven gebruiken.",
+        "winners.fieldTitle": "Titel",
         "stats.overview": "Overzicht",
         "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
         "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
@@ -753,6 +772,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Enviado para o Discord",
         "winners.sendConfirmTitle": "Enviar o anúncio dos vencedores?",
         "winners.sendConfirmBody": "Publica esta mensagem no canal do torneio agora mesmo. Isso não pode ser desfeito.",
+        "winners.fullEdit": "Edição completa",
+        "winners.fullEditHint": "Substitui o título, a cor e a miniatura apenas para esta mensagem — deixe em branco para continuar usando os do torneio.",
+        "winners.fieldTitle": "Título",
         "stats.overview": "Visão geral",
         "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
         "stats.teamsChartTitle": "Equipas registadas por torneio",
@@ -864,6 +886,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Στάλθηκε στο Discord",
         "winners.sendConfirmTitle": "Αποστολή ανακοίνωσης νικητών;",
         "winners.sendConfirmBody": "Δημοσιεύει αυτό το μήνυμα στο κανάλι ανακοινώσεων του τουρνουά τώρα. Δεν μπορεί να αναιρεθεί.",
+        "winners.fullEdit": "Πλήρης επεξεργασία",
+        "winners.fullEditHint": "Αντικαταστήστε τον τίτλο, το χρώμα και τη μικρογραφία μόνο για αυτό το μήνυμα — αφήστε κενό για να συνεχίσετε να χρησιμοποιείτε αυτά του τουρνουά.",
+        "winners.fieldTitle": "Τίτλος",
         "stats.overview": "Επισκόπηση",
         "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
         "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
@@ -975,6 +1000,9 @@ const TRANSLATIONS = {
         "winners.messageSent": "Envoyé sur Discord",
         "winners.sendConfirmTitle": "Envoyer l'annonce des vainqueurs ?",
         "winners.sendConfirmBody": "Publie ce message dans le salon d'annonce du tournoi dès maintenant. Cette action est irréversible.",
+        "winners.fullEdit": "Édition complète",
+        "winners.fullEditHint": "Remplace le titre, la couleur et la miniature pour ce message uniquement — laissez vide pour continuer à utiliser ceux du tournoi.",
+        "winners.fieldTitle": "Titre",
         "stats.overview": "Vue d'ensemble",
         "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
         "stats.teamsChartTitle": "Équipes inscrites par tournoi",
@@ -2305,6 +2333,8 @@ function populateWinnersSelect() {
         winnersCurrentMatch = null;
         document.getElementById("winners-card").classList.add("hidden");
         document.getElementById("winner-message-card").classList.add("hidden");
+        document.getElementById("winner-message-actions").classList.add("hidden");
+        document.getElementById("winner-message-form-card").classList.add("hidden");
     }
 }
 
@@ -2316,8 +2346,21 @@ async function showLastMatch(tournament) {
     winnersCurrentTournament = tournament;
     winnersCurrentMatch = null;
     document.getElementById("winner-message-card").classList.remove("hidden");
+    document.getElementById("winner-message-actions").classList.remove("hidden");
+    document.getElementById("winner-message-form-card").classList.remove("hidden");
     document.getElementById("wm-text").value = tournament.winner_message_text || "";
     document.getElementById("wm-save-result").textContent = "";
+
+    // "Full edit" fields: title/thumbnail stay blank when there's no stored
+    // override (the placeholder/preview fall back to the tournament's own),
+    // color always shows the effective value since a swatch can't show "blank".
+    const titleInput = document.getElementById("wm-title-input");
+    titleInput.value = tournament.winner_message_title || "";
+    titleInput.placeholder = `🏆 ${tournament.name}`;
+    state.wmThumbnailOverride = null;
+    document.getElementById("wm-thumbnail-input").value = tournament.winner_message_thumbnail || "";
+    setWinnerMessageColorField(tournament.winner_message_color || tournament.color || "#8b5cf6");
+
     renderWinnerMessagePreview();
 
     await loadLastMatch(tournament.id);
@@ -2408,6 +2451,8 @@ document.getElementById("winners-tournament-select").addEventListener("change", 
         winnersCurrentMatch = null;
         document.getElementById("winners-card").classList.add("hidden");
         document.getElementById("winner-message-card").classList.add("hidden");
+        document.getElementById("winner-message-actions").classList.add("hidden");
+        document.getElementById("winner-message-form-card").classList.add("hidden");
     }
 });
 
@@ -2464,15 +2509,20 @@ function renderWinnerMessagePreview() {
         authorEl.classList.add("hidden");
     }
 
+    // "Full edit" overrides win when set, otherwise fall back to the
+    // tournament's own thumbnail/title/color — same idea as collectFormData's
+    // state.thumbnailOverride-first pattern for the main editor.
+    const thumbnail = state.wmThumbnailOverride || document.getElementById("wm-thumbnail-input").value.trim() || t.thumbnail;
     const thumbEl = document.getElementById("wm-pv-thumbnail");
-    if (t.thumbnail) {
-        thumbEl.src = t.thumbnail;
+    if (thumbnail) {
+        thumbEl.src = thumbnail;
         thumbEl.classList.remove("hidden");
     } else {
         thumbEl.classList.add("hidden");
     }
 
-    document.getElementById("wm-pv-title").textContent = `🏆 ${t.name || ""}`;
+    const title = document.getElementById("wm-title-input").value.trim() || `🏆 ${t.name || ""}`;
+    document.getElementById("wm-pv-title").textContent = title;
 
     const template = document.getElementById("wm-text").value;
     const resolved = resolveWinnerMessageTextClient(t, winnersCurrentMatch, template);
@@ -2488,10 +2538,32 @@ function renderWinnerMessagePreview() {
         imgEl.classList.add("hidden");
     }
 
-    document.querySelector("#winner-message-card .dp-embed").style.borderLeftColor = t.color || "#8b5cf6";
+    const color = document.getElementById("wm-color").value || t.color || "#8b5cf6";
+    document.querySelector("#winner-message-card .dp-embed").style.borderLeftColor = color;
 }
 
-document.getElementById("wm-text").addEventListener("input", renderWinnerMessagePreview);
+// Sets the "Full edit" color field and its swatch together — mirrors
+// setColorField for the main editor's own embed-color field.
+function setWinnerMessageColorField(hex) {
+    const input = document.getElementById("wm-color");
+    input.value = hex;
+    document.querySelector("#wm-color-swatch .color-swatch-preview").style.background = hex;
+    document.querySelector("#wm-color-swatch .color-swatch-hex").textContent = hex.toUpperCase();
+    renderWinnerMessagePreview();
+}
+
+document.getElementById("wm-color-swatch").addEventListener("click", (e) => {
+    colorPicker.open({
+        x: e.clientX,
+        y: e.clientY,
+        initialColor: document.getElementById("wm-color").value || "#8b5cf6",
+        change: setWinnerMessageColorField,
+    });
+});
+
+["wm-text", "wm-title-input", "wm-thumbnail-input"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", renderWinnerMessagePreview);
+});
 
 document.getElementById("wm-toolbar").addEventListener("click", (e) => {
     const fmtBtn = e.target.closest("button[data-fmt]");
@@ -2527,9 +2599,12 @@ document.getElementById("wm-save-btn").addEventListener("click", async () => {
     result.textContent = "";
     try {
         const text = document.getElementById("wm-text").value.trim() || null;
+        const title = document.getElementById("wm-title-input").value.trim() || null;
+        const color = document.getElementById("wm-color").value || null;
+        const thumbnail = state.wmThumbnailOverride || document.getElementById("wm-thumbnail-input").value.trim() || null;
         const { tournament } = await apiFetch(`/api/tournaments/${winnersCurrentTournament.id}`, {
             method: "PATCH",
-            body: JSON.stringify({ winnerMessageText: text }),
+            body: JSON.stringify({ winnerMessageText: text, winnerMessageTitle: title, winnerMessageColor: color, winnerMessageThumbnail: thumbnail }),
         });
         winnersCurrentTournament = tournament;
         const idx = state.tournaments.findIndex((t) => t.id === tournament.id);
@@ -3170,7 +3245,7 @@ function updateSectionBadges() {
 // All three behave identically (a local upload becomes a data: URL that takes
 // precedence over the paired text input's pasted link), so one factory wires
 // each instead of repeating the same dropzone plumbing three times.
-function wireImageDropzone(dropzoneId, fileInputId, textInputId, overrideKey) {
+function wireImageDropzone(dropzoneId, fileInputId, textInputId, overrideKey, onChange = renderPreview) {
     const dropzone = document.getElementById(dropzoneId);
     const fileInput = document.getElementById(fileInputId);
     const textInput = document.getElementById(textInputId);
@@ -3180,7 +3255,7 @@ function wireImageDropzone(dropzoneId, fileInputId, textInputId, overrideKey) {
         reader.onload = () => {
             state[overrideKey] = reader.result;
             textInput.value = "";
-            renderPreview();
+            onChange();
         };
         reader.readAsDataURL(file);
     }
@@ -3207,6 +3282,7 @@ function wireImageDropzone(dropzoneId, fileInputId, textInputId, overrideKey) {
 wireImageDropzone("banner-dropzone", "banner-file", "f-banner", "bannerOverride");
 wireImageDropzone("thumbnail-dropzone", "thumbnail-file", "f-thumbnail", "thumbnailOverride");
 wireImageDropzone("author-icon-dropzone", "author-icon-file", "f-author-icon", "authorIconOverride");
+wireImageDropzone("wm-thumbnail-dropzone", "wm-thumbnail-file", "wm-thumbnail-input", "wmThumbnailOverride", renderWinnerMessagePreview);
 
 // =========================================================================
 // Description toolbar: Discord markdown shortcuts + role/channel/user mention

@@ -119,73 +119,117 @@
                 <p class="hint" data-i18n="winners.hint">Shows the bracket's final match, pulled live from Matcherino (refreshes every 30s).</p>
             </section>
 
-            <section id="winners-card" class="card hidden">
-                <div class="card-head-row">
-                    <h2 id="winners-title">Final match</h2>
-                    <span id="winners-status" class="winners-status-badge"></span>
-                </div>
-                <div id="winners-scoreboard"></div>
-                <p id="winners-empty" class="hint hidden" data-i18n="winners.noFinalYet">The bracket's final match hasn't started yet.</p>
-                <p id="winners-error" class="hint hidden" data-i18n="winners.loadError">Couldn't load match data from Matcherino.</p>
-            </section>
-
-            <!-- ===== Winner announcement message editor ===== -->
-            <section id="winner-message-card" class="card hidden">
-                <h2 data-i18n="winners.messageTitle">Winner announcement message</h2>
-                <p class="hint" data-i18n="winners.messageHint">Tournament name, game and branding are pulled in automatically. Write the rest below — use the buttons to insert the winning team, score and player names, filled in live from the current match.</p>
-
-                <div class="discord-preview">
-                    <div class="dp-avatar">🏆</div>
-                    <div class="dp-body">
-                        <div class="dp-header">
-                            <span class="dp-username">Tournament Bot</span>
-                            <span class="dp-botTag">BOT</span>
-                            <span class="dp-time">today, just now</span>
+            <div class="layout" id="winner-message-layout">
+                <section class="preview-col">
+                    <section id="winners-card" class="card hidden">
+                        <div class="card-head-row">
+                            <h2 id="winners-title">Final match</h2>
+                            <span id="winners-status" class="winners-status-badge"></span>
                         </div>
-                        <div class="dp-embed">
-                            <div class="dp-embed-author hidden" id="wm-pv-author">
-                                <img class="dp-author-icon hidden" id="wm-pv-author-icon" />
-                                <span id="wm-pv-author-name"></span>
+                        <div id="winners-scoreboard"></div>
+                        <p id="winners-empty" class="hint hidden" data-i18n="winners.noFinalYet">The bracket's final match hasn't started yet.</p>
+                        <p id="winners-error" class="hint hidden" data-i18n="winners.loadError">Couldn't load match data from Matcherino.</p>
+                    </section>
+
+                    <div id="winner-message-card" class="card preview-card hidden">
+                        <h2 data-i18n="winners.messageTitle">Winner announcement message</h2>
+                        <div class="discord-preview">
+                            <div class="dp-avatar">🏆</div>
+                            <div class="dp-body">
+                                <div class="dp-header">
+                                    <span class="dp-username">Tournament Bot</span>
+                                    <span class="dp-botTag">BOT</span>
+                                    <span class="dp-time">today, just now</span>
+                                </div>
+                                <div class="dp-embed">
+                                    <div class="dp-embed-author hidden" id="wm-pv-author">
+                                        <img class="dp-author-icon hidden" id="wm-pv-author-icon" />
+                                        <span id="wm-pv-author-name"></span>
+                                    </div>
+                                    <div class="dp-embed-top">
+                                        <img class="dp-embed-thumbnail hidden" id="wm-pv-thumbnail" />
+                                        <div class="dp-embed-title" id="wm-pv-title">🏆 Tournament name</div>
+                                        <div class="dp-embed-desc" id="wm-pv-desc"></div>
+                                    </div>
+                                    <img class="dp-embed-image hidden" id="wm-pv-image" />
+                                </div>
                             </div>
-                            <div class="dp-embed-top">
-                                <img class="dp-embed-thumbnail hidden" id="wm-pv-thumbnail" />
-                                <div class="dp-embed-title" id="wm-pv-title">🏆 Tournament name</div>
-                                <div class="dp-embed-desc" id="wm-pv-desc"></div>
-                            </div>
-                            <img class="dp-embed-image hidden" id="wm-pv-image" />
                         </div>
+                        <p class="hint" data-i18n="winners.messageHint">Tournament name, game and branding are pulled in automatically. Write the rest in the form — use the buttons to insert the winning team, score and player names, filled in live from the current match.</p>
                     </div>
-                </div>
 
-                <label data-i18n="winners.messageLabel">Message</label>
-                <div class="format-toolbar" id="wm-toolbar">
-                    <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
-                    <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
-                    <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
-                    <button type="button" data-fmt="strike" title="Strikethrough"><s>S</s></button>
-                    <button type="button" data-fmt="spoiler" title="Spoiler (hidden until clicked)">||S||</button>
-                    <button type="button" data-fmt="code" title="Inline code">`code`</button>
-                    <button type="button" data-fmt="codeblock" title="Code block">{ }</button>
-                    <button type="button" data-fmt="quote" title="Quote">❝</button>
-                    <button type="button" data-fmt="bullet" title="Bullet list">•</button>
-                    <button type="button" data-fmt="header" title="Header">H</button>
-                    <button type="button" data-fmt="link" title="Link">Link</button>
-                </div>
-                <div class="format-toolbar" id="wm-placeholder-toolbar">
-                    <button type="button" data-ph="{winner}" data-i18n="winners.phWinner">Winner</button>
-                    <button type="button" data-ph="{winnerPlayers}" data-i18n="winners.phWinnerPlayers">Winner players</button>
-                    <button type="button" data-ph="{loser}" data-i18n="winners.phLoser">Loser</button>
-                    <button type="button" data-ph="{loserPlayers}" data-i18n="winners.phLoserPlayers">Loser players</button>
-                    <button type="button" data-ph="{score}" data-i18n="winners.phScore">Score</button>
-                    <button type="button" data-ph="{tournament}" data-i18n="winners.phTournament">Tournament</button>
-                    <button type="button" data-ph="{game}" data-i18n="winners.phGame">Game</button>
-                </div>
-                <textarea id="wm-text" class="description-textarea" rows="8" maxlength="2000" placeholder="GG {winner}! Final score {score}. MVPs: {winnerPlayers} 🏆"></textarea>
+                    <div id="winner-message-actions" class="card editor-actions hidden">
+                        <button type="button" id="wm-save-btn" data-i18n="winners.saveMessage">Save</button>
+                        <p id="wm-save-result" class="result"></p>
+                        <button type="button" id="wm-send-btn" class="secondary-btn full-width-btn" data-i18n="winners.sendMessage">Send to Discord</button>
+                    </div>
+                </section>
 
-                <button type="button" id="wm-save-btn" data-i18n="winners.saveMessage">Save</button>
-                <p id="wm-save-result" class="result"></p>
-                <button type="button" id="wm-send-btn" class="secondary-btn full-width-btn" data-i18n="winners.sendMessage">Send to Discord</button>
-            </section>
+                <section class="form-col">
+                    <section id="winner-message-form-card" class="card hidden">
+                        <h2 data-i18n="winners.messageTitle">Winner announcement message</h2>
+
+                        <div class="form-section" data-section="wm-message">
+                            <button type="button" class="section-header" data-section-toggle>
+                                <span class="section-title" data-i18n="winners.messageLabel">Message</span>
+                                <span class="section-chevron">▾</span>
+                            </button>
+                            <div class="section-body">
+                                <div class="format-toolbar" id="wm-toolbar">
+                                    <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
+                                    <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
+                                    <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
+                                    <button type="button" data-fmt="strike" title="Strikethrough"><s>S</s></button>
+                                    <button type="button" data-fmt="spoiler" title="Spoiler (hidden until clicked)">||S||</button>
+                                    <button type="button" data-fmt="code" title="Inline code">`code`</button>
+                                    <button type="button" data-fmt="codeblock" title="Code block">{ }</button>
+                                    <button type="button" data-fmt="quote" title="Quote">❝</button>
+                                    <button type="button" data-fmt="bullet" title="Bullet list">•</button>
+                                    <button type="button" data-fmt="header" title="Header">H</button>
+                                    <button type="button" data-fmt="link" title="Link">Link</button>
+                                </div>
+                                <div class="format-toolbar" id="wm-placeholder-toolbar">
+                                    <button type="button" data-ph="{winner}" data-i18n="winners.phWinner">Winner</button>
+                                    <button type="button" data-ph="{winnerPlayers}" data-i18n="winners.phWinnerPlayers">Winner players</button>
+                                    <button type="button" data-ph="{loser}" data-i18n="winners.phLoser">Loser</button>
+                                    <button type="button" data-ph="{loserPlayers}" data-i18n="winners.phLoserPlayers">Loser players</button>
+                                    <button type="button" data-ph="{score}" data-i18n="winners.phScore">Score</button>
+                                    <button type="button" data-ph="{tournament}" data-i18n="winners.phTournament">Tournament</button>
+                                    <button type="button" data-ph="{game}" data-i18n="winners.phGame">Game</button>
+                                </div>
+                                <textarea id="wm-text" class="description-textarea" rows="8" maxlength="2000" placeholder="GG {winner}! Final score {score}. MVPs: {winnerPlayers} 🏆"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-section collapsed" data-section="wm-advanced">
+                            <button type="button" class="section-header" data-section-toggle>
+                                <span class="section-title" data-i18n="winners.fullEdit">Full edit</span>
+                                <span class="section-chevron">▾</span>
+                            </button>
+                            <div class="section-body">
+                                <p class="hint" style="margin-top:-4px;" data-i18n="winners.fullEditHint">Override the title, color and thumbnail for this message only — leave blank to keep using the tournament's own.</p>
+
+                                <label data-i18n="winners.fieldTitle">Title</label>
+                                <input id="wm-title-input" type="text" maxlength="256" />
+
+                                <label data-i18n="editor.field.color">Embed color</label>
+                                <button type="button" id="wm-color-swatch" class="color-swatch-btn">
+                                    <span class="color-swatch-preview" style="background:#8b5cf6"></span>
+                                    <span class="color-swatch-hex">#8B5CF6</span>
+                                </button>
+                                <input type="hidden" id="wm-color" value="" />
+
+                                <label data-i18n="editor.field.thumbnail">Thumbnail</label>
+                                <div class="dropzone small" id="wm-thumbnail-dropzone">
+                                    <span>🖼️ Drag or click</span>
+                                    <input type="file" id="wm-thumbnail-file" accept="image/*" hidden />
+                                </div>
+                                <input id="wm-thumbnail-input" type="text" placeholder="...or paste a link for the thumbnail" />
+                            </div>
+                        </div>
+                    </section>
+                </section>
+            </div>
         </section>
 
         <!-- ============== EDITOR (constructor + live preview) ============== -->
