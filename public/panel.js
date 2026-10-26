@@ -92,10 +92,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Override the title, color and thumbnail for this message only — leave blank to keep using the tournament's own.",
         "winners.fieldTitle": "Title",
         "winners.noTitle": "🚫 No title — don't show a title at all",
-        "winners.playerFormatLabel": "Player list format",
-        "winners.formatInline": "Inline",
-        "winners.formatList": "List",
-        "winners.playerFormatHint": "How {winnerPlayers}/{loserPlayers} are written: \"Kraft, Fiolsi\" inline, or one bulleted name per line.",
         "stats.overview": "Overview",
         "stats.empty": "No published tournaments yet on this server — stats show up once at least one has been announced.",
         "stats.teamsChartTitle": "Teams registered per tournament",
@@ -211,10 +207,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Переопределите заголовок, цвет и миниатюру только для этого сообщения — оставьте пустым, чтобы использовать настройки турнира.",
         "winners.fieldTitle": "Заголовок",
         "winners.noTitle": "🚫 Без заголовка — не показывать заголовок вообще",
-        "winners.playerFormatLabel": "Формат списка игроков",
-        "winners.formatInline": "В строку",
-        "winners.formatList": "Списком",
-        "winners.playerFormatHint": "Как записываются {winnerPlayers}/{loserPlayers}: \"Kraft, Fiolsi\" в строку, либо по одному имени на строке с маркером.",
         "stats.overview": "Обзор",
         "stats.empty": "На этом сервере пока нет опубликованных турниров — статистика появится, как только хотя бы один будет анонсирован.",
         "stats.teamsChartTitle": "Команд зарегистрировано по турнирам",
@@ -330,10 +322,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Anula el título, el color y la miniatura solo para este mensaje — déjalo en blanco para seguir usando los del torneo.",
         "winners.fieldTitle": "Título",
         "winners.noTitle": "🚫 Sin título — no mostrar ningún título",
-        "winners.playerFormatLabel": "Formato de la lista de jugadores",
-        "winners.formatInline": "En línea",
-        "winners.formatList": "En lista",
-        "winners.playerFormatHint": "Cómo se escriben {winnerPlayers}/{loserPlayers}: \"Kraft, Fiolsi\" en línea, o un nombre con viñeta por línea.",
         "stats.overview": "Resumen",
         "stats.empty": "Aún no hay torneos publicados en este servidor — las estadísticas aparecerán cuando se anuncie al menos uno.",
         "stats.teamsChartTitle": "Equipos registrados por torneo",
@@ -449,10 +437,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Suprascrie titlul, culoarea și miniatura doar pentru acest mesaj — lasă necompletat pentru a folosi în continuare cele ale turneului.",
         "winners.fieldTitle": "Titlu",
         "winners.noTitle": "🚫 Fără titlu — nu afișa niciun titlu",
-        "winners.playerFormatLabel": "Format listă jucători",
-        "winners.formatInline": "În linie",
-        "winners.formatList": "Listă",
-        "winners.playerFormatHint": "Cum sunt scrise {winnerPlayers}/{loserPlayers}: \"Kraft, Fiolsi\" în linie, sau câte un nume pe linie, cu marcaj.",
         "stats.overview": "Prezentare generală",
         "stats.empty": "Încă nu există turnee publicate pe acest server — statisticile vor apărea după ce cel puțin unul este anunțat.",
         "stats.teamsChartTitle": "Echipe înregistrate pe turneu",
@@ -568,10 +552,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Sovrascrivi titolo, colore e miniatura solo per questo messaggio — lascia vuoto per continuare a usare quelli del torneo.",
         "winners.fieldTitle": "Titolo",
         "winners.noTitle": "🚫 Nessun titolo — non mostrare alcun titolo",
-        "winners.playerFormatLabel": "Formato elenco giocatori",
-        "winners.formatInline": "In linea",
-        "winners.formatList": "Elenco",
-        "winners.playerFormatHint": "Come vengono scritti {winnerPlayers}/{loserPlayers}: \"Kraft, Fiolsi\" in linea, oppure un nome puntato per riga.",
         "stats.overview": "Panoramica",
         "stats.empty": "Nessun torneo pubblicato ancora su questo server — le statistiche appariranno non appena almeno uno sarà annunciato.",
         "stats.teamsChartTitle": "Squadre registrate per torneo",
@@ -687,10 +667,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Overschrijf de titel, kleur en miniatuur alleen voor dit bericht — laat leeg om die van het toernooi te blijven gebruiken.",
         "winners.fieldTitle": "Titel",
         "winners.noTitle": "🚫 Geen titel — toon helemaal geen titel",
-        "winners.playerFormatLabel": "Spelerslijst-indeling",
-        "winners.formatInline": "Inline",
-        "winners.formatList": "Lijst",
-        "winners.playerFormatHint": "Hoe {winnerPlayers}/{loserPlayers} worden geschreven: \"Kraft, Fiolsi\" inline, of één naam met opsommingsteken per regel.",
         "stats.overview": "Overzicht",
         "stats.empty": "Nog geen gepubliceerde toernooien op deze server — statistieken verschijnen zodra er minstens één is aangekondigd.",
         "stats.teamsChartTitle": "Geregistreerde teams per toernooi",
@@ -806,10 +782,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Substitui o título, a cor e a miniatura apenas para esta mensagem — deixe em branco para continuar usando os do torneio.",
         "winners.fieldTitle": "Título",
         "winners.noTitle": "🚫 Sem título — não mostrar nenhum título",
-        "winners.playerFormatLabel": "Formato da lista de jogadores",
-        "winners.formatInline": "Em linha",
-        "winners.formatList": "Em lista",
-        "winners.playerFormatHint": "Como {winnerPlayers}/{loserPlayers} são escritos: \"Kraft, Fiolsi\" em linha, ou um nome com marcador por linha.",
         "stats.overview": "Visão geral",
         "stats.empty": "Ainda não há torneios publicados neste servidor — as estatísticas aparecem assim que pelo menos um for anunciado.",
         "stats.teamsChartTitle": "Equipas registadas por torneio",
@@ -925,10 +897,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Αντικαταστήστε τον τίτλο, το χρώμα και τη μικρογραφία μόνο για αυτό το μήνυμα — αφήστε κενό για να συνεχίσετε να χρησιμοποιείτε αυτά του τουρνουά.",
         "winners.fieldTitle": "Τίτλος",
         "winners.noTitle": "🚫 Χωρίς τίτλο — να μην εμφανίζεται καθόλου τίτλος",
-        "winners.playerFormatLabel": "Μορφή λίστας παικτών",
-        "winners.formatInline": "Σε γραμμή",
-        "winners.formatList": "Λίστα",
-        "winners.playerFormatHint": "Πώς γράφονται τα {winnerPlayers}/{loserPlayers}: \"Kraft, Fiolsi\" σε μία γραμμή, ή ένα όνομα με κουκκίδα ανά γραμμή.",
         "stats.overview": "Επισκόπηση",
         "stats.empty": "Δεν υπάρχουν ακόμα δημοσιευμένα τουρνουά σε αυτόν τον διακομιστή — τα στατιστικά θα εμφανιστούν μόλις ανακοινωθεί τουλάχιστον ένα.",
         "stats.teamsChartTitle": "Εγγεγραμμένες ομάδες ανά τουρνουά",
@@ -1044,10 +1012,6 @@ const TRANSLATIONS = {
         "winners.fullEditHint": "Remplace le titre, la couleur et la miniature pour ce message uniquement — laissez vide pour continuer à utiliser ceux du tournoi.",
         "winners.fieldTitle": "Titre",
         "winners.noTitle": "🚫 Aucun titre — ne rien afficher comme titre",
-        "winners.playerFormatLabel": "Format de la liste des joueurs",
-        "winners.formatInline": "En ligne",
-        "winners.formatList": "En liste",
-        "winners.playerFormatHint": "Comment {winnerPlayers}/{loserPlayers} sont écrits : \"Kraft, Fiolsi\" en ligne, ou un nom à puce par ligne.",
         "stats.overview": "Vue d'ensemble",
         "stats.empty": "Aucun tournoi publié pour l'instant sur ce serveur — les statistiques apparaîtront dès qu'au moins un aura été annoncé.",
         "stats.teamsChartTitle": "Équipes inscrites par tournoi",
@@ -2405,9 +2369,7 @@ async function showLastMatch(tournament) {
     state.wmThumbnailOverride = null;
     document.getElementById("wm-thumbnail-input").value = tournament.winner_message_thumbnail || "";
     setWinnerMessageColorField(tournament.winner_message_color || tournament.color || "#8b5cf6");
-    document.querySelectorAll("#wm-player-format-toggle .settings-toggle-btn").forEach((b) => {
-        b.classList.toggle("active", b.dataset.format === (tournament.winner_message_player_format || "inline"));
-    });
+    setWinnerMessagePlayerFormat(tournament.winner_message_player_format || "inline");
 
     renderWinnerMessagePreview();
 
@@ -2513,7 +2475,19 @@ document.getElementById("winners-tournament-select").addEventListener("change", 
 // =========================================================================
 
 function getWinnerMessagePlayerFormat() {
-    return document.querySelector("#wm-player-format-toggle .settings-toggle-btn.active")?.dataset.format || "inline";
+    return document.getElementById("wm-player-format-btn").dataset.format || "inline";
+}
+
+// Sets the compact toolbar toggle's state and matching icon/title together.
+function setWinnerMessagePlayerFormat(format) {
+    const btn = document.getElementById("wm-player-format-btn");
+    btn.dataset.format = format;
+    btn.classList.toggle("active", format === "list");
+    btn.textContent = format === "list" ? "☰" : "≡";
+    btn.title =
+        format === "list"
+            ? "Player list format: bulleted list (click for inline)"
+            : "Player list format: inline (click for a bulleted list)";
 }
 
 function resolveWinnerMessageTextClient(tournament, match, template, playerFormat) {
@@ -2631,10 +2605,8 @@ document.getElementById("wm-title-none").addEventListener("change", (e) => {
     renderWinnerMessagePreview();
 });
 
-document.getElementById("wm-player-format-toggle").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-format]");
-    if (!btn) return;
-    document.querySelectorAll("#wm-player-format-toggle .settings-toggle-btn").forEach((b) => b.classList.toggle("active", b === btn));
+document.getElementById("wm-player-format-btn").addEventListener("click", () => {
+    setWinnerMessagePlayerFormat(getWinnerMessagePlayerFormat() === "list" ? "inline" : "list");
     renderWinnerMessagePreview();
 });
 

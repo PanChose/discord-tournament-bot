@@ -1081,6 +1081,10 @@ input[type="color"] { height: 40px; padding: 4px; cursor: pointer; }
 
 .format-toolbar button:hover { background: var(--hover-bg); border-color: var(--accent); }
 
+/* Compact toggle buttons that live inside a toolbar (e.g. the winner-message
+   player-list-format switch) instead of a one-shot insert/format action. */
+.format-toolbar button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
 .toolbar-sep {
     width: 1px;
     align-self: stretch;

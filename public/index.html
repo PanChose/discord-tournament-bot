@@ -193,6 +193,8 @@
                                     <button type="button" data-ph="{winnerPlayers}" data-i18n="winners.phWinnerPlayers">Winner players</button>
                                     <button type="button" data-ph="{loser}" data-i18n="winners.phLoser">Loser</button>
                                     <button type="button" data-ph="{loserPlayers}" data-i18n="winners.phLoserPlayers">Loser players</button>
+                                    <button type="button" id="wm-player-format-btn" data-format="inline" title="Player list format: inline (click for a bulleted list)">☰</button>
+                                    <span class="toolbar-sep"></span>
                                     <button type="button" data-ph="{score}" data-i18n="winners.phScore">Score</button>
                                     <button type="button" data-ph="{tournament}" data-i18n="winners.phTournament">Tournament</button>
                                     <button type="button" data-ph="{game}" data-i18n="winners.phGame">Game</button>
@@ -229,15 +231,6 @@
                                     <input type="file" id="wm-thumbnail-file" accept="image/*" hidden />
                                 </div>
                                 <input id="wm-thumbnail-input" type="text" placeholder="...or paste a link for the thumbnail" />
-
-                                <div class="section-divider"></div>
-
-                                <label data-i18n="winners.playerFormatLabel">Player list format</label>
-                                <div class="settings-toggle-row" id="wm-player-format-toggle">
-                                    <button type="button" class="settings-toggle-btn active" data-format="inline" data-i18n="winners.formatInline">Inline</button>
-                                    <button type="button" class="settings-toggle-btn" data-format="list" data-i18n="winners.formatList">List</button>
-                                </div>
-                                <p class="hint" style="margin-top:-8px;" data-i18n="winners.playerFormatHint">How {winnerPlayers}/{loserPlayers} are written: "Kraft, Fiolsi" inline, or one bulleted name per line.</p>
                             </div>
                         </div>
                     </section>
