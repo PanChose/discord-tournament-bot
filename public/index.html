@@ -211,6 +211,10 @@
 
                                 <label data-i18n="winners.fieldTitle">Title</label>
                                 <input id="wm-title-input" type="text" maxlength="256" />
+                                <label class="checkbox-row" for="wm-title-none">
+                                    <input type="checkbox" id="wm-title-none" />
+                                    <span data-i18n="winners.noTitle">🚫 No title — don't show a title at all</span>
+                                </label>
 
                                 <label data-i18n="editor.field.color">Embed color</label>
                                 <button type="button" id="wm-color-swatch" class="color-swatch-btn">
@@ -225,6 +229,15 @@
                                     <input type="file" id="wm-thumbnail-file" accept="image/*" hidden />
                                 </div>
                                 <input id="wm-thumbnail-input" type="text" placeholder="...or paste a link for the thumbnail" />
+
+                                <div class="section-divider"></div>
+
+                                <label data-i18n="winners.playerFormatLabel">Player list format</label>
+                                <div class="settings-toggle-row" id="wm-player-format-toggle">
+                                    <button type="button" class="settings-toggle-btn active" data-format="inline" data-i18n="winners.formatInline">Inline</button>
+                                    <button type="button" class="settings-toggle-btn" data-format="list" data-i18n="winners.formatList">List</button>
+                                </div>
+                                <p class="hint" style="margin-top:-8px;" data-i18n="winners.playerFormatHint">How {winnerPlayers}/{loserPlayers} are written: "Kraft, Fiolsi" inline, or one bulleted name per line.</p>
                             </div>
                         </div>
                     </section>
