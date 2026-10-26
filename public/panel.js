@@ -1334,6 +1334,10 @@ const WHATS_NEW = {
             label: "🎨 Design",
             items: ["Redesigned color palette and overall look — a softer indigo/purple theme across the header, sidebar and cards"],
         },
+        {
+            label: "🐛 Bug Fixes",
+            items: ["Pinging the @everyone role no longer shows up as @@everyone"],
+        },
     ],
 };
 
